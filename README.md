@@ -2,13 +2,13 @@
 # STEPS FOR CLONING 
 ```
 cd existing_folder
-git remote add origin https://github.com/ExtGroupJs/supermario_shop.git
+git remote add origin https://github.com/ExtGroupJs/gold-mine-dashboard.git
 git branch -M main
 git push -uf origin main
 ```
 
 # STEPS FOR DEVELOPING
-1.  when the code is already cloned, create a python virtual enviroment (using currently python 3.11):
+1.  when the code is already cloned, create a python virtual enviroment (using currently python 3.13):
 python -m venv venv
 
 2. Activate virtual enviroment:
@@ -42,3 +42,23 @@ python manage.py runserver_plus --cert-file localhost.crt --key-file localhost.k
 !!!For BE Develop...
 
 pip-chill >.\req.txt
+
+
+
+## Correr el proyecto desde docker
+
+## Primera vez (o si modificas package.json):
+
+`docker compose up --build -d`
+
+Esto construirá la imagen, instalando las dependencias una sola vez.
+
+## Si no se modifica más nada es solo levantar los containers:
+`docker compose -f docker-compose-dev.yml up -d`
+Para los cambios de código posteriores no hay que hacer más nada, el código está montado como un volumen, el servidor de desarrollo dentro del contenedor detectará los cambios y recargará la aplicación automáticamente.
+
+## Para parar:
+`docker compose -f docker-compose-dev.yml down`
+
+## Para crear solo la imagen
+docker build -f Dockerfile-dev -t certus-backend-img:latest .
