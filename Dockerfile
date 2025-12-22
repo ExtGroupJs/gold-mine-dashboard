@@ -8,9 +8,7 @@ COPY ./ /home/project
 
 RUN pip install -r ./requirements.txt
 
-# El CMD para iniciar el servidor de desarrollo
-# Asumimos que "start:dev" usa nodemon o similar para recargar con los cambios
-
 EXPOSE 8000
 
-CMD [ "python", "manage.py", "runserver" ]
+# Corregido: especificar la dirección de host para que sea accesible desde fuera del contenedor
+CMD [ "python3", "./manage.py", "runserver", "0.0.0.0:8000" ]

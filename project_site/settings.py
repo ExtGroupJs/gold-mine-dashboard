@@ -65,6 +65,7 @@ INSTALLED_APPS = [
     "drf_spectacular",
     "drf_spectacular_sidecar",  # required for Django collectstatic discovery
     "apps.common.middlewares",
+    "debug_toolbar",
     "django_browser_reload",
     "django_watchfiles",
 ]
@@ -95,6 +96,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     "apps.common.middlewares.GetRequestUserMiddleware",
     "django_browser_reload.middleware.BrowserReloadMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 
 
