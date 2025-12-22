@@ -1,0 +1,18 @@
+from django.db import models
+
+class Task(models.Model):
+    task_code = models.CharField(max_length=50, unique=True)
+    status_code = models.CharField(max_length=50)
+    wbs_id = models.CharField(max_length=100)
+    task_name = models.TextField()
+    target_drtn_hr_cnt = models.IntegerField()
+    original_duration = models.IntegerField()
+    remain_drtn_hr_cnt = models.IntegerField()
+    start_date = models.DateTimeField()
+    end_date = models.DateTimeField()
+    target_cost = models.DecimalField(max_digits=10, decimal_places=2)
+    total_float_hr_cnt = models.IntegerField()
+    delete_record_flag = models.BooleanField(default=False)
+    
+    def __str__(self):
+        return self.task_code
