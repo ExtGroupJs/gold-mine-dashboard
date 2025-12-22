@@ -1,0 +1,217 @@
+<!DOCTYPE html>
+<html lang="es">
+{% load static %}
+{% load i18n %}
+
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Caracol2023 | {% blocktranslate %}página de registro{% endblocktranslate %}</title>
+  <link rel="icon" type="image/png" href="{% static 'assets/spa/assets/img/logo.png' %}">
+  <!-- Google Font: Source Sans Pro -->
+  <link rel="stylesheet"
+    href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback">
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="{% static 'assets/plugins/fontawesome-free/css/all.min.css' %}">
+  <!-- icheck bootstrap -->
+  <link rel="stylesheet" href="{% static 'assets/plugins/icheck-bootstrap/icheck-bootstrap.min.css' %}">
+  <!-- Theme style -->
+  <link rel="stylesheet" href="{% static 'assets/plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/plugins/toastr/toastr.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/dist/css/adminlte.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/plugins/select2/css/select2.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/plugins/select2-bootstrap4-theme/select2-bootstrap4.min.css' %}">
+
+  <style>
+    .fondoprofile {
+      background-image: url('/static/assets/dist/img/fondotransparente.png');
+      background-size: cover;
+
+      height: 100vh;
+    }
+
+    .spinner-overlay {
+      position: fixed;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(51, 4, 4, 0.5);
+      z-index: 9999;
+      display: none;
+      justify-content: center;
+      align-items: center;
+      flex-direction: column;
+    }
+
+    .spinner {
+      width: 50px;
+      height: 50px;
+      border-radius: 50%;
+      border: 3px solid transparent;
+      border-top-color: #ffffff;
+      animation: spin 1s linear infinite;
+    }
+
+    .spinner-text {
+      color: white;
+      font-size: 1.2rem;
+      margin-top: 10px;
+      text-align: center;
+    }
+
+    @keyframes spin {
+      from {
+        transform: rotate(0deg);
+      }
+
+      to {
+        transform: rotate(360deg);
+      }
+    }
+  </style>
+
+</head>
+
+<body class="hold-transition register-page fondoprofile">
+  <div class="register-box" style="width: 600px;">
+    <div class="card card-outline card-primary">
+      <div class="card-header text-center">
+        <a href="../../index2.html" class="h1"><b>Caracol</b>2023</a>
+      </div>
+      <div class="card-body">
+
+        <form id="form-create-profile">
+          <div class="card-body">
+            <div class="row">
+              <div class="form-group col-md-6">
+                <label for="first_name">{% blocktranslate %}Nombre{% endblocktranslate %}</label>
+                <input type="text" class="form-control" id="first_name" name="first_name" placeholder="{% blocktranslate %}Entre el nombre{% endblocktranslate %}"
+                  required>
+              </div>
+              <div class="form-group col-md-6">
+                <label for="last_name">{% blocktranslate %}Apellidos{% endblocktranslate %}</label>
+                <input type="text" class="form-control" id="last_name" placeholder="{% blocktranslate %}Entre los Apellidos{% endblocktranslate %}" required>
+              </div>
+            </div>
+            <div class="row">
+              <div class="form-group col-md-6">
+                <label for="ci">{% blocktranslate %}Número de Identificación{% endblocktranslate %}</label>
+                <input type="text" class="form-control" id="ci" name="ci"
+                  placeholder="{% blocktranslate %}Entre el número de identificación{% endblocktranslate %}" required>
+              </div>
+
+              <div class="form-group col-md-6">
+                <label for="email">{% blocktranslate %}Correo{% endblocktranslate %}</label>
+                <input type="email" class="form-control" id="email" name="email" placeholder="{% blocktranslate %}Entre el email{% endblocktranslate %}" required>
+              </div>
+
+            </div>
+            <div class="row">
+              <div class="form-group col-md-6">
+                <label>{% blocktranslate %}Género{% endblocktranslate %}</label>
+                <select class="form-control" id="gender" name="gender">
+                  <option value="F">F</option>
+                  <option value="M">M</option>
+                </select>
+              </div>
+
+
+              <div class="form-group col-md-6">
+                <label for="exampleInputFile">{% blocktranslate %}Subir Foto{% endblocktranslate %}</label>
+                <div class="input-group">
+                  <div class="custom-file">
+                    <input type="file" class="custom-file-input" id="customFile" accept="image/png, image/jpeg">
+                    <label class=" custom-file-label" for="customFile"></label>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="row">
+              <div class="form-group col-md-6">
+                <label>{% blocktranslate %}País{% endblocktranslate %}</label>
+                <select class="form-control select2" id="country" style="width: 100%;" tabindex="-1">
+                </select>
+              </div>
+              <div class="form-group col-md-6">
+                <label for="username2">{% blocktranslate %}Usuario{% endblocktranslate %}</label>
+                <input type="username2" class="form-control" id="username2" name="username2"
+                  placeholder="{% blocktranslate %}Entre el usuario{% endblocktranslate %}" required>
+              </div>
+            </div>
+
+            <div class="form-check" id="credencial" style="display: none;">
+              <input class="form-check-input" type="checkbox" id="checkcredencial">
+              <label class="form-check-label">{% blocktranslate %}Editar Contraseña{% endblocktranslate %}</label>
+              <br>
+            </div>
+
+
+            <div class="row">
+              <div class="form-group col-md-6">
+                <label for="password">{% blocktranslate %}Contraseña{% endblocktranslate %}</label>
+                <input type="password" class="form-control" name="password" id="password" placeholder="{% blocktranslate %}Contraseña{% endblocktranslate %}"
+                  required>
+              </div>
+              <div class="form-group col-md-6">
+                <label for="inputPasswordValidate">{% blocktranslate %}Repetir Contraseña{% endblocktranslate %}</label>
+                <input type="password" class="form-control" name="inputPasswordValidate" id="inputPasswordValidate"
+                  placeholder="{% blocktranslate %}Contraseña{% endblocktranslate %}" required>
+              </div>
+            </div>
+          </div>
+          <!-- /.card-body -->
+          <div class="modal-footer justify-content-between">
+            <button type="submit" class="btn btn-primary float-right">{% blocktranslate %}Enviar{% endblocktranslate %}</button>
+          </div>
+
+        </form>
+
+
+        <div class="spinner-overlay">
+          <div class="spinner"></div>
+          <div class="spinner-text">{% blocktranslate %}Estamos trabajando en su perfil{% endblocktranslate %}</div>
+        </div>
+
+      </div>
+      <!-- /.form-box -->
+    </div><!-- /.card -->
+
+  </div>
+  <!-- /.register-box -->
+
+  <!-- Page specific script -->
+  <script src="{% static 'assets/plugins/jquery/jquery.min.js' %}"></script>
+  <!-- Bootstrap 4 -->
+  <script src="{% static 'assets/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <!-- AdminLTE App -->
+  <script src="{% static 'assets/dist/js/adminlte.min.js' %}"></script>
+
+  <script src="{% static 'assets/dist/js/createprofile.js' %}"></script>
+  <script src="{% static 'assets/dist/js/logout.js' %}"></script>
+  <script src="{% static 'assets/plugins/jquery-validation/localization/messages_es.js' %}"></script>
+
+  <script src="{% static 'assets/dist/js/axios.min.js' %}"></script>
+  <script src="{% static 'assets/plugins/toastr/toastr.min.js' %}"></script>
+  <script src="{% static 'assets/plugins/sweetalert2/sweetalert2.min.js' %}"></script>
+  <script src="{% static 'assets/plugins/bs-custom-file-input/bs-custom-file-input.min.js' %}"></script>
+  <script src="{% static 'assets/plugins/jquery-validation/jquery.validate.min.js' %}"></script>
+  <script src="{% static 'assets/plugins/select2/js/select2.full.min.js' %}"></script>
+
+
+  <script>
+    var Toast = Swal.mixin({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 3000
+    });
+
+  </script>
+  {% block script %}
+  {% endblock %}
+</body>
+
+</html>

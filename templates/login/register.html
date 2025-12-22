@@ -1,0 +1,290 @@
+{% load static %}
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MM Auto Part | Log in</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <!-- <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback"> -->
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="{% static 'assets/plugins/fontawesome-free/css/all.min.css' %}">
+  <!-- icheck bootstrap -->
+  <link rel="stylesheet" href="{% static 'assets/plugins/icheck-bootstrap/icheck-bootstrap.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/plugins/toastr/toastr.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/dist/css/adminlte.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/dist/css/adminlte.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/dist/css/load.css' %}">
+</head>
+
+<body class="hold-transition login-page">
+<div class="overlay" id="load" hidden>
+    <i class="fas fa-2x fa-sync fa-spin"></i>
+  </div>
+  <div class="login-box">
+    <div class="login-logo">
+      <a href="{% url 'index' %}"><img width="10%" src="{% static 'assets/dist/img/AdminLTELogo.png' %}" alt=""
+          title=""><b>MM Auto</b></a>
+    </div>
+    <div class="card">
+      <div class="card-body register-card-body">
+        <p class="login-box-msg">Register a new membership</p>
+
+        <form id="register-form" method="post">
+          <div class="input-group mb-3">
+            <input type="text" id="input-name" class="form-control" placeholder="name" required>
+            <div class="input-group-append">
+              <div class="input-group-text">
+                <span class="fas fa-user"></span>
+              </div>
+            </div>
+          </div>
+          <div class="input-group mb-3">
+            <input type="text" id="input-lastname" class="form-control" placeholder="lastname" required>
+            <div class="input-group-append">
+              <div class="input-group-text">
+                <span class="fas fa-user"></span>
+              </div>
+            </div>
+          </div>
+          <div class="input-group mb-3">
+            <input type="text" id="input-user" class="form-control" placeholder="User" required>
+            <div class="input-group-append">
+              <div class="input-group-text">
+                <span class="fas fa-user"></span>
+              </div>
+            </div>
+          </div>
+          <div class="input-group mb-3">
+            <input type="email" id="input-email" class="form-control" placeholder="Email" required>
+            <div class="input-group-append">
+              <div class="input-group-text">
+                <span class="fas fa-envelope"></span>
+              </div>
+            </div>
+          </div>
+          <div class="input-group mb-3">
+            <input type="password" id="input-password" class="form-control" placeholder="Password" required>
+            <div class="input-group-append">
+              <div class="input-group-text">
+                <span class="fas fa-lock"></span>
+              </div>
+            </div>
+          </div>
+          <div class="input-group mb-3">
+            <input type="password" id="input-retype-password" class="form-control" placeholder="Retype password"
+              required>
+            <div class="input-group-append">
+              <div class="input-group-text">
+                <span class="fas fa-lock"></span>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-8">
+              <div class="icheck-primary">
+                <input type="checkbox" id="agreeTerms" name="terms" value="agree" required>
+                <label for="agreeTerms">
+                  I agree to the <a href="" data-toggle="modal" data-target="#exampleModalScrollable">terms</a>
+                </label>
+              </div>
+            </div>
+            <div class="col-4">
+              <button type="submit" class="btn btn-primary btn-block">Register</button>
+            </div>
+          </div>
+        </form>
+
+        <div class="social-auth-links text-center">
+          <p>- OR -</p>
+          <a href="{% url 'first_login' %}" class="text-center">I already have a membership</a>
+        </div>
+
+      </div>
+    </div>
+  </div>
+
+  <!-- Modal -->
+  <div class="modal fade" id="exampleModalScrollable" tabindex="-1" role="dialog"
+    aria-labelledby="exampleModalScrollableTitle" aria-hidden="true">
+    <div class="modal-dialog modal-dialog-scrollable" role="document">
+      <div class="modal-content">
+        <div class="modal-header">
+          <h5 class="modal-title" id="exampleModalScrollableTitle"> Términos de Uso para Miembros</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body"><h2>1. Membership</h2>
+
+          <p>1.1 Membership on the Site is free/paid (indicate if it is free or paid).</p>
+          <p>1.2 To become a member, you must create an account by providing accurate and complete information. You are responsible for maintaining the confidentiality of your login information and for all activities that occur under your account.</p>
+        
+          <h2>2. User Content</h2>
+        
+          <p>2.1 You are solely responsible for the content that you post on the Site ("User Content").</p>
+          <p>2.2 You will not post User Content that is illegal, harmful, threatening, abusive, harassing, defamatory, obscene, racially or ethnically objectionable, or that infringes on the intellectual property rights of any other party.</p>
+          <p>2.3 We reserve the right, in our sole discretion, to remove or edit any User Content that violates these Terms.</p>
+        
+          <h2>3. User Conduct</h2>
+        
+          <p>3.1 You agree to use the Site in a lawful and ethical manner.</p>
+          <p>3.2 You will not use the Site for any illegal purpose, such as infringing on the copyrights of others or transmitting computer viruses.</p>
+          <p>3.3 You will not harass, intimidate, or abuse other users of the Site.</p>
+        
+          <h2>4. Intellectual Property</h2>
+        
+          <p>4.1 The content of the Site, including the text, graphics, logos, images, and software, is our property or is licensed to us and is protected by applicable copyright laws.</p>
+          <p>4.2 You may not use any content of the Site without our prior written permission.</p>
+        
+          <h2>5. Termination</h2>
+        
+          <p>5.1 We may terminate your access to the Site for any reason, at any time, without prior notice.</p>
+        
+          <h2>6. Disclaimer</h2>
+        
+          <p>6.1 THE SITE IS PROVIDED "AS IS" AND "AS AVAILABLE". WE MAKE NO WARRANTIES OF ANY KIND, EXPRESS OR IMPLIED, INCLUDING, BUT NOT LIMITED TO, THE WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, AND NON-INFRINGEMENT.</p>
+        
+          <h2>7. Limitation of Liability</h2>
+        
+          <p>7.1 WE SHALL NOT BE LIABLE FOR ANY DIRECT, INDIRECT, INCIDENTAL, CONSEQUENTIAL, OR SPECIAL DAMAGES ARISING OUT OF OR IN CONNECTION WITH YOUR USE OF THE SITE.</p>
+        
+          <h2>8. Governing Law and Jurisdiction</h2>
+        
+          <p>8.1 These Terms shall be governed by and construed in accordance with the laws of the state of [Your State of Residence], United States.</p>
+        
+          <h2>9. Dispute Resolution</h2>
+        
+          <p>9.1 Any dispute arising out of or in connection with these Terms shall be resolved by binding arbitration in accordance with the arbitration rules of the American Arbitration Association ("AAA"). The arbitration shall be conducted in [City, State] and shall be conducted in the English language.</p>
+        
+          <h2>10. Entire Agreement</h2>
+        
+          <p>10.1 These Terms constitute the entire agreement between you and us with respect to your use of the Site and supersede all prior or contemporaneous communications, representations, or agreements, whether oral or written.</p>
+        
+          <h2>11. Changes to Terms</h2>
+        
+          <p>11.1 We reserve the right to change these Terms at any time. Changes will be posted on the Site. By continuing to use the Site after the posting of changes, you agree to be bound by the revised Terms.</p>
+        
+          <h2>12. Contact</h2>
+        
+          <p>12.1 If you have any questions about these Terms, please contact us at [Your Email Address].</p>
+        
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Close</button>
+          <button type="button" id="modalaccept" class="btn btn-primary">Accept</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- jQuery -->
+  <script src="{% static 'assets/plugins/jquery/jquery.min.js' %}"></script>
+  <!-- Bootstrap 4 -->
+  <script src="{% static 'assets/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <!-- AdminLTE App -->
+  <script src="{% static 'assets/dist/js/adminlte.min.js' %}"></script>
+  <script src="{% static 'assets/dist/js/axios.min.js' %}"></script>
+  <script src="{% static 'assets/plugins/sweetalert2/sweetalert2.min.js' %}"></script>
+  <script src="{% static 'assets/plugins/toastr/toastr.min.js' %}"></script>
+
+  <script>
+  const csrfToken = document.cookie
+  .split(";")
+  .find((c) => c.trim().startsWith("csrftoken="))
+  ?.split("=")[1];
+    var load = document.getElementById("load");
+  axios.defaults.headers.common["X-CSRFToken"] = csrfToken;
+    var Toast = Swal.mixin({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 3000
+    });
+
+    let form = document.getElementById('register-form');
+    form.addEventListener('submit', function (event) {
+      event.preventDefault();
+
+      // Obtener valores de los campos
+      const first_name = document.getElementById('input-name').value;
+      const last_name = document.getElementById('input-lastname').value;
+      const username = document.getElementById('input-user').value;
+      const email = document.getElementById('input-email').value;
+      const password = document.getElementById('input-password').value;
+      const retypePassword = document.getElementById('input-retype-password').value;
+
+      // Validación de coincidencia de contraseñas
+      if (password !== retypePassword) {
+        Toast.fire({
+          icon: 'error',
+          title: 'Error: Passwords do not match.'
+        });
+        return; // Detener el envío si las contraseñas no coinciden
+      }
+
+      // Validación de aceptación de términos
+      if (!document.getElementById('agreeTerms').checked) {
+        Toast.fire({
+          icon: 'error',
+          title: 'Error: You must agree to the terms.'
+        });
+        return; // Detener el envío si no se aceptan los términos
+      }
+
+load.hidden = false;
+
+      let data = new FormData();
+      data.append("first_name", first_name);
+      data.append("last_name", last_name);
+      data.append("username", username);
+      data.append("email", email);
+      data.append("password", password);
+
+      // Envío de datos con axios al endpoint de registro
+      axios.post('../user-gestion/users/', data)
+        .then(function (res) {
+          if (res.status == 201) { // Cambiar el código según el éxito esperado
+          load.hidden = true;
+            Toast.fire({
+              icon: 'success',
+              title: 'Registration successful! Redirecting...'
+            });
+            setTimeout(() => {
+              window.location = "{% url 'first_login' %}";
+            }, 2000); // Redirigir después de 2 segundos
+          }
+        }).catch(function (err) {
+          load.hidden = true;
+          Toast.fire({
+            icon: 'error',
+            title: 'Error: Registration failed. Please try again.'
+          });
+        });
+    });
+
+
+
+    $('#exampleModalScrollable').on('shown.bs.modal', function () {
+      // Obtener el botón y el checkbox
+      const modal_accept = document.getElementById('modalaccept');
+      const checkbox = document.getElementById('agreeTerms');
+      const modal = $(this);
+
+      // Agregar un listener al botón
+      modal_accept.addEventListener('click', function () {
+        // Marcar el checkbox       
+        checkbox.checked = true;
+        modal.modal('hide');
+      });
+    });
+  </script>
+
+</body>
+
+</html>

@@ -1,0 +1,182 @@
+{% load static %}
+{% load i18n %}
+
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>MMotors | Log in</title>
+
+  <!-- Google Font: Source Sans Pro -->
+  <!-- <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback"> -->
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="{% static 'assets/plugins/fontawesome-free/css/all.min.css' %}">
+  <!-- icheck bootstrap -->
+  <link rel="stylesheet" href="{% static 'assets/plugins/icheck-bootstrap/icheck-bootstrap.min.css' %}">
+
+  <link rel="stylesheet" href="{% static 'assets/plugins/toastr/toastr.min.css' %}">
+
+  <link rel="stylesheet" href="{% static 'assets/dist/css/adminlte.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/dist/css/adminlte.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css' %}">
+  <link rel="stylesheet" href="{% static 'assets/dist/css/load.css' %}">
+
+
+  <!-- Theme style -->
+
+
+
+
+
+
+</head>
+
+<body class="hold-transition login-page">
+  <div class="overlay" id="load" hidden>
+    <i class="fas fa-2x fa-sync fa-spin"></i>
+  </div>
+  <div class="login-box">
+    <div class="login-logo">
+      <a href="{% url 'index' %}"><img width="10%" src="{% static 'assets/dist/img/AdminLTELogo.png' %}" alt=""
+          title=""><b>
+          MM Auto </b>Part</a>
+    </div>
+    <!-- /.login-logo -->
+    <div class="card">
+      <div class="card-body login-card-body">
+        <p class="login-box-msg">{% blocktranslate %}Sign in to start your session{% endblocktranslate %}</p>
+
+        <form id="login-form">
+          <div class="input-group mb-3">
+            <input type="text" id="input-username" class="form-control" placeholder="User">
+            <div class="input-group-append">
+              <div class="input-group-text">
+                <span class="fas fa-user"></span>
+              </div>
+            </div>
+          </div>
+          <div class="input-group mb-3">
+            <input type="password" id="input-password" class="form-control" placeholder="Password">
+            <div class="input-group-append">
+              <div class="input-group-text">
+                <span class="fas fa-lock"></span>
+              </div>
+            </div>
+          </div>
+          <div class="row">
+            <div class="col-8">
+              <div class="icheck-primary">
+
+              </div>
+            </div>
+            <!-- /.col -->
+            <div class="col-4">
+              <button type="submit" id="bt-login" class="btn btn-primary btn-block">{% blocktranslate %}Sign in{%endblocktranslate %}</button>
+            </div>
+            <!-- /.col -->
+
+          </div>
+          <div class="social-auth-links text-center mb-3">
+            <p>- OR -</p>
+            <p class="mb-0">
+              <a href="{% url 'register' %}" class="text-center">Register a new membership</a>
+            </p>
+          </div>
+        </form>
+
+        <div class="social-auth-links text-center mb-3">
+
+        </div>
+        <!-- /.social-auth-links -->
+
+
+
+      </div>
+      <!-- /.login-card-body -->
+    </div>
+
+  </div>
+  <!-- /.login-box -->
+
+
+  <!-- jQuery -->
+  <script src="{% static 'assets/plugins/jquery/jquery.min.js' %}"></script>
+  <!-- Bootstrap 4 -->
+  <script src="{% static 'assets/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+  <!-- AdminLTE App -->
+  <script src="{% static 'assets/dist/js/adminlte.min.js' %}"></script>
+   <script src="{% static 'assets/dist/js/logout.js' %}"></script>
+
+  <script src="{% static 'assets/dist/js/axios.min.js' %}"></script>
+  <script src="{% static 'assets/plugins/sweetalert2/sweetalert2.min.js' %}"></script>
+
+  <script src="{% static 'assets/plugins/toastr/toastr.min.js' %}"></script>
+ 
+
+  <script>
+  // Variable con el token
+ const csrfToken = document.cookie
+  .split(";")
+  .find((c) => c.trim().startsWith("csrftoken="))
+  ?.split("=")[1];
+    var load = document.getElementById("load");
+  axios.defaults.headers.common["X-CSRFToken"] = csrfToken;
+
+    // variable para configurar las notificaciones
+    var Toast = Swal.mixin({
+      toast: true,
+      position: 'top-end',
+      showConfirmButton: false,
+      timer: 3000
+    });
+
+    // Método para acceder al endpoint del login
+    let form = document.getElementById('login-form');
+    form.addEventListener('submit', function (event) {
+      event.preventDefault()
+      let data = new FormData();
+      data.append("username", document.getElementById('input-username').value)
+      data.append("password", document.getElementById('input-password').value)
+      // Envio de datos con axios al endpoint
+      load.hidden = false;
+      axios.post('../user-gestion/users/login/', data)
+        .then(function (res) {
+          if (res.status == 202) {
+            localStorage.setItem("user", res.data.username);
+            localStorage.setItem("avatar", res.data.photo);
+            localStorage.setItem("id", res.data.id);
+            localStorage.setItem("internal_status", res.data.internal_status);
+             window.location = "{% url 'index' %}";
+          
+            load.hidden = true;
+          }
+        }).catch(function (err) {
+          load.hidden = true;
+          document.getElementsByClassName("login-box-msg")[0].style.color = "red";
+          document.getElementById('input-password').value = "";
+          document.getElementById('input-password').classList.add("is-invalid");
+          document.getElementById('input-username').classList.add("is-invalid");
+          document.getElementById('input-password').focus();
+          Toast.fire({
+            icon: 'error',
+            title: 'Error: Access denied, check your credentials. Username and Password.'
+          })
+        })
+
+    })
+
+
+  </script>
+
+
+
+
+
+
+
+
+</body>
+
+</html>

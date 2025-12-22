@@ -1,0 +1,47 @@
+[
+  {
+    "model": "auth.group",
+    "pk": 1,
+    "fields": {
+      "name": "Super Admin",
+      "permissions": [
+        [
+          "view_systemuser",
+          "users_app",
+          "systemuser"
+        ],
+        [
+          "add_systemuser",
+          "users_app",
+          "systemuser"
+        ],
+        [
+          "change_systemuser",
+          "users_app",
+          "systemuser"
+        ],
+        [
+          "delete_systemuser",
+          "users_app",
+          "systemuser"
+        ]
+      ]
+    }
+  },
+  {
+    "model": "auth.group",
+    "pk": 2,
+    "fields": {
+      "name": "Editor",
+      "permissions": []
+    }
+  },
+  {
+    "model": "auth.group",
+    "pk": 3,
+    "fields": {
+      "name": "Lector",
+      "permissions": []
+    }
+  }
+]

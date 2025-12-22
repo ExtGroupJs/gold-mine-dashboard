@@ -1,0 +1,27 @@
+
+# version: '3.8'  # Versión de Docker Compose
+
+services:
+  postgres:
+    container_name: ${WEBSITE_SLUG_NAME}_postgres
+    image: postgres:16
+    environment:
+      POSTGRES_DB: ${DB_REMOTE_NAME}
+      POSTGRES_USER: ${DB_REMOTE_USER}
+      POSTGRES_PASSWORD: ${DB_REMOTE_PASSWORD}
+    ports:
+      - "${DB_REMOTE_PORT}:5432"
+    volumes:
+      - postgres_data_volume:/var/lib/postgresql/data
+    restart: always  # Opcional: reinicia el contenedor si falla
+
+  redis:
+    container_name: ${WEBSITE_SLUG_NAME}_redis
+    image: redis:latest
+    restart: always
+    ports:
+      - ${REDIS_PORT}:6379
+
+volumes:
+  postgres_data_volume:
+    name: postgres_data_volume_${WEBSITE_SLUG_NAME}  # Define el volumen
