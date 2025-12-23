@@ -9,6 +9,7 @@ from .models.resource import Resource
 from .models.task import Task
 from .models.task_resource import TaskResource
 from .models.wbs import WBS
+from .models.primavera_import_file import PrimaveraImportFile
 
 
 @admin.register(Resource)
@@ -20,9 +21,13 @@ class TaskAdmin(GenericModelAdmin):
     pass  # Usará la configuración genérica por defecto
 
 @admin.register(TaskResource)
-class ResourceAdmin(GenericModelAdmin):
+class TaskResourceAdmin(GenericModelAdmin):
     pass  # Usará la configuración genérica por defecto
 
 @admin.register(WBS)
 class WBSAdmin(GenericModelAdmin):
+    pass  # Usará la configuración genérica por defecto
+
+@admin.register(PrimaveraImportFile)
+class PrimaveraImportFileAdmin(GenericModelAdmin):
     pass  # Usará la configuración genérica por defecto

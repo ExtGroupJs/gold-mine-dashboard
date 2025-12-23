@@ -61,8 +61,33 @@ class GenericModelAdmin(admin.ModelAdmin):
             self.EXCLUDED_FIELDS.update(self.EXCLUDED_FIELDS_FOR_EDITING)
 
         self.editable_fields = [
-            field for field in self.all_fields if field not in self.EXCLUDED_FIELDS
+            field for field in self.all_fields if field not in self.EXCLUDED_FIELDS and
+            not self._is_problematic_field_for_edit(field)
+        ]
+        self.list_display_fields = [
+            field for field in self.all_fields 
+            if not self._is_problematic_field_in_list(field)
         ]
         self.empty_value_display = "-empty-"
-        self.list_display = self.all_fields
+        self.list_display = self.list_display_fields
         self.fields = self.editable_fields
+
+        
+    def _is_problematic_field_in_list(self, field_name):
+        """Verifica si un campo es ManyToMany o reverse ForeignKey"""
+        try:
+            field = self.model._meta.get_field(field_name)
+            return (field.many_to_many or 
+                   (field.many_to_one and field.auto_created) or
+                   (field.is_relation and field.auto_created) or
+                   (field.one_to_one and field.auto_created))
+        except Exception:
+            return False
+
+    def _is_problematic_field_for_edit(self, field_name):
+        """Verifica si un campo es ManyToMany o reverse ForeignKey"""
+        try:
+            field = self.model._meta.get_field(field_name)
+            return field.many_to_many
+        except Exception:
+            return False
