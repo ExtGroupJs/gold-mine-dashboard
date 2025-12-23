@@ -1,9 +1,11 @@
 from django.db import models
+from .wbs import WBS
+
 
 class Task(models.Model):
     task_code = models.CharField(max_length=50, unique=True)
     status_code = models.CharField(max_length=50)
-    wbs_id = models.CharField(max_length=100)
+    wbs = models.ForeignKey(WBS, on_delete=models.DO_NOTHING)
     task_name = models.TextField()
     target_drtn_hr_cnt = models.IntegerField()
     original_duration = models.IntegerField()
