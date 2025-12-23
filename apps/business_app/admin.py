@@ -10,7 +10,12 @@ from .models.task import Task
 from .models.task_resource import TaskResource
 from .models.wbs import WBS
 from .models.primavera_import_file import PrimaveraImportFile
+from .models.allowed_extensions import AllowedExtensions
 
+
+@admin.register(AllowedExtensions)
+class AllowedExtensionsAdmin(GenericModelAdmin):
+    pass  # Usará la configuración genérica por defecto
 
 @admin.register(Resource)
 class ResourceAdmin(GenericModelAdmin):
