@@ -7,8 +7,9 @@ from django.db import migrations, models
 
 def add_excel_to_allowed_extensions(apps, schema_editor):
     AllowedExtensions = apps.get_model("business_app", "AllowedExtensions")
-    AllowedExtensions.objects.create(extension=".xls", typical_app_name="Excel file (old format)")
-    AllowedExtensions.objects.create(extension=".xlsx", typical_app_name="Excel file (new format)")
+    AllowedExtensions.objects.create(
+        extension=".xls", typical_app_name="Excel file (old format)"
+    )
 
 
 class Migration(migrations.Migration):

@@ -32,7 +32,7 @@ class XslProcessor:
         )
         try:
             self.task_df = pd.read_excel(
-                origin_file, sheet_name=ExcelNomenclators.task_sheet, engine="openpyxl"
+                origin_file, sheet_name=ExcelNomenclators.task_sheet, engine="xlrd"
             )
         except OSError as e:
             if "no valid workbook part" in str(e):
