@@ -14,7 +14,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <link rel="icon" type="image/png" href="{% static 'assets/dist/img/AdminLTELogo.png' %}">
-  <title>MM Auto Part</title>
+  <title>La Victoria</title>
 
   <!-- Google Font: Source Sans Pro -->
   <!-- <link rel="stylesheet" href="https://fonts.googleapis.com/css?family=Source+Sans+Pro:300,400,400i,700&display=fallback"> -->
@@ -29,6 +29,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
   <link rel="stylesheet" href="{% static 'assets/dist/js/adminlte.js' %}">
   <link rel="stylesheet" href="{% static 'assets/dist/js/pages/dashboard3.js' %}">
   <link rel="stylesheet" href="{% static 'assets/plugins/sweetalert2-theme-bootstrap-4/bootstrap-4.min.css' %}">
+    <link rel="stylesheet" href="{% static 'assets/dist/css/load.css' %}">
 
 
   {% block head-extra %}
@@ -38,6 +39,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
 </head>
 
 <body class="hold-transition sidebar-mini sidebar-collapse ">
+<div class="overlay" style="width: 100%; height: 100%;" id="load" hidden >
+    <i class="fas fa-2x fa-sync fa-spin"></i>
+</div>
+
   <div class="wrapper">
 
     <!-- Navbar -->
@@ -135,10 +140,10 @@ scratch. This page gets rid of all links and provides the needed markup only.
     <!-- Main Sidebar Container -->
     <aside class="main-sidebar sidebar-dark-primary elevation-4">
       <!-- Brand Logo -->
-       <a href="" class="brand-link">
-        <img src="{% static 'assets/dist/img/AdminLTELogo.png' %}" alt="PGX Logo" class="brand-image  elevation-3"
+       <a href="" class="brand-link bg-warning">
+        <img src="{% static 'assets/dist/img/AdminLTELogo.png' %}" alt="PGX Logo" class="brand-image  elevation-0"
           style="opacity: .8">
-        <span class="brand-text font-weight-light">MM Auto Part</span>
+        <span class="brand-text font-weight-light">La Victoria</span>
       </a>
 
       <!-- Sidebar -->
@@ -513,6 +518,7 @@ scratch. This page gets rid of all links and provides the needed markup only.
           <!-- /.row -->
         </div>
         <!-- /.container-fluid -->
+  
       </div>
       <!-- /.content -->
 
@@ -578,7 +584,8 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
     }); {% endcomment %}
 
-
+ var load=document.getElementById("load");
+ load.hidden=true;
   </script>
 
 
