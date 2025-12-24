@@ -11,7 +11,7 @@ class Task(models.Model):
     wbs = models.ForeignKey(WBS, on_delete=models.DO_NOTHING)
     task_name = models.TextField()
     target_drtn_hr_cnt = models.IntegerField()
-    original_duration = models.IntegerField()
+    # original_duration = models.IntegerField()
     remain_drtn_hr_cnt = models.IntegerField()
     start_date = models.DateTimeField()
     end_date = models.DateTimeField()

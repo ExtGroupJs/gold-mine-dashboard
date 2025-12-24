@@ -5,6 +5,7 @@ from .allowed_extensions import AllowedExtensions
 import os
 from django.core.exceptions import ValidationError
 from apps.users_app.models.system_user import SystemUser
+from ..utils.xsl_processor import XslProcessor
 
 
 @deconstructible
@@ -55,12 +56,9 @@ class PrimaveraImportFile(models.Model):
 
         if is_new and file:
             try:
-                global_configuration = SiteConfiguration.get_solo()
-                processor_object = XslxToPdb(file, global_configuration)
-                processor_object.proccess_initial_file_data(self.id)
-                processor_object.proccess_pdb_file(self.id, file_name)
+                processor_object = XslProcessor(file)
+                processor_object.proccess_task_data(self.id)
             except Exception as e:
                 print(e)
                 self.delete()
                 raise e
-
