@@ -15,10 +15,16 @@ class Task(models.Model):
     remain_drtn_hr_cnt = models.IntegerField(verbose_name="Remaining Duration(d)")
     start_date = models.DateTimeField(null=True, blank=True, verbose_name="(*)Start")
     end_date = models.DateTimeField(null=True, blank=True, verbose_name="(*)Finish")
-    target_cost = models.DecimalField(max_digits=10, decimal_places=2, verbose_name="(*)Budgeted Total Cost($)")
+    target_cost = models.DecimalField(
+        max_digits=10, decimal_places=2, verbose_name="(*)Budgeted Total Cost($)"
+    )
     total_float_hr_cnt = models.IntegerField(verbose_name="(*)Total Float(d)")
-    delete_record_flag = models.BooleanField(default=False, verbose_name="Delete This Row")
-    resources = models.ManyToManyField(Resource, through=TaskResource, verbose_name="(*)Resources")
+    delete_record_flag = models.BooleanField(
+        default=False, verbose_name="Delete This Row"
+    )
+    resources = models.ManyToManyField(
+        Resource, through=TaskResource, verbose_name="(*)Resources"
+    )
 
     class Meta:
         verbose_name = _("Task")

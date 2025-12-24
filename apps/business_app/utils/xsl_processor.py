@@ -1,11 +1,9 @@
 import logging
 from django.core.exceptions import ValidationError
-from datetime import datetime
 
 import pandas as pd
 
 from .excel_nomenclators import ExcelNomenclators
-from django.db import transaction
 from ..models.task import Task
 from ..models.wbs import WBS
 from ..models.resource import Resource
@@ -62,7 +60,6 @@ class XslProcessor:
 
     def proccess_task_data(self, uploaded_file_id):
         logger.info("Proccessing task sheet...")
-        date_format = "%d/%m/%Y %I:%M:%S %p"
         for index, row in self.task_df.iterrows():
             if not index:
                 continue
@@ -86,7 +83,6 @@ class XslProcessor:
                     resources.append(resource)
 
                 # Define el formato correcto para fechas con AM/PM (formato 12h)
-                date_format = "%d/%m/%Y %I:%M:%S %p"  # Ej: 20/03/2026 03:12:00 PM
                 start_date = pd.to_datetime(
                     row[ExcelNomenclators.sheet_task_column_start_date], errors="coerce"
                 )
