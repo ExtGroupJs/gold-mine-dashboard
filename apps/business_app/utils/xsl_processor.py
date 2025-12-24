@@ -1,5 +1,3 @@
-from django.core.cache import cache
-import io
 import logging
 from django.core.exceptions import ValidationError
 
@@ -69,7 +67,7 @@ class XslProcessor:
             resources = []
             for res_name in resources_names:
                 resource, _ = Resource.objects.get_or_create(
-                    name=res_name, defaults={resource_type: ""}
+                    name=res_name, defaults={"resource_type": ""}
                 )
                 resources.append(resource)
             data.append(
@@ -93,7 +91,7 @@ class XslProcessor:
                     delete_record_flag=row[
                         ExcelNomenclators.sheet_task_column_delete_record_flag
                     ],
-                    resources=resources
+                    resources=resources,
                 )
             )
         with transaction.atomic():
