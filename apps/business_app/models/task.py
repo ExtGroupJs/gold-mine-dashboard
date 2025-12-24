@@ -22,8 +22,7 @@ class Task(models.Model):
 
     class Meta:
         verbose_name = _("Task")
-        verbose_name_plural = _("Tasks")       
+        verbose_name_plural = _("Tasks")
 
-    
     def __str__(self):
         return self.task_code

@@ -4,44 +4,83 @@ import apps.business_app.models.primavera_import_file
 import django.db.models.deletion
 from django.db import migrations, models
 
+
 def add_excel_to_allowed_extensions(apps, schema_editor):
     AllowedExtensions = apps.get_model("business_app", "AllowedExtensions")
     AllowedExtensions.objects.create(extension=".xls", typical_app_name="Excel file")
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('business_app', '0001_initial'),
-        ('users_app', '0002_create_default_admin_user'),
+        ("business_app", "0001_initial"),
+        ("users_app", "0002_create_default_admin_user"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='AllowedExtensions',
+            name="AllowedExtensions",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('extension', models.CharField(max_length=5, verbose_name='file extension')),
-                ('typical_app_name', models.CharField(max_length=150, verbose_name='Application')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "extension",
+                    models.CharField(max_length=5, verbose_name="file extension"),
+                ),
+                (
+                    "typical_app_name",
+                    models.CharField(max_length=150, verbose_name="Application"),
+                ),
             ],
             options={
-                'verbose_name': 'Allowed extension',
-                'verbose_name_plural': 'allowed Extensions',
+                "verbose_name": "Allowed extension",
+                "verbose_name_plural": "allowed Extensions",
             },
         ),
         migrations.CreateModel(
-            name='PrimaveraImportFile',
+            name="PrimaveraImportFile",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('file', models.FileField(upload_to='primavera_imports/', validators=[apps.business_app.models.primavera_import_file.FileExtensionValidator()])),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('extra_info', models.TextField(blank=True, null=True)),
-                ('system_user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='uploaded_files', to='users_app.systemuser')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "file",
+                    models.FileField(
+                        upload_to="primavera_imports/",
+                        validators=[
+                            apps.business_app.models.primavera_import_file.FileExtensionValidator()
+                        ],
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("extra_info", models.TextField(blank=True, null=True)),
+                (
+                    "system_user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="uploaded_files",
+                        to="users_app.systemuser",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Primavera imported File',
-                'verbose_name_plural': 'Primavera imported Files',
+                "verbose_name": "Primavera imported File",
+                "verbose_name_plural": "Primavera imported Files",
             },
         ),
-        migrations.RunPython(add_excel_to_allowed_extensions, migrations.RunPython.noop),
+        migrations.RunPython(
+            add_excel_to_allowed_extensions, migrations.RunPython.noop
+        ),
     ]

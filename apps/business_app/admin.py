@@ -1,8 +1,7 @@
 from django.contrib import admin
-from solo.admin import SingletonModelAdmin
-import logging
-from django.contrib import admin
-from apps.common.admin import GenericModelAdmin # TODO usar este siempre que sea posible
+from apps.common.admin import (
+    GenericModelAdmin,
+)  # TODO usar este siempre que sea posible
 
 
 from .models.resource import Resource
@@ -17,21 +16,26 @@ from .models.allowed_extensions import AllowedExtensions
 class AllowedExtensionsAdmin(GenericModelAdmin):
     pass  # Usará la configuración genérica por defecto
 
+
 @admin.register(Resource)
 class ResourceAdmin(GenericModelAdmin):
     pass  # Usará la configuración genérica por defecto
+
 
 @admin.register(Task)
 class TaskAdmin(GenericModelAdmin):
     pass  # Usará la configuración genérica por defecto
 
+
 @admin.register(TaskResource)
 class TaskResourceAdmin(GenericModelAdmin):
     pass  # Usará la configuración genérica por defecto
 
+
 @admin.register(WBS)
 class WBSAdmin(GenericModelAdmin):
     pass  # Usará la configuración genérica por defecto
+
 
 @admin.register(PrimaveraImportFile)
 class PrimaveraImportFileAdmin(GenericModelAdmin):
