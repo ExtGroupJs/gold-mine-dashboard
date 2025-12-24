@@ -24,7 +24,7 @@ class ResourceAdmin(GenericModelAdmin):
 
 @admin.register(Task)
 class TaskAdmin(GenericModelAdmin):
-    pass  # Usará la configuración genérica por defecto
+    EXCLUDED_FIELDS_FOR_EDITING = {"taskresource"}
 
 
 @admin.register(TaskResource)

@@ -1,9 +1,10 @@
 import logging
 from django.core.exceptions import ValidationError
+from datetime import datetime
 
 import pandas as pd
 
-from .utils.excel_nomenclators import ExcelNomenclators
+from .excel_nomenclators import ExcelNomenclators
 from django.db import transaction
 from ..models.task import Task
 from ..models.wbs import WBS
@@ -31,11 +32,16 @@ class XslProcessor:
             ExcelNomenclators.sheet_task_column_status_code,
             ExcelNomenclators.sheet_task_column_task_code,
         )
-        self.task_df = pd.read_excel(
-            self.origin_file,
-            sheet_name=ExcelNomenclators.task_sheet,
-            engine="openpyxl",
-        )
+        try:
+            self.task_df = pd.read_excel(
+                origin_file, sheet_name=ExcelNomenclators.task_sheet, engine="openpyxl"
+            )
+        except OSError as e:
+            if "no valid workbook part" in str(e):
+                raise ValidationError(
+                    "Invalid Excel file: The file appears to be empty or corrupted"
+                )
+            raise
         self._validate_sheet_structure(
             df=self.task_df,
             mandatory_columns=mandatory_task_columns_for_validation,
@@ -43,8 +49,8 @@ class XslProcessor:
         )
 
     def _validate_sheet_structure(self, df, mandatory_columns, sheet):
-        first_row_input = self.df.iloc[0]
-        for column in self.mandatory_columns:
+        first_row_input = df.iloc[0]
+        for column in mandatory_columns:
             try:
                 first_row_input[column]
             except KeyError as e:
@@ -56,43 +62,79 @@ class XslProcessor:
 
     def proccess_task_data(self, uploaded_file_id):
         logger.info("Proccessing task sheet...")
-        data = []
-        for index, row in self.input_df.iterrows():
-            wbs, _ = WBS.objects.get_or_create(
-                wbs_id=row[ExcelNomenclators.sheet_task_column_wbs_id]
-            )
-            resources_names = row[
-                ExcelNomenclators.sheet_task_column_resource_list
-            ].split(",")
-            resources = []
-            for res_name in resources_names:
-                resource, _ = Resource.objects.get_or_create(
-                    name=res_name, defaults={"resource_type": ""}
+        date_format = "%d/%m/%Y %I:%M:%S %p"
+        for index, row in self.task_df.iterrows():
+            if not index:
+                continue
+            try:
+                wbs, _ = WBS.objects.get_or_create(
+                    wbs_id=row[ExcelNomenclators.sheet_task_column_wbs_id]
                 )
-                resources.append(resource)
-            data.append(
-                Task(
+                resources_names = (
+                    []
+                    if pd.isna(row[ExcelNomenclators.sheet_task_column_resource_list])
+                    else str(
+                        row[ExcelNomenclators.sheet_task_column_resource_list]
+                    ).split(",")
+                )
+                resources = []
+
+                for res_name in resources_names:
+                    resource, _ = Resource.objects.get_or_create(
+                        name=res_name, defaults={"resource_type": ""}
+                    )
+                    resources.append(resource)
+
+                # Define el formato correcto para fechas con AM/PM (formato 12h)
+                date_format = "%d/%m/%Y %I:%M:%S %p"  # Ej: 20/03/2026 03:12:00 PM
+                start_date = pd.to_datetime(
+                    row[ExcelNomenclators.sheet_task_column_start_date], errors="coerce"
+                )
+                end_date = pd.to_datetime(
+                    row[ExcelNomenclators.sheet_task_column_end_date], errors="coerce"
+                )
+
+                task, _ = Task.objects.update_or_create(
                     task_code=row[ExcelNomenclators.sheet_task_column_task_code],
-                    wbs=wbs,
-                    status_code=row[ExcelNomenclators.sheet_task_column_status_code],
-                    task_name=row[ExcelNomenclators.sheet_task_column_task_name],
-                    target_drtn_hr_cnt=int(
-                        row[ExcelNomenclators.sheet_task_column_target_drtn_hr_cnt]
-                    ),
-                    remain_drtn_hr_cnt=int(
-                        row[ExcelNomenclators.sheet_task_column_remain_drtn_hr_cnt]
-                    ),
-                    start_date=row[ExcelNomenclators.sheet_task_column_start_date],
-                    end_date=row[ExcelNomenclators.sheet_task_column_end_date],
-                    target_cost=row[ExcelNomenclators.sheet_task_column_target_cost],
-                    total_float_hr_cnt=row[
-                        ExcelNomenclators.sheet_task_column_total_float_hr_cnt
-                    ],
-                    delete_record_flag=row[
-                        ExcelNomenclators.sheet_task_column_delete_record_flag
-                    ],
-                    resources=resources,
+                    defaults={
+                        "wbs": wbs,
+                        "status_code": row[
+                            ExcelNomenclators.sheet_task_column_status_code
+                        ],
+                        "task_name": row[ExcelNomenclators.sheet_task_column_task_name],
+                        "target_drtn_hr_cnt": int(
+                            row[ExcelNomenclators.sheet_task_column_target_drtn_hr_cnt]
+                        ),
+                        "remain_drtn_hr_cnt": int(
+                            row[ExcelNomenclators.sheet_task_column_remain_drtn_hr_cnt]
+                        ),
+                        "start_date": start_date if pd.notna(start_date) else None,
+                        "end_date": end_date if pd.notna(end_date) else None,
+                        "total_float_hr_cnt": row[
+                            ExcelNomenclators.sheet_task_column_total_float_hr_cnt
+                        ]
+                        if not pd.isna(
+                            row[ExcelNomenclators.sheet_task_column_total_float_hr_cnt]
+                        )
+                        else 0,
+                        "target_cost": row[
+                            ExcelNomenclators.sheet_task_column_target_cost
+                        ]
+                        if not pd.isna(
+                            row[ExcelNomenclators.sheet_task_column_target_cost]
+                        )
+                        else 0,
+                        "delete_record_flag": bool(
+                            row[ExcelNomenclators.sheet_task_column_delete_record_flag]
+                        )
+                        if not pd.isna(
+                            row[ExcelNomenclators.sheet_task_column_delete_record_flag]
+                        )
+                        else False,
+                    },
                 )
-            )
-        with transaction.atomic():
-            Task.objects.bulk_create(data)
+                task.resources.set(resources)
+
+            except Exception as e:
+                print(f"----------An exception occurred in line {index}: {e}")
+                raise
