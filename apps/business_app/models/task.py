@@ -7,7 +7,7 @@ from apps.common.mixins.generic_log import GenericLogMixin
 from safedelete.models import SafeDeleteModel
 
 
-class Task(models.Model):
+class Task(GenericLogMixin, SafeDeleteModel, models.Model):
     task_code = models.CharField(max_length=50, unique=True, verbose_name="Activity ID")
     status_code = models.CharField(max_length=50, verbose_name="Activity Status")
     wbs = models.ForeignKey(WBS, on_delete=models.DO_NOTHING, verbose_name="WBS Code")
