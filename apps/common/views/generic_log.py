@@ -3,9 +3,9 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, viewsets
 from rest_framework.generics import GenericAPIView
 
-from apps.common.common_ordering_filter import CommonOrderingFilter
+from apps.common.mixins.common_view_mixin import CommonOrderingFilter
 from apps.common.models.generic_log import GenericLog
-from apps.common.pagination import AllResultsSetPagination
+from apps.common.mixins.pagination_mixin import GetAllMixin
 from apps.common.permissions import IsAuthenticatedAndReadOnly
 from apps.common.serializers.generic_log import GenericLogSerializer
 from rest_framework.decorators import action
@@ -13,7 +13,7 @@ from rest_framework.response import Response
 from django.contrib.contenttypes.models import ContentType
 
 
-class GenericLogViewSet(viewsets.ReadOnlyModelViewSet, GenericAPIView):
+class GenericLogViewSet(viewsets.ReadOnlyModelViewSet, GetAllMixin, GenericAPIView):
     queryset = GenericLog.objects.all()
     serializer_class = GenericLogSerializer
     permission_classes = [IsAuthenticatedAndReadOnly]
@@ -22,7 +22,7 @@ class GenericLogViewSet(viewsets.ReadOnlyModelViewSet, GenericAPIView):
         filters.SearchFilter,
         CommonOrderingFilter,
     ]
-    pagination_class = AllResultsSetPagination
+    # pagination_class = AllResultsSetPagination
     filterset_fields = {
         "content_type": ["exact"],
         "object_id": ["exact"],

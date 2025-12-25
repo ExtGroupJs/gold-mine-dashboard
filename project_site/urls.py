@@ -41,6 +41,7 @@ urlpatterns = [
         name="swagger-ui",
     ),
     path("api/redoc/", SpectacularRedocView.as_view(url_name="schema"), name="redoc"),
+    path("common/", include("apps.common.urls")),
     path("user-gestion/", include("apps.users_app.urls")),
     path("business-gestion/", include("apps.business_app.urls")),
     path("admin/", admin.site.urls),

@@ -3,9 +3,11 @@ from .wbs import WBS
 from .resource import Resource
 from .task_resource import TaskResource
 from django.utils.translation import gettext_lazy as _
+from apps.common.mixins.generic_log import GenericLogMixin
+from safedelete.models import SafeDeleteModel
 
 
-class Task(models.Model):
+class Task(GenericLogMixin, SafeDeleteModel, models.Model):
     task_code = models.CharField(max_length=50, unique=True)
     status_code = models.CharField(max_length=50)
     wbs = models.ForeignKey(WBS, on_delete=models.DO_NOTHING)
