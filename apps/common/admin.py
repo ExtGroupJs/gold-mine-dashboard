@@ -1,5 +1,5 @@
 from django.contrib import admin
-
+from .models.generic_log import GenericLog
 
 class GenericModelAdmin(admin.ModelAdmin):
     """
@@ -96,3 +96,9 @@ class GenericModelAdmin(admin.ModelAdmin):
             return field.many_to_many
         except Exception:
             return False
+
+
+@admin.register(GenericLog)
+class GenericLogAdmin(GenericModelAdmin):
+    pass  # Usará la configuración genérica por defecto
+

@@ -104,8 +104,8 @@ class XslProcessor:
                         "remain_drtn_hr_cnt": int(
                             row[ExcelNomenclators.sheet_task_column_remain_drtn_hr_cnt]
                         ),
-                        "start_date": start_date if pd.notna(start_date) else None,
-                        "end_date": end_date if pd.notna(end_date) else None,
+                        "start_date": start_date.isoformat() if pd.notna(start_date) else None,
+                        "end_date": end_date.isoformat() if pd.notna(end_date) else None,
                         "total_float_hr_cnt": row[
                             ExcelNomenclators.sheet_task_column_total_float_hr_cnt
                         ]
