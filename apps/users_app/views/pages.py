@@ -4,7 +4,7 @@ from django.shortcuts import render
 
 
 def index(request):
-    return render(request, "index.html")
+    return render(request, "dashboard/dashboard.html")
 
 
 def usuarios(request):
@@ -37,3 +37,11 @@ def products(request):
 
 def shop_products(request):
     return render(request, "shop_products/shop_products.html")
+
+# paginas de la mina
+
+def task(request):
+    return render(request, "task/task.html")
+
+def dashboard(request):
+    return render(request, "dashboard/dashboard.html")
