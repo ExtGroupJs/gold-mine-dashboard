@@ -10,7 +10,6 @@ from rest_framework import status
 from apps.users_app.models.groups import Groups
 
 
-
 from django.contrib.auth.models import User
 
 
@@ -42,7 +41,7 @@ class BaseTestClass(TestCase):
             expires=timezone.now() + timezone.timedelta(days=1),
             scope="read,write",
         )
-    
+
     def _test_permissions(
         self,
         url,

@@ -5,6 +5,7 @@ from termcolor import colored
 from apps.users_app.models.groups import Groups
 from django.contrib.auth.models import User
 
+
 class Command(BaseCommand):
     help = "Loads initial fixtures"
 
@@ -25,7 +26,6 @@ class Command(BaseCommand):
             attrs=["blink"],
         )
     )
-
 
     admin_user = User.objects.get(username="admin")
     admin_user.groups.add(Groups.SUPER_ADMIN)
