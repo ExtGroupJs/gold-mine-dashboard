@@ -57,6 +57,16 @@ urlpatterns = [
     path("shops/", pages.shops, name="shops"),
     path("products/", pages.products, name="products"),
     path("shop_products/", pages.shop_products, name="shop_products"),
+
+# paginas para la mina
+
+    path("task/", pages.task, name="task"),
+    path("dashboard/", pages.dashboard, name="dashboard"),
+
+
+
+
+
 ]
 
 # This is for serving media on development stages

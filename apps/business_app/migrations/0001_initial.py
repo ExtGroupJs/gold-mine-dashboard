@@ -5,74 +5,120 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     initial = True
 
-    dependencies = [
-    ]
+    dependencies = []
 
     operations = [
         migrations.CreateModel(
-            name='Resource',
+            name="Resource",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('resource_type', models.CharField(max_length=50)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
+                ("resource_type", models.CharField(max_length=50)),
             ],
             options={
-                'verbose_name': 'Resource',
-                'verbose_name_plural': 'Resources',
+                "verbose_name": "Resource",
+                "verbose_name_plural": "Resources",
             },
         ),
         migrations.CreateModel(
-            name='Task',
+            name="Task",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('task_code', models.CharField(max_length=50, unique=True)),
-                ('status_code', models.CharField(max_length=50)),
-                ('task_name', models.TextField()),
-                ('target_drtn_hr_cnt', models.IntegerField()),
-                ('original_duration', models.IntegerField()),
-                ('remain_drtn_hr_cnt', models.IntegerField()),
-                ('start_date', models.DateTimeField()),
-                ('end_date', models.DateTimeField()),
-                ('target_cost', models.DecimalField(decimal_places=2, max_digits=10)),
-                ('total_float_hr_cnt', models.IntegerField()),
-                ('delete_record_flag', models.BooleanField(default=False)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("task_code", models.CharField(max_length=50, unique=True)),
+                ("status_code", models.CharField(max_length=50)),
+                ("task_name", models.TextField()),
+                ("target_drtn_hr_cnt", models.IntegerField()),
+                ("original_duration", models.IntegerField()),
+                ("remain_drtn_hr_cnt", models.IntegerField()),
+                ("start_date", models.DateTimeField()),
+                ("end_date", models.DateTimeField()),
+                ("target_cost", models.DecimalField(decimal_places=2, max_digits=10)),
+                ("total_float_hr_cnt", models.IntegerField()),
+                ("delete_record_flag", models.BooleanField(default=False)),
             ],
             options={
-                'verbose_name': 'Task',
-                'verbose_name_plural': 'Tasks',
+                "verbose_name": "Task",
+                "verbose_name_plural": "Tasks",
             },
         ),
         migrations.CreateModel(
-            name='WBS',
+            name="WBS",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('wbs_id', models.CharField(max_length=100, unique=True)),
-                ('description', models.TextField()),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("wbs_id", models.CharField(max_length=100, unique=True)),
+                ("description", models.TextField()),
             ],
         ),
         migrations.CreateModel(
-            name='TaskResource',
+            name="TaskResource",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('resource', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='business_app.resource')),
-                ('task', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='business_app.task')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "resource",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="business_app.resource",
+                    ),
+                ),
+                (
+                    "task",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="business_app.task",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Task Resource',
-                'verbose_name_plural': 'Task Resources',
+                "verbose_name": "Task Resource",
+                "verbose_name_plural": "Task Resources",
             },
         ),
         migrations.AddField(
-            model_name='task',
-            name='resources',
-            field=models.ManyToManyField(through='business_app.TaskResource', to='business_app.resource'),
+            model_name="task",
+            name="resources",
+            field=models.ManyToManyField(
+                through="business_app.TaskResource", to="business_app.resource"
+            ),
         ),
         migrations.AddField(
-            model_name='task',
-            name='wbs',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.DO_NOTHING, to='business_app.wbs'),
+            model_name="task",
+            name="wbs",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.DO_NOTHING, to="business_app.wbs"
+            ),
         ),
     ]

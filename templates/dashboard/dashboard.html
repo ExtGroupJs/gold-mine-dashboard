@@ -1,0 +1,183 @@
+{% extends "index.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block head-extra %}
+<link rel="stylesheet" href="{% static 'assets/dist/css/adminlte.min.css' %}">
+<style>
+  /* Task row status colors */
+  .task-status-started td { background-color: #fff3cd !important; } /* orange-ish */
+  .task-status-completed td { background-color: #d4edda !important; } /* green-ish */
+  .task-status-notstarted td { background-color: #f8d7da !important; } /* red-ish */
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Content Wrapper. Contains page content -->
+    <!-- Content Wrapper. Contains page content -->
+    <div class="content-wrapper">
+      <!-- Content Header (Page header) -->
+      <div class="content-header">
+        <div class="container-fluid">
+          <div class="row mb-2">
+            <div class="col-sm-6">
+              <h1 class="m-0">Starter Page</h1>
+            </div><!-- /.col -->
+            <div class="col-sm-6">
+              <ol class="breadcrumb float-sm-right">
+                <li class="breadcrumb-item"><a href="#">Home</a></li>
+                <li class="breadcrumb-item active">Dashboard</li>
+              </ol>
+            </div><!-- /.col -->
+          </div><!-- /.row -->
+        </div><!-- /.container-fluid -->
+      </div>
+      <!-- /.content-header -->
+
+      <section class="content">
+        <div class="container-fluid">
+                  <div class="row">
+                    <!-- placeholder for future filters / controls -->
+                  </div>
+          <!-- /.row (main row) -->
+        </div><!-- /.container-fluid -->
+      </section>
+
+      <!-- Main content -->
+
+
+
+      <div class="content">
+        <div class="container-fluid">
+          <div class="row">
+            <div class="col-lg-12">
+              <div class="card">
+                <div class="card-header border-0 d-flex justify-content-between align-items-center">
+                  <h3 class="card-title">Resumen de Tareas</h3>
+                  <div>
+                    <button id="btn-refresh-dashboard" class="btn btn-sm btn-primary">Actualizar</button>
+                  </div>
+                </div>
+                <div class="card-body">
+                  <div class="row">
+                    <div class="col-sm-3 col-6">
+                      <div class="small-box bg-info">
+                        <div class="inner">
+                          <h3 id="total-tasks">0</h3>
+                          <p>Total Tareas</p>
+                        </div>
+                        <div class="icon"><i class="fas fa-tasks"></i></div>
+                      </div>
+                    </div>
+                    <div class="col-sm-3 col-6">
+                      <div class="small-box bg-danger">
+                        <div class="inner">
+                          <h3 id="notstarted-tasks">0</h3>
+                          <p>No Iniciadas</p>
+                        </div>
+                        <div class="icon"><i class="fas fa-hourglass-start"></i></div>
+                      </div>
+                    </div>
+                    <div class="col-sm-3 col-6">
+                      <div class="small-box bg-warning">
+                        <div class="inner">
+                          <h3 id="started-tasks">0</h3>
+                          <p>En Progreso</p>
+                        </div>
+                        <div class="icon"><i class="fas fa-play"></i></div>
+                      </div>
+                    </div>
+                    <div class="col-sm-3 col-6">
+                      <div class="small-box bg-success">
+                        <div class="inner">
+                          <h3 id="completed-tasks">0</h3>
+                          <p>Completadas</p>
+                        </div>
+                        <div class="icon"><i class="fas fa-check"></i></div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-lg-6">
+                      <div class="card">
+                        <div class="card-header">
+                          <h3 class="card-title">Distribución por estado</h3>
+                        </div>
+                        <div class="card-body">
+                          <canvas id="tasks-pie-chart" height="200"></canvas>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-lg-6">
+                      <div class="card">
+                        <div class="card-header">
+                          <h3 class="card-title">Tareas por código de estado</h3>
+                        </div>
+                        <div class="card-body">
+                          <canvas id="tasks-bar-chart" height="200"></canvas>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+
+                  <div class="row">
+                    <div class="col-lg-6">
+                      <div class="card">
+                        <div class="card-header">
+                          <h3 class="card-title">Próximas a vencer (7 días)</h3>
+                        </div>
+                        <div class="card-body table-responsive p-0">
+                          <table class="table table-sm" id="table-upcoming">
+                            <thead><tr><th>Tarea</th><th>Fin</th></tr></thead>
+                            <tbody></tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                    <div class="col-lg-6">
+                      <div class="card">
+                        <div class="card-header">
+                          <h3 class="card-title">Atrasadas</h3>
+                        </div>
+                        <div class="card-body table-responsive p-0">
+                          <table class="table table-sm" id="table-overdue">
+                            <thead><tr><th>Tarea</th><th>Fin</th></tr></thead>
+                            <tbody></tbody>
+                          </table>
+                        </div>
+                      </div>
+                    </div>
+                  </div>
+                </div>
+              </div>
+              <!-- /.card -->
+
+              <!-- Removed unrelated cards to keep dashboard focused -->
+            </div>
+            <!-- /.col-md-6 -->
+            <div class="col-lg-6">
+              <!-- Removed extra analytics cards -->
+            </div>
+            <!-- /.col-md-6 -->
+          </div>
+          <!-- /.row -->
+        </div>
+        <!-- /.container-fluid -->
+      </div>
+      <!-- /.content -->
+
+
+      <!-- /.content -->
+    </div>
+    <!-- /.content-wrapper -->
+
+{% endblock %}
+
+{% block script %}
+  <!-- Required libs for dashboard -->
+  <script src="{% static 'assets/dist/js/axios.min.js' %}"></script>
+  <script src="{% static 'assets/plugins/chart.js/Chart.bundle.js' %}"></script>
+  <script src="{% static 'assets/dist/js-mine/dashboard.js' %}"></script>
+{% endblock %}

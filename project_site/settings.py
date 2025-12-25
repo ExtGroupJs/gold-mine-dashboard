@@ -66,8 +66,8 @@ INSTALLED_APPS = [
     "drf_spectacular_sidecar",  # required for Django collectstatic discovery
     "apps.common.middlewares",
     "debug_toolbar",
-    "django_browser_reload",
-    "django_watchfiles",
+    # "django_browser_reload",
+    # "django_watchfiles",
 ]
 
 WEBSITE_NAME = env("WEBSITE_NAME", default="My website")
