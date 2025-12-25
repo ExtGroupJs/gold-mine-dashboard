@@ -10,6 +10,8 @@ class ExcelNomenclators:
     sheet_task_column_resource_list = "resource_list"
     sheet_task_column_end_date = "end_date"
     sheet_task_column_start_date = "start_date"
+    sheet_task_column_act_start_date = "act_start_date"
+    sheet_task_column_act_end_date = "act_end_date"
     sheet_task_column_remain_drtn_hr_cnt = "remain_drtn_hr_cnt"
     sheet_task_column_target_drtn_hr_cnt = "target_drtn_hr_cnt"
     sheet_task_column_task_name = "task_name"

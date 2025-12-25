@@ -17,6 +17,8 @@ class Task(GenericLogMixin, SafeDeleteModel, models.Model):
     remain_drtn_hr_cnt = models.IntegerField(verbose_name="Remaining Duration(d)")
     start_date = models.DateTimeField(null=True, blank=True, verbose_name="(*)Start")
     end_date = models.DateTimeField(null=True, blank=True, verbose_name="(*)Finish")
+    act_start_date = models.DateTimeField(null=True, blank=True, verbose_name="Actual Start")
+    act_end_date = models.DateTimeField(null=True, blank=True, verbose_name="Actual Finish")
     target_cost = models.DecimalField(
         max_digits=10, decimal_places=2, verbose_name="(*)Budgeted Total Cost($)"
     )
