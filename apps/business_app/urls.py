@@ -1,6 +1,7 @@
 # from rest_framework import routers
 from rest_framework_extensions.routers import ExtendedSimpleRouter
 from .views.task import TaskViewSet
+from .views.excel_exporter import ExcelExporterViewSet
 
 # from django.urls import path
 
@@ -10,6 +11,12 @@ router.register(
     "task",
     TaskViewSet,
     basename="task",
+)
+
+router.register(
+    "excel-export",
+    ExcelExporterViewSet,
+    basename="excel-export",
 )
 
 urlpatterns = [
