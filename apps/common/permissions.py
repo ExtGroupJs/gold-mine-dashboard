@@ -8,6 +8,9 @@ from apps.users_app.models.groups import Groups
 
 COMMON_ROLES = [
     Groups.SUPER_ADMIN.value,
+    Groups.SUPERVISOR.value,
+    Groups.PLANNER.value,
+    Groups.OPERATOR.value,
 ]
 
 
@@ -45,7 +48,7 @@ class CommonRolePermission(DjangoModelPermissions):
         """
         return self.superuser_bypass
 
-    def has_permission(self, request, view):
+    def has_permission(self, request, view, **kwargs):
         if not request.user or not request.user.is_authenticated:
             return False
         if (
@@ -73,6 +76,15 @@ class IsAuthenticatedAndReadOnly(BasePermission):
             and request.user.is_authenticated
         )
 
+
+class ShopProductsViewSetPermission(CommonRolePermission):
+
+    def has_permission(self, request, view):
+        if request.method in SAFE_METHODS:
+            self.roles = self.roles + [
+                Groups.DASHBOARD_CLIENT.value,
+            ]
+        return super().has_permission(request, view)
 
 # class UssageExamplePermission(CommonRolePermission):
 #     roles = (
