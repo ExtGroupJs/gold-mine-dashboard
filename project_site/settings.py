@@ -98,8 +98,8 @@ MIDDLEWARE = [
     "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 if not DEBUG:
-    SESSION_EXPIRE_SECONDS = env("SESSION_EXPIRE_SECONDS", cast=int)
-    MIDDLEWARE.append(django_session_timeout.middleware.SessionTimeoutMiddleware)
+    SESSION_EXPIRE_SECONDS = env.int("SESSION_EXPIRE_SECONDS")
+    MIDDLEWARE.append("django_session_timeout.middleware.SessionTimeoutMiddleware")
 
 
 ROOT_URLCONF = "project_site.urls"
