@@ -87,7 +87,6 @@ SPECTACULAR_SETTINGS = {
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
     "django.contrib.sessions.middleware.SessionMiddleware",
-    "django_session_timeout.middleware.SessionTimeoutMiddleware",
     "django.middleware.locale.LocaleMiddleware",
     "django.middleware.common.CommonMiddleware",
     "django.middleware.csrf.CsrfViewMiddleware",
@@ -98,11 +97,12 @@ MIDDLEWARE = [
     "django_browser_reload.middleware.BrowserReloadMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
+if not DEBUG:
+    SESSION_EXPIRE_SECONDS = env("SESSION_EXPIRE_SECONDS", cast=int)
+    MIDDLEWARE.append(django_session_timeout.middleware.SessionTimeoutMiddleware)
 
 
 ROOT_URLCONF = "project_site.urls"
-
-SESSION_EXPIRE_SECONDS = env("SESSION_EXPIRE_SECONDS", cast=int)
 SESSION_EXPIRE_AFTER_LAST_ACTIVITY = True
 SESSION_TIMEOUT_REDIRECT = "first_login"
 

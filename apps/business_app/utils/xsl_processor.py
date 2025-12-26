@@ -100,7 +100,7 @@ class XslProcessor:
                     errors="coerce",
                 )
 
-                task, _ = Task.objects.update_or_create(
+                task, _ = Task.all_objects.update_or_create(
                     task_code=row[ExcelNomenclators.sheet_task_column_task_code],
                     defaults={
                         "wbs": wbs,
@@ -126,16 +126,16 @@ class XslProcessor:
                         "act_end_date": act_end_date.isoformat()
                         if pd.notna(act_end_date)
                         else None,
-                        "total_float_hr_cnt": row[
+                        "total_float_hr_cnt": int(row[
                             ExcelNomenclators.sheet_task_column_total_float_hr_cnt
-                        ]
+                        ])
                         if not pd.isna(
                             row[ExcelNomenclators.sheet_task_column_total_float_hr_cnt]
                         )
                         else 0,
-                        "target_cost": row[
+                        "target_cost": float(row[
                             ExcelNomenclators.sheet_task_column_target_cost
-                        ]
+                        ])
                         if not pd.isna(
                             row[ExcelNomenclators.sheet_task_column_target_cost]
                         )

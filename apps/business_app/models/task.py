@@ -23,8 +23,8 @@ class Task(GenericLogMixin, SafeDeleteModel, models.Model):
     act_end_date = models.DateTimeField(
         null=True, blank=True, verbose_name="Actual Finish"
     )
-    target_cost = models.DecimalField(
-        max_digits=10, decimal_places=2, verbose_name="(*)Budgeted Total Cost($)"
+    target_cost = models.FloatField(
+       verbose_name="(*)Budgeted Total Cost($)"
     )
     total_float_hr_cnt = models.IntegerField(verbose_name="(*)Total Float(d)")
     delete_record_flag = models.BooleanField(

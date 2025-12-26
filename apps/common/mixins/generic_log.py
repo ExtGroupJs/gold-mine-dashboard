@@ -2,7 +2,9 @@ from django.forms import model_to_dict
 from django.contrib.contenttypes.models import ContentType
 from apps.common.middlewares import get_current_user
 from apps.common.models.generic_log import GenericLog
-import datetime
+from datetime import datetime, date
+import pytz
+from decimal import Decimal
 
 
 class GenericLogMixin:
@@ -18,6 +20,16 @@ class GenericLogMixin:
     this way when the object is deleted, the reference is stored and the trazability can be done.
     """
 
+    def normalize_to_utc(self, date_str):
+        if isinstance(date_str, date):
+            date_str = date_str.isoformat()
+        dt = datetime.fromisoformat(date_str)
+        if dt.tzinfo is None:
+            dt = dt.replace(tzinfo=pytz.UTC)
+        else:
+            dt = dt.astimezone(pytz.UTC)
+        return dt.isoformat()
+
     def save(self, *args, **kwargs):
         updated_object_dict = model_to_dict(self)
         action = GenericLog.ACTION.UPDATED
@@ -27,18 +39,17 @@ class GenericLogMixin:
             for field, new_value in updated_object_dict.items():
                 old_value = getattr(original_object, field)
                 incoming_value = getattr(self, field)
-
+                if isinstance(old_value, date):
+                    old_value = self.normalize_to_utc(old_value.isoformat())
+                    if incoming_value is not None:
+                        incoming_value = self.normalize_to_utc(incoming_value)
+ 
                 if old_value != incoming_value:
-                    if hasattr(old_value, "_meta") or isinstance(
-                        old_value, datetime.date
-                    ):
+                    if hasattr(old_value, "_meta"):
                         old_value = old_value.__str__()
 
-                    if hasattr(incoming_value, "_meta") or isinstance(
-                        incoming_value, datetime.date
-                    ):
+                    if hasattr(incoming_value, "_meta"):
                         new_value = incoming_value.__str__()
-
                     details[field] = {
                         "old_value": old_value,
                         "new_value": new_value,
