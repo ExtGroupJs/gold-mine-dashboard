@@ -124,8 +124,9 @@ $(document).ready(function () {
         title: "Acciones",
         orderable: false,
         render: (data, type, row) => {
-          const hasStart = !!row.start_date;
-          const hasEnd = !!row.end_date;
+          // use actual dates returned by API to decide which actions to show
+          const hasStart = !!row.act_start_date;
+          const hasEnd = !!row.act_end_date;
           let actionButtons = `<div class="btn-group" role="group">`;
           // Edit
           actionButtons += `<button type="button" title="edit" class="btn bg-olive active btn-edit" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-edit"></i></button>`;
@@ -163,15 +164,16 @@ $(document).ready(function () {
     table.rows({ page: 'current' }).data().each(function (d, i) {
       const rowNode = rows[i];
       $(rowNode).removeClass('task-status-started task-status-completed task-status-notstarted');
-      const hasStart = !!d.start_date;
-      const hasEnd = !!d.end_date;
+      // now using actual dates returned by the API
+      const hasStart = !!d.act_start_date;
+      const hasEnd = !!d.act_end_date;
       if (hasStart && !hasEnd) {
         $(rowNode).addClass('task-status-started');
       } else if (!hasStart && !hasEnd) {
         $(rowNode).addClass('task-status-notstarted');
       } else if (hasStart && hasEnd) {
-        // if end date already passed -> green
-        const endDt = new Date(d.end_date);
+        // if actual end date already passed -> green
+        const endDt = new Date(d.act_end_date || d.end_date);
         const now = new Date();
         if (endDt <= now) {
           $(rowNode).addClass('task-status-completed');
@@ -194,12 +196,19 @@ $(document).ready(function () {
   $("table").on("click", ".btn-start", function () {
     const id = $(this).data("id");
     const $btn = $(this);
+    const $row = $(this).closest('tr');
+    const rowApi = table.row($row);
+    const rowData = rowApi.data() || {};
     $btn.prop('disabled', true);
     const now = new Date().toISOString();
-    axios.patch(API_URL + id + '/', { start_date: now })
+    // set actual start date field on the backend
+    axios.patch(API_URL + id + '/', { act_start_date: now })
       .then(() => {
         showSuccess('Tarea iniciada');
-        table.ajax.reload(null, false);
+        // update row data locally and redraw table minimally
+        rowData.act_start_date = now;
+        rowApi.data(rowData);
+        table.draw(false);
       })
       .catch((err) => {
         showError('Error iniciando tarea', err.message || '');
@@ -210,12 +219,19 @@ $(document).ready(function () {
   $("table").on("click", ".btn-stop", function () {
     const id = $(this).data("id");
     const $btn = $(this);
+    const $row = $(this).closest('tr');
+    const rowApi = table.row($row);
+    const rowData = rowApi.data() || {};
     $btn.prop('disabled', true);
     const now = new Date().toISOString();
-    axios.patch(API_URL + id + '/', { end_date: now })
+    // set actual end date field on the backend
+    axios.patch(API_URL + id + '/', { act_end_date: now })
       .then(() => {
         showSuccess('Tarea terminada');
-        table.ajax.reload(null, false);
+        // update row data locally and redraw table minimally
+        rowData.act_end_date = now;
+        rowApi.data(rowData);
+        table.draw(false);
       })
       .catch((err) => {
         showError('Error terminando tarea', err.message || '');
@@ -287,9 +303,18 @@ function openEditModal(id) {
       form.elements.remain_drtn_hr_cnt.value = t.remain_drtn_hr_cnt ?? "";
       form.elements.total_float_hr_cnt.value = t.total_float_hr_cnt ?? "";
       form.elements.target_cost.value = t.target_cost ?? "";
-      // convert to input datetime-local format yyyy-MM-ddTHH:mm
+      // convert to input datetime-local format yyyy-MM-ddTHH:mm for planned dates
       if (t.start_date) form.elements.start_date.value = new Date(t.start_date).toISOString().slice(0, 16);
       if (t.end_date) form.elements.end_date.value = new Date(t.end_date).toISOString().slice(0, 16);
+      // set hidden actual dates (act_start_date/act_end_date) if present
+      const actStartInput = document.getElementById('act_start_date');
+      const actEndInput = document.getElementById('act_end_date');
+      if (actStartInput) {
+        actStartInput.value = t.act_start_date ? new Date(t.act_start_date).toISOString().slice(0, 16) : '';
+      }
+      if (actEndInput) {
+        actEndInput.value = t.act_end_date ? new Date(t.act_end_date).toISOString().slice(0, 16) : '';
+      }
       form.elements.delete_record_flag.checked = !!t.delete_record_flag;
       $("#modal-crear-task").modal("show");
     })

@@ -22,16 +22,28 @@ class ExcelExporterViewSet(viewsets.ViewSet):
                 {
                     ExcelNomenclators.sheet_task_column_task_code: t.task_code,
                     ExcelNomenclators.sheet_task_column_status_code: t.status_code,
-                    ExcelNomenclators.sheet_task_column_wbs_id: t.wbs.wbs_id if t.wbs else "",
+                    ExcelNomenclators.sheet_task_column_wbs_id: t.wbs.wbs_id
+                    if t.wbs
+                    else "",
                     ExcelNomenclators.sheet_task_column_task_name: t.task_name,
                     ExcelNomenclators.sheet_task_column_target_drtn_hr_cnt: t.target_drtn_hr_cnt,
                     ExcelNomenclators.sheet_task_column_remain_drtn_hr_cnt: t.remain_drtn_hr_cnt,
-                    ExcelNomenclators.sheet_task_column_start_date: t.start_date.isoformat() if t.start_date else None,
-                    ExcelNomenclators.sheet_task_column_end_date: t.end_date.isoformat() if t.end_date else None,
+                    ExcelNomenclators.sheet_task_column_start_date: t.start_date.isoformat()
+                    if t.start_date
+                    else None,
+                    ExcelNomenclators.sheet_task_column_end_date: t.end_date.isoformat()
+                    if t.end_date
+                    else None,
                     ExcelNomenclators.sheet_task_column_resource_list: resources,
-                    ExcelNomenclators.sheet_task_column_target_cost: float(t.target_cost) if t.target_cost is not None else 0,
+                    ExcelNomenclators.sheet_task_column_target_cost: float(
+                        t.target_cost
+                    )
+                    if t.target_cost is not None
+                    else 0,
                     ExcelNomenclators.sheet_task_column_total_float_hr_cnt: t.total_float_hr_cnt,
-                    ExcelNomenclators.sheet_task_column_delete_record_flag: t.delete_record_flag if t.delete_record_flag else "",
+                    ExcelNomenclators.sheet_task_column_delete_record_flag: t.delete_record_flag
+                    if t.delete_record_flag
+                    else "",
                 }
             )
 

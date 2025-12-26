@@ -1,6 +1,7 @@
 from django.contrib import admin
 from .models.generic_log import GenericLog
 
+
 class GenericModelAdmin(admin.ModelAdmin):
     """
     Una clase base de Django admin.ModelAdmin genérica que automatiza la configuración
@@ -101,4 +102,3 @@ class GenericModelAdmin(admin.ModelAdmin):
 @admin.register(GenericLog)
 class GenericLogAdmin(GenericModelAdmin):
     pass  # Usará la configuración genérica por defecto
-

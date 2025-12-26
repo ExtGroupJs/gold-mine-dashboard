@@ -5,80 +5,96 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('business_app', '0003_remove_task_original_duration_alter_task_end_date_and_more'),
+        (
+            "business_app",
+            "0003_remove_task_original_duration_alter_task_end_date_and_more",
+        ),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='task',
-            name='deleted',
+            model_name="task",
+            name="deleted",
             field=models.DateTimeField(db_index=True, editable=False, null=True),
         ),
         migrations.AddField(
-            model_name='task',
-            name='deleted_by_cascade',
+            model_name="task",
+            name="deleted_by_cascade",
             field=models.BooleanField(default=False, editable=False),
         ),
         migrations.AlterField(
-            model_name='task',
-            name='delete_record_flag',
-            field=models.BooleanField(default=False, verbose_name='Delete This Row'),
+            model_name="task",
+            name="delete_record_flag",
+            field=models.BooleanField(default=False, verbose_name="Delete This Row"),
         ),
         migrations.AlterField(
-            model_name='task',
-            name='end_date',
-            field=models.DateTimeField(blank=True, null=True, verbose_name='(*)Finish'),
+            model_name="task",
+            name="end_date",
+            field=models.DateTimeField(blank=True, null=True, verbose_name="(*)Finish"),
         ),
         migrations.AlterField(
-            model_name='task',
-            name='remain_drtn_hr_cnt',
-            field=models.IntegerField(verbose_name='Remaining Duration(d)'),
+            model_name="task",
+            name="remain_drtn_hr_cnt",
+            field=models.IntegerField(verbose_name="Remaining Duration(d)"),
         ),
         migrations.AlterField(
-            model_name='task',
-            name='resources',
-            field=models.ManyToManyField(through='business_app.TaskResource', to='business_app.resource', verbose_name='(*)Resources'),
+            model_name="task",
+            name="resources",
+            field=models.ManyToManyField(
+                through="business_app.TaskResource",
+                to="business_app.resource",
+                verbose_name="(*)Resources",
+            ),
         ),
         migrations.AlterField(
-            model_name='task',
-            name='start_date',
-            field=models.DateTimeField(blank=True, null=True, verbose_name='(*)Start'),
+            model_name="task",
+            name="start_date",
+            field=models.DateTimeField(blank=True, null=True, verbose_name="(*)Start"),
         ),
         migrations.AlterField(
-            model_name='task',
-            name='status_code',
-            field=models.CharField(max_length=50, verbose_name='Activity Status'),
+            model_name="task",
+            name="status_code",
+            field=models.CharField(max_length=50, verbose_name="Activity Status"),
         ),
         migrations.AlterField(
-            model_name='task',
-            name='target_cost',
-            field=models.DecimalField(decimal_places=2, max_digits=10, verbose_name='(*)Budgeted Total Cost($)'),
+            model_name="task",
+            name="target_cost",
+            field=models.DecimalField(
+                decimal_places=2,
+                max_digits=10,
+                verbose_name="(*)Budgeted Total Cost($)",
+            ),
         ),
         migrations.AlterField(
-            model_name='task',
-            name='target_drtn_hr_cnt',
-            field=models.IntegerField(verbose_name='Original Duration(d)'),
+            model_name="task",
+            name="target_drtn_hr_cnt",
+            field=models.IntegerField(verbose_name="Original Duration(d)"),
         ),
         migrations.AlterField(
-            model_name='task',
-            name='task_code',
-            field=models.CharField(max_length=50, unique=True, verbose_name='Activity ID'),
+            model_name="task",
+            name="task_code",
+            field=models.CharField(
+                max_length=50, unique=True, verbose_name="Activity ID"
+            ),
         ),
         migrations.AlterField(
-            model_name='task',
-            name='task_name',
-            field=models.TextField(verbose_name='Activity Name'),
+            model_name="task",
+            name="task_name",
+            field=models.TextField(verbose_name="Activity Name"),
         ),
         migrations.AlterField(
-            model_name='task',
-            name='total_float_hr_cnt',
-            field=models.IntegerField(verbose_name='(*)Total Float(d)'),
+            model_name="task",
+            name="total_float_hr_cnt",
+            field=models.IntegerField(verbose_name="(*)Total Float(d)"),
         ),
         migrations.AlterField(
-            model_name='task',
-            name='wbs',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.DO_NOTHING, to='business_app.wbs', verbose_name='WBS Code'),
+            model_name="task",
+            name="wbs",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.DO_NOTHING,
+                to="business_app.wbs",
+                verbose_name="WBS Code",
+            ),
         ),
     ]

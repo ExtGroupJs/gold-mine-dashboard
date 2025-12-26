@@ -92,10 +92,12 @@ class XslProcessor:
                     row[ExcelNomenclators.sheet_task_column_end_date], errors="coerce"
                 )
                 act_start_date = pd.to_datetime(
-                    row[ExcelNomenclators.sheet_task_column_act_start_date], errors="coerce"
+                    row[ExcelNomenclators.sheet_task_column_act_start_date],
+                    errors="coerce",
                 )
                 act_end_date = pd.to_datetime(
-                    row[ExcelNomenclators.sheet_task_column_act_end_date], errors="coerce"
+                    row[ExcelNomenclators.sheet_task_column_act_end_date],
+                    errors="coerce",
                 )
 
                 task, _ = Task.objects.update_or_create(
@@ -112,10 +114,18 @@ class XslProcessor:
                         "remain_drtn_hr_cnt": int(
                             row[ExcelNomenclators.sheet_task_column_remain_drtn_hr_cnt]
                         ),
-                        "start_date": start_date.isoformat() if pd.notna(start_date) else None,
-                        "end_date": end_date.isoformat() if pd.notna(end_date) else None,
-                        "act_start_date": act_start_date.isoformat() if pd.notna(act_start_date) else None,
-                        "act_end_date": act_end_date.isoformat() if pd.notna(act_end_date) else None,
+                        "start_date": start_date.isoformat()
+                        if pd.notna(start_date)
+                        else None,
+                        "end_date": end_date.isoformat()
+                        if pd.notna(end_date)
+                        else None,
+                        "act_start_date": act_start_date.isoformat()
+                        if pd.notna(act_start_date)
+                        else None,
+                        "act_end_date": act_end_date.isoformat()
+                        if pd.notna(act_end_date)
+                        else None,
                         "total_float_hr_cnt": row[
                             ExcelNomenclators.sheet_task_column_total_float_hr_cnt
                         ]

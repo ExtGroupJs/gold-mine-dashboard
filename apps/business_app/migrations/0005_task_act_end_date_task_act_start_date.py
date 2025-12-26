@@ -4,20 +4,23 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('business_app', '0004_alter_task_delete_record_flag_alter_task_end_date_and_more'),
+        ("business_app", "0004_task_deleted_task_deleted_by_cascade_and_more"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='task',
-            name='act_end_date',
-            field=models.DateTimeField(blank=True, null=True, verbose_name='Actual Finish'),
+            model_name="task",
+            name="act_end_date",
+            field=models.DateTimeField(
+                blank=True, null=True, verbose_name="Actual Finish"
+            ),
         ),
         migrations.AddField(
-            model_name='task',
-            name='act_start_date',
-            field=models.DateTimeField(blank=True, null=True, verbose_name='Actual Start'),
+            model_name="task",
+            name="act_start_date",
+            field=models.DateTimeField(
+                blank=True, null=True, verbose_name="Actual Start"
+            ),
         ),
     ]

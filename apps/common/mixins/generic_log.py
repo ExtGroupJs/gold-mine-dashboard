@@ -2,6 +2,7 @@ from django.forms import model_to_dict
 from django.contrib.contenttypes.models import ContentType
 from apps.common.middlewares import get_current_user
 from apps.common.models.generic_log import GenericLog
+import datetime
 
 
 class GenericLogMixin:
@@ -28,10 +29,14 @@ class GenericLogMixin:
                 incoming_value = getattr(self, field)
 
                 if old_value != incoming_value:
-                    if hasattr(old_value, "_meta"):
+                    if hasattr(old_value, "_meta") or isinstance(
+                        old_value, datetime.date
+                    ):
                         old_value = old_value.__str__()
 
-                    if hasattr(incoming_value, "_meta"):
+                    if hasattr(incoming_value, "_meta") or isinstance(
+                        incoming_value, datetime.date
+                    ):
                         new_value = incoming_value.__str__()
 
                     details[field] = {
