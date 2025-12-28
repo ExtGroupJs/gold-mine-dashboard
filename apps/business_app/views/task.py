@@ -2,6 +2,8 @@ from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, viewsets, permissions
 from rest_framework.generics import GenericAPIView
 
+from apps.common.permissions import ShopProductsViewSetPermission
+
 
 from ..models.task import Task
 from ..serializers.task import TaskSerializer
@@ -22,6 +24,7 @@ class TaskViewSet(viewsets.ModelViewSet, GenericAPIView):
         "wbs__wbs_id",
     ]
     ordering_fields = "__all__"
+    permission_classes = [ShopProductsViewSetPermission]
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
