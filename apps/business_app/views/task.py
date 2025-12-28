@@ -1,5 +1,5 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, viewsets, permissions
+from rest_framework import filters, viewsets
 from rest_framework.generics import GenericAPIView
 
 from apps.common.permissions import ShopProductsViewSetPermission
@@ -16,7 +16,9 @@ from apps.common.mixins.common_view_mixin import CommonOrderingFilter
 class TaskViewSet(viewsets.ModelViewSet, GenericAPIView):
     """ """
 
-    queryset = Task.objects.all().select_related("wbs").prefetch_related("resources", "alerts")
+    queryset = (
+        Task.objects.all().select_related("wbs").prefetch_related("resources", "alerts")
+    )
     serializer_class = TaskSerializer
     search_fields = [
         "task_code",

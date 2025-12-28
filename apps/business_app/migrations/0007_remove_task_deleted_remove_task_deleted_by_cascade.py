@@ -4,18 +4,17 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('business_app', '0006_task_internal_status_task_percent_complete_and_more'),
+        ("business_app", "0006_task_internal_status_task_percent_complete_and_more"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='task',
-            name='deleted',
+            model_name="task",
+            name="deleted",
         ),
         migrations.RemoveField(
-            model_name='task',
-            name='deleted_by_cascade',
+            model_name="task",
+            name="deleted_by_cascade",
         ),
     ]

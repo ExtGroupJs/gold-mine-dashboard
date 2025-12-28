@@ -3,21 +3,24 @@ from .task import Task
 from django.utils.translation import gettext_lazy as _
 
 
-
 class Alert(models.Model):
     class KIND(models.TextChoices):
         INFO = "I", _("information")
-        WARNING = "W", _("warning") 
+        WARNING = "W", _("warning")
         CRITICAL = "C", _("critical")
 
-    task = models.ForeignKey(to=Task, on_delete=models.CASCADE, related_name="alerts", verbose_name=_("Task"))
+    task = models.ForeignKey(
+        to=Task, on_delete=models.CASCADE, related_name="alerts", verbose_name=_("Task")
+    )
     kind = models.CharField(
         _("Alert type"),
         choices=KIND.choices,
         default=KIND.WARNING,
         max_length=1,
     )
-    short_description = models.CharField(max_length=100, verbose_name=_("Short Description"))
+    short_description = models.CharField(
+        max_length=100, verbose_name=_("Short Description")
+    )
     description = models.TextField(null=True, blank=True, verbose_name=_("Description"))
 
     def __str__(self):

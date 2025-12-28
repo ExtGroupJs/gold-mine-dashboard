@@ -5,20 +5,53 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('business_app', '0007_remove_task_deleted_remove_task_deleted_by_cascade'),
+        ("business_app", "0007_remove_task_deleted_remove_task_deleted_by_cascade"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='Alert',
+            name="Alert",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('kind', models.CharField(choices=[('I', 'information'), ('W', 'warning'), ('C', 'critical')], default='W', max_length=1, verbose_name='Alert type')),
-                ('short_description', models.CharField(max_length=100, verbose_name='Short Description')),
-                ('description', models.TextField(blank=True, null=True, verbose_name='Description')),
-                ('task', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='alerts', to='business_app.task', verbose_name='Task')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "kind",
+                    models.CharField(
+                        choices=[
+                            ("I", "information"),
+                            ("W", "warning"),
+                            ("C", "critical"),
+                        ],
+                        default="W",
+                        max_length=1,
+                        verbose_name="Alert type",
+                    ),
+                ),
+                (
+                    "short_description",
+                    models.CharField(max_length=100, verbose_name="Short Description"),
+                ),
+                (
+                    "description",
+                    models.TextField(blank=True, null=True, verbose_name="Description"),
+                ),
+                (
+                    "task",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="alerts",
+                        to="business_app.task",
+                        verbose_name="Task",
+                    ),
+                ),
             ],
         ),
     ]
