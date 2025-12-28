@@ -1,7 +1,7 @@
 
 # version: '3.8'  # Versión de Docker Compose
 
-networks:
+# networks:
   # internal_network:
   #   driver: bridge
 services:
