@@ -1,8 +1,7 @@
 from django_filters.rest_framework import DjangoFilterBackend
-from rest_framework import filters, viewsets, permissions
+from rest_framework import filters, viewsets
 from rest_framework.generics import GenericAPIView
 
-from apps.common.permissions import ShopProductsViewSetPermission
 
 
 from ..models.alert import Alert
@@ -17,8 +16,8 @@ from apps.common.permissions import IsAuthenticatedAndReadOnly
 class AlertViewSet(viewsets.ModelViewSet, GenericAPIView):
     """ """
 
-    queryset = Alert.objects.all().select_related("task").prefetch_related(
-        "task__resources"
+    queryset = (
+        Alert.objects.all().select_related("task").prefetch_related("task__resources")
     )
     serializer_class = AlertSerializer
     search_fields = [

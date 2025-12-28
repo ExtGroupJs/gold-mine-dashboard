@@ -78,13 +78,13 @@ class IsAuthenticatedAndReadOnly(BasePermission):
 
 
 class ShopProductsViewSetPermission(CommonRolePermission):
-
     def has_permission(self, request, view):
         if request.method in SAFE_METHODS:
             self.roles = self.roles + [
                 Groups.DASHBOARD_CLIENT.value,
             ]
         return super().has_permission(request, view)
+
 
 # class UssageExamplePermission(CommonRolePermission):
 #     roles = (

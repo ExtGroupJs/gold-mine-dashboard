@@ -126,16 +126,16 @@ class XslProcessor:
                         "act_end_date": act_end_date.isoformat()
                         if pd.notna(act_end_date)
                         else None,
-                        "total_float_hr_cnt": int(row[
-                            ExcelNomenclators.sheet_task_column_total_float_hr_cnt
-                        ])
+                        "total_float_hr_cnt": int(
+                            row[ExcelNomenclators.sheet_task_column_total_float_hr_cnt]
+                        )
                         if not pd.isna(
                             row[ExcelNomenclators.sheet_task_column_total_float_hr_cnt]
                         )
                         else 0,
-                        "target_cost": float(row[
-                            ExcelNomenclators.sheet_task_column_target_cost
-                        ])
+                        "target_cost": float(
+                            row[ExcelNomenclators.sheet_task_column_target_cost]
+                        )
                         if not pd.isna(
                             row[ExcelNomenclators.sheet_task_column_target_cost]
                         )

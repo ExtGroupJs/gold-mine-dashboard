@@ -4,7 +4,6 @@ from apps.common.middlewares import get_current_user
 from apps.common.models.generic_log import GenericLog
 from datetime import datetime, date
 import pytz
-from decimal import Decimal
 
 
 class GenericLogMixin:
@@ -43,7 +42,7 @@ class GenericLogMixin:
                     old_value = self.normalize_to_utc(old_value.isoformat())
                     if incoming_value is not None:
                         incoming_value = self.normalize_to_utc(incoming_value)
- 
+
                 if old_value != incoming_value:
                     if hasattr(old_value, "_meta"):
                         old_value = old_value.__str__()
