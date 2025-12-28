@@ -100,7 +100,7 @@ class XslProcessor:
                     errors="coerce",
                 )
 
-                task, _ = Task.all_objects.update_or_create(
+                task, _ = Task.objects.update_or_create(
                     task_code=row[ExcelNomenclators.sheet_task_column_task_code],
                     defaults={
                         "wbs": wbs,

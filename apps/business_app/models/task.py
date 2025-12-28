@@ -10,7 +10,7 @@ from django.core.validators import (
     MinValueValidator,
 )
 
-class Task(GenericLogMixin, SafeDeleteModel, models.Model):
+class Task(GenericLogMixin, models.Model):
     ### INTERNAL FIELDS
     class INTERNAL_STATUS(models.TextChoices):
         PLANNED = "P", _("planned") # default
