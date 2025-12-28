@@ -149,9 +149,6 @@ else:
         "PASSWORD": env("DB_REMOTE_PASSWORD"),
         "HOST": env("DB_REMOTE_HOST"),
         "PORT": env("DB_REMOTE_PORT", cast=int),
-        "OPTIONS": {
-            "sql_mode": "STRICT_TRANS_TABLES",
-        },
     }
 
 DATABASES = {
