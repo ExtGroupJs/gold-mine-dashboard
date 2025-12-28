@@ -2,8 +2,8 @@
 # version: '3.8'  # Versión de Docker Compose
 
 networks:
-  internal_network:
-    driver: bridge
+  # internal_network:
+  #   driver: bridge
 services:
   postgres:
     container_name: ${WEBSITE_SLUG_NAME}_postgres
@@ -17,8 +17,8 @@ services:
     volumes:
       - postgres_data_volume:/var/lib/postgresql/data
     restart: always  # Opcional: reinicia el contenedor si falla
-    networks:
-      - internal_network
+    # networks:
+    #   - internal_network
       
   redis:
     container_name: ${WEBSITE_SLUG_NAME}_redis
@@ -26,58 +26,58 @@ services:
     restart: always
     ports:
       - ${REDIS_PORT}:6379
-    networks:
-      - internal_network
-    healthcheck:
-      test: ["CMD", "redis-cli", "ping"]
-      interval: 10s
-      timeout: 5s
-      retries: 5
+    # networks:
+    #   - internal_network
+    # healthcheck:
+    #   test: ["CMD", "redis-cli", "ping"]
+    #   interval: 10s
+    #   timeout: 5s
+    #   retries: 5
   
-  django-server:
-    # image: certus-backend-img:latest # esto por si se creó la imagen localmente
-    build:
-      context: .
-      dockerfile: Dockerfile # Usamos nuestro Dockerfile de desarrollo
-    restart: always
-    networks:
-      - internal_network
-    ports:
-      - "8000:8000"
-    volumes:
-      # 1. Monta tu código local en el contenedor.
-      # Cualquier cambio que hagas en tu PC se verá dentro del contenedor.
-      - .:/home/project
+#   django-server:
+#     # image: certus-backend-img:latest # esto por si se creó la imagen localmente
+#     build:
+#       context: .
+#       dockerfile: Dockerfile # Usamos nuestro Dockerfile de desarrollo
+#     restart: always
+#     networks:
+#       - internal_network
+#     ports:
+#       - "8000:8000"
+#     volumes:
+#       # 1. Monta tu código local en el contenedor.
+#       # Cualquier cambio que hagas en tu PC se verá dentro del contenedor.
+#       - .:/home/project
 
-    depends_on:
-      postgres:
-        condition: service_started
-      redis:
-        condition: service_healthy  # <-- CAMBIA ESTO
+#     depends_on:
+#       postgres:
+#         condition: service_started
+#       redis:
+#         condition: service_healthy  # <-- CAMBIA ESTO
      
-    environment:
-      SECRET_KEY: ${SECRET_KEY}
+#     environment:
+#       SECRET_KEY: ${SECRET_KEY}
 
-      REDIS_HOST: "redis"
-      REDIS_PORT: ${REDIS_PORT}
+#       REDIS_HOST: "redis"
+#       REDIS_PORT: ${REDIS_PORT}
 
-      WEBSITE_NAME: ${WEBSITE_NAME}
-      WEBSITE_SLUG_NAME: ${WEBSITE_SLUG_NAME}
+#       WEBSITE_NAME: ${WEBSITE_NAME}
+#       WEBSITE_SLUG_NAME: ${WEBSITE_SLUG_NAME}
 
-      #seconds before session expires
-      SESSION_EXPIRE_SECONDS: ${SESSION_EXPIRE_SECONDS}
+#       #seconds before session expires
+#       SESSION_EXPIRE_SECONDS: ${SESSION_EXPIRE_SECONDS}
 
-      #set to "remote" on production server, or "local" on local machine
-      RUNNING_FROM: ${RUNNING_FROM}
+#       #set to "remote" on production server, or "local" on local machine
+#       RUNNING_FROM: ${RUNNING_FROM}
 
-      DB_REMOTE_ENGINE: ${DB_REMOTE_ENGINE}
-      DB_REMOTE_NAME: ${DB_REMOTE_NAME}
-      DB_REMOTE_USER: ${DB_REMOTE_USER}
-      DB_REMOTE_PASSWORD: ${DB_REMOTE_PASSWORD}
-      DB_REMOTE_HOST: postgres
-      DB_REMOTE_PORT: ${DB_REMOTE_PORT}
+#       DB_REMOTE_ENGINE: ${DB_REMOTE_ENGINE}
+#       DB_REMOTE_NAME: ${DB_REMOTE_NAME}
+#       DB_REMOTE_USER: ${DB_REMOTE_USER}
+#       DB_REMOTE_PASSWORD: ${DB_REMOTE_PASSWORD}
+#       DB_REMOTE_HOST: postgres
+#       DB_REMOTE_PORT: ${DB_REMOTE_PORT}
 
-      CACHE_DEFAULT_TIMEOUT: ${CACHE_DEFAULT_TIMEOUT}
+#       CACHE_DEFAULT_TIMEOUT: ${CACHE_DEFAULT_TIMEOUT}
 volumes:
   postgres_data_volume:
     name: postgres_data_volume_${WEBSITE_SLUG_NAME}  # Define el volumen
