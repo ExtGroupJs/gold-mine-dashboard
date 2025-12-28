@@ -16,7 +16,7 @@ from apps.common.mixins.common_view_mixin import CommonOrderingFilter
 class TaskViewSet(viewsets.ModelViewSet, GenericAPIView):
     """ """
 
-    queryset = Task.objects.all()
+    queryset = Task.objects.all().select_related("wbs").prefetch_related("resources", "alerts")
     serializer_class = TaskSerializer
     search_fields = [
         "task_code",
@@ -30,4 +30,3 @@ class TaskViewSet(viewsets.ModelViewSet, GenericAPIView):
         filters.SearchFilter,
         CommonOrderingFilter,
     ]
-    permission_classes = [permissions.AllowAny]
