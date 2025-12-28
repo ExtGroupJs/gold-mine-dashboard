@@ -34,7 +34,7 @@ class TaskResourceAdmin(GenericModelAdmin):
 
 @admin.register(WBS)
 class WBSAdmin(GenericModelAdmin):
-    pass  # Usará la configuración genérica por defecto
+    EXCLUDED_FIELDS_FOR_EDITING = {"task"}
 
 
 @admin.register(PrimaveraImportFile)
