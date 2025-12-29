@@ -12,6 +12,7 @@ from django.core.validators import (
 
 class Task(GenericLogMixin, models.Model):
     ### INTERNAL FIELDS
+
     class INTERNAL_STATUS(models.TextChoices):
         PLANNED = "P", _("Planned")  # ESTE ES ADICIONAL INTERNO
         HOLD = "H", _("Hold")  # ESTE ES ADICIONAL INTERNO
@@ -23,6 +24,11 @@ class Task(GenericLogMixin, models.Model):
         COMPLETED = "C", _("Completed")  # ESTE ESTÁ TAMBIÉN EN EL PRIMAVERA
         NOT_STARTED = "N", _("Not started")  # ESTE ESTÁ TAMBIÉN EN EL PRIMAVERA
 
+    PRIMAVERA_IMPORTED_STATUS = (
+        INTERNAL_STATUS.COMPLETED.value,
+        INTERNAL_STATUS.NOT_STARTED.value,
+        INTERNAL_STATUS.IN_PROGRESS.value,
+    )
     internal_status = models.CharField(
         _("internal status"),
         choices=INTERNAL_STATUS.choices,

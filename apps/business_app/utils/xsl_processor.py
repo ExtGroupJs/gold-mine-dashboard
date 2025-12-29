@@ -153,11 +153,7 @@ class XslProcessor:
                     row[ExcelNomenclators.sheet_task_column_status_code]
                 )[0].upper()
 
-                if internal_status_code in (
-                    Task.INTERNAL_STATUS.COMPLETED.value,
-                    Task.INTERNAL_STATUS.NOT_STARTED.value,
-                    Task.INTERNAL_STATUS.IN_PROGRESS.value,
-                ):
+                if internal_status_code in Task.PRIMAVERA_IMPORTED_STATUS:
                     task.internal_status = internal_status_code
                 task.save()
                 task.resources.set(resources)
