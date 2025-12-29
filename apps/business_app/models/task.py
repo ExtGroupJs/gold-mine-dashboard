@@ -13,13 +13,15 @@ from django.core.validators import (
 class Task(GenericLogMixin, models.Model):
     ### INTERNAL FIELDS
     class INTERNAL_STATUS(models.TextChoices):
-        PLANNED = "P", _("planned")  # default
-        STARTED = (
-            "S",
-            _("started"),
-        )  # when percent_complete > 0 or act_start_date is set
-        COMPLETED = "C", _("completed")  # when percent_complete == 100
-        ON_HOLD = "H", _("on hold")  # when task is paused
+        PLANNED = "P", _("Planned")  # ESTE ES ADICIONAL INTERNO
+        HOLD = "H", _("Hold")  # ESTE ES ADICIONAL INTERNO
+
+        IN_PROGRESS = (  # ESTE ESTÁ TAMBIÉN EN EL PRIMAVERA
+            "I",
+            _("In progress"),
+        )
+        COMPLETED = "C", _("Completed")  # ESTE ESTÁ TAMBIÉN EN EL PRIMAVERA
+        NOT_STARTED = "N", _("Not started")  # ESTE ESTÁ TAMBIÉN EN EL PRIMAVERA
 
     internal_status = models.CharField(
         _("internal status"),
