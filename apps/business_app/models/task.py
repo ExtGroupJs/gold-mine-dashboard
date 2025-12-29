@@ -36,15 +36,15 @@ class Task(GenericLogMixin, models.Model):
         blank=True,
         max_length=1,
     )
-    percent_complete = models.IntegerField(
+    internal_percent_complete = models.IntegerField(
         _("percent complete"),
         default=0,
         validators=[MinValueValidator(0), MaxValueValidator(100)],
     )
-    planned_date = models.DateTimeField(
+    internal_planned_date = models.DateTimeField(
         null=True, blank=True, verbose_name="Planned Date"
     )
-    responsibles = models.ManyToManyField(
+    internal_responsibles = models.ManyToManyField(
         "users_app.SystemUser", verbose_name="Responsible User(s)", blank=True
     )
 
