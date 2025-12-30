@@ -67,7 +67,8 @@ class XslProcessor:
                 continue
             try:
                 wbs, _ = WBS.objects.get_or_create(
-                    wbs_id=row[ExcelNomenclators.sheet_task_column_wbs_id]
+                    wbs_id=row[ExcelNomenclators.sheet_task_column_wbs_id],
+                    defaults={"wbs_name": row[ExcelNomenclators.sheet_task_column_wbs_id]}
                 )
                 resources_names = (
                     []
@@ -108,11 +109,8 @@ class XslProcessor:
                             ExcelNomenclators.sheet_task_column_status_code
                         ],
                         "task_name": row[ExcelNomenclators.sheet_task_column_task_name],
-                        "target_drtn_hr_cnt": int(
-                            row[ExcelNomenclators.sheet_task_column_target_drtn_hr_cnt]
-                        ),
-                        "remain_drtn_hr_cnt": int(
-                            row[ExcelNomenclators.sheet_task_column_remain_drtn_hr_cnt]
+                        "complete_pct": int(
+                            row[ExcelNomenclators.sheet_task_column_complete_pct]
                         ),
                         "start_date": start_date.isoformat()
                         if pd.notna(start_date)
@@ -126,20 +124,6 @@ class XslProcessor:
                         "act_end_date": act_end_date.isoformat()
                         if pd.notna(act_end_date)
                         else None,
-                        "total_float_hr_cnt": int(
-                            row[ExcelNomenclators.sheet_task_column_total_float_hr_cnt]
-                        )
-                        if not pd.isna(
-                            row[ExcelNomenclators.sheet_task_column_total_float_hr_cnt]
-                        )
-                        else 0,
-                        "target_cost": float(
-                            row[ExcelNomenclators.sheet_task_column_target_cost]
-                        )
-                        if not pd.isna(
-                            row[ExcelNomenclators.sheet_task_column_target_cost]
-                        )
-                        else 0,
                         "delete_record_flag": bool(
                             row[ExcelNomenclators.sheet_task_column_delete_record_flag]
                         )

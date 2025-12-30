@@ -55,9 +55,7 @@ class Task(GenericLogMixin, models.Model):
     status_code = models.CharField(max_length=50, verbose_name="Activity Status")
     wbs = models.ForeignKey(WBS, on_delete=models.DO_NOTHING, verbose_name="WBS Code")
     task_name = models.TextField(verbose_name="Activity Name")
-    target_drtn_hr_cnt = models.IntegerField(verbose_name="Original Duration(d)")
     # original_duration = models.IntegerField()
-    remain_drtn_hr_cnt = models.IntegerField(verbose_name="Remaining Duration(d)")
     start_date = models.DateTimeField(null=True, blank=True, verbose_name="(*)Start")
     end_date = models.DateTimeField(null=True, blank=True, verbose_name="(*)Finish")
     act_start_date = models.DateTimeField(
@@ -66,10 +64,13 @@ class Task(GenericLogMixin, models.Model):
     act_end_date = models.DateTimeField(
         null=True, blank=True, verbose_name="Actual Finish"
     )
-    target_cost = models.FloatField(verbose_name="(*)Budgeted Total Cost($)")
-    total_float_hr_cnt = models.IntegerField(verbose_name="(*)Total Float(d)")
     delete_record_flag = models.BooleanField(
         default=False, verbose_name="Delete This Row"
+    )
+    complete_pct = models.IntegerField(
+        _("percent complete"),
+        default=0,
+        validators=[MinValueValidator(0), MaxValueValidator(100)],
     )
     resources = models.ManyToManyField(
         Resource, through=TaskResource, verbose_name="(*)Resources"
