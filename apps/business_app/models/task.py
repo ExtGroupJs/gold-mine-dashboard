@@ -8,6 +8,8 @@ from django.core.validators import (
     MaxValueValidator,
     MinValueValidator,
 )
+from django.contrib.auth.models import Group
+
 
 
 class Task(GenericLogMixin, models.Model):
@@ -45,7 +47,7 @@ class Task(GenericLogMixin, models.Model):
         null=True, blank=True, verbose_name="Planned Date"
     )
     internal_responsibles = models.ManyToManyField(
-        "users_app.SystemUser", verbose_name="Responsible User(s)", blank=True
+        Group, verbose_name="Responsible Roles(s)", blank=True
     )
 
     # P6 FIELDS
