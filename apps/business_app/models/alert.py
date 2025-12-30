@@ -1,9 +1,11 @@
 from django.db import models
 from .task import Task
 from django.utils.translation import gettext_lazy as _
+from apps.common.mixins.generic_log import GenericLogMixin
+from safedelete.models import SafeDeleteModel
 
 
-class Alert(models.Model):
+class Alert(GenericLogMixin, SafeDeleteModel, models.Model):
     class KIND(models.TextChoices):
         INFO = "I", _("information")
         WARNING = "W", _("warning")
