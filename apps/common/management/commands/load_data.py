@@ -39,11 +39,11 @@ class Command(BaseCommand):
         )
         planner_user, _ = SystemUser.objects.get_or_create(
             username="planner_user",
-            defaults={  
-            "email": "",
-            "password":"password",
-            "first_name": "Planner",
-            "last_name": "User",
+            defaults={
+                "email": "",
+                "password": "password",
+                "first_name": "Planner",
+                "last_name": "User",
             },
         )
         planner_user.groups.add(Groups.PLANNER)
@@ -56,11 +56,11 @@ class Command(BaseCommand):
         )
         suspervior_a, _ = SystemUser.objects.get_or_create(
             username="supervisor_a",
-            defaults={  
-            "email": "",
-            "password":"password",
-            "first_name": "Supervisor A",
-            "last_name": "User",
+            defaults={
+                "email": "",
+                "password": "password",
+                "first_name": "Supervisor A",
+                "last_name": "User",
             },
         )
         suspervior_a.groups.add(Groups.SUPERVISOR_AREA_A)
@@ -73,11 +73,11 @@ class Command(BaseCommand):
         )
         suspervior_b, _ = SystemUser.objects.get_or_create(
             username="supervisor_b",
-            defaults={  
-            "email": "",
-            "password":"password",
-            "first_name": "Supervisor B",
-            "last_name": "User",
+            defaults={
+                "email": "",
+                "password": "password",
+                "first_name": "Supervisor B",
+                "last_name": "User",
             },
         )
         suspervior_b.groups.add(Groups.SUPERVISOR_AREA_B)
