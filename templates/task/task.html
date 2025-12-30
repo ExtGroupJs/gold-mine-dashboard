@@ -95,114 +95,40 @@
 </div>
 <!-- /.content-wrapper -->
 
-<!-- modal para crear/editar tarea -->
-<div class="modal fade" id="modal-crear-task" data-backdrop="static" tabindex="-1" role="dialog"
-  aria-labelledby="staticBackdropLabel" aria-hidden="true">
-  <div class="modal-dialog modal-lg">
-    <div class="modal-content">
-      <div class="modal-header">
-        <h4 class="modal-title">Adicionar Tarea</h4>
-        <button type="button" class="close" data-dismiss="modal" aria-label="Close">
-          <span aria-hidden="true">&times;</span>
-        </button>
-      </div>
 
-      <form id="form-create-task">
-        <div class="card-body">
-
-          <div class="row">
-            <div class="form-group col-sm-6">
-              <label for="wbs">WBS</label>
-              <input type="text" class="form-control" id="wbs" name="wbs" placeholder="WBS" required>
-            </div>
-            <div class="form-group col-sm-6">
-              <label for="task_code">Código</label>
-              <input type="text" class="form-control" id="task_code" name="task_code" placeholder="Código">
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="form-group col-sm-6">
-              <label for="task_name">Nombre de la tarea</label>
-              <input type="text" class="form-control" id="task_name" name="task_name" placeholder="Nombre">
-            </div>
-            <div class="form-group col-sm-6">
-              <label for="status_code">Estado</label>
-              <input type="text" class="form-control" id="status_code" name="status_code" placeholder="Estado">
-            </div>
-          </div>
-
-          <div class="form-group">
-            <label for="resources">Recursos</label>
-            <select class="form-control" id="resources" name="resources" multiple="multiple" style="width:100%" data-placeholder="Buscar o agregar recursos">
-            </select>
-            <small class="form-text text-muted">Escribe para buscar o agrega nuevos recursos separándolos con coma.</small>
-          </div>
-
-          <div class="row">
-            <div class="form-group col-sm-4">
-              <label for="target_drtn_hr_cnt">Duración objetivo (hrs)</label>
-              <input type="number" class="form-control" id="target_drtn_hr_cnt" name="target_drtn_hr_cnt">
-            </div>
-            <div class="form-group col-sm-4">
-              <label for="remain_drtn_hr_cnt">Horas restantes</label>
-              <input type="number" class="form-control" id="remain_drtn_hr_cnt" name="remain_drtn_hr_cnt">
-            </div>
-            <div class="form-group col-sm-4">
-              <label for="total_float_hr_cnt">Total float (hrs)</label>
-              <input type="number" class="form-control" id="total_float_hr_cnt" name="total_float_hr_cnt">
-            </div>
-          </div>
-
-          <div class="row">
-            <div class="form-group col-sm-6">
-              <label for="start_date">Fecha inicio</label>
-              <input type="datetime-local" class="form-control" id="start_date" name="start_date">
-            </div>
-            <div class="form-group col-sm-6">
-              <label for="end_date">Fecha fin</label>
-              <input type="datetime-local" class="form-control" id="end_date" name="end_date">
-            </div>
-          </div>
-
-          <!-- Hidden fields to show/manage actual start/end dates returned by API (act_start_date/act_end_date) -->
-          <input type="datetime-local" id="act_start_date" name="act_start_date" style="display:none" />
-          <input type="datetime-local" id="act_end_date" name="act_end_date" style="display:none" />
-
-          <div class="row">
-            <div class="form-group col-sm-6">
-              <label for="target_cost">Costo objetivo</label>
-              <input type="text" class="form-control" id="target_cost" name="target_cost">
-            </div>
-            <div class="form-group col-sm-6">
-              <label for="delete_record_flag">Eliminar registro</label>
-              <div class="form-check">
-                <input class="form-check-input" type="checkbox" value="true" id="delete_record_flag" name="delete_record_flag">
-                <label class="form-check-label" for="delete_record_flag">Marcar como eliminado</label>
-              </div>
-            </div>
-          </div>
-
-        </div>
-
-        <!-- /.card-body -->
-        <div class="modal-footer justify-content-between">
-          <button type="button" class="btn btn-default" data-dismiss="modal">Cerrar</button>
-          <button type="submit" class="btn btn-primary">Guardar</button>
-        </div>
-
-      </form>
-
-    </div>
-  </div>
-
-</div>
-
-<!-- /.modal-content -->
-</div>
 <!-- /.modal-dialog -->
 </div>
 <!-- /.modal -->
+
+<!-- Modal para asignar responsables y fecha de inicio -->
+<div class="modal fade" id="modal-assign-task" tabindex="-1" role="dialog" aria-labelledby="assignLabel" aria-hidden="true">
+  <div class="modal-dialog modal-sm">
+    <div class="modal-content">
+      <form id="form-assign-task">
+        <div class="modal-header">
+          <h5 class="modal-title" id="assignLabel">Asignar responsable / Iniciar</h5>
+          <button type="button" class="close" data-dismiss="modal" aria-label="Close">
+            <span aria-hidden="true">&times;</span>
+          </button>
+        </div>
+        <div class="modal-body">
+          <div class="form-group">
+            <label for="assign_roles">Roles</label>
+            <select id="assign_roles" class="form-control" multiple style="width:100%" data-placeholder="Selecciona roles"></select>
+          </div>
+          <div class="form-group">
+            <label for="assign_start_date">Fecha y hora inicio</label>
+            <input id="assign_start_date" type="datetime-local" class="form-control" />
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cerrar</button>
+          <button type="submit" class="btn btn-primary">Asignar e Iniciar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
 
 {% endblock %}
 {% block script %} <!-- DataTables & Plugins -->

@@ -4,195 +4,137 @@
 
 {% block head-extra %}
 <link rel="stylesheet" href="{% static 'assets/dist/css/adminlte.min.css' %}">
-<style>
-  /* Task row status colors */
-  .task-status-started td { background-color: #fff3cd !important; } /* orange-ish */
-  .task-status-completed td { background-color: #d4edda !important; } /* green-ish */
-  .task-status-notstarted td { background-color: #f8d7da !important; } /* red-ish */
-</style>
 {% endblock %}
 
 {% block content %}
-
-<!-- Content Wrapper. Contains page content -->
-    <!-- Content Wrapper. Contains page content -->
-    <div class="content-wrapper">
-      <!-- Content Header (Page header) -->
-      <div class="content-header">
-        <div class="container-fluid">
-          <div class="row mb-2">
-            <div class="col-sm-6">
-              <h1 class="m-0">Starter Page</h1>
-            </div><!-- /.col -->
-            <div class="col-sm-6">
-              <ol class="breadcrumb float-sm-right">
-                <li class="breadcrumb-item"><a href="#">Home</a></li>
-                <li class="breadcrumb-item active">Dashboard</li>
-              </ol>
-            </div><!-- /.col -->
-          </div><!-- /.row -->
-        </div><!-- /.container-fluid -->
-      </div>
-      <!-- /.content-header -->
-
-      <section class="content">
-        <div class="container-fluid">
-                  <div class="row">
-                    <!-- placeholder for future filters / controls -->
-                  </div>
-          <!-- /.row (main row) -->
-        </div><!-- /.container-fluid -->
-      </section>
-
-      <!-- Main content -->
-
-
-
-      <div class="content">
-        <div class="container-fluid">
-          <div class="row">
-            <div class="col-lg-12">
-              <div class="card">
-                <div class="card-header border-0 d-flex justify-content-between align-items-center">
-                  <h3 class="card-title">Resumen de Tareas</h3>
-                  <div>
-                    <button id="btn-refresh-dashboard" class="btn btn-sm btn-primary">Actualizar</button>
-                  </div>
-                </div>
-                <div class="card-body">
-                  <div class="row">
-                    <div class="col-sm-3 col-6">
-                      <div class="small-box bg-info">
-                        <div class="inner">
-                          <h3 id="total-tasks">0</h3>
-                          <p>Total Tareas</p>
-                        </div>
-                        <div class="icon"><i class="fas fa-tasks"></i></div>
-                      </div>
-                    </div>
-                    <div class="col-sm-3 col-6">
-                      <div class="small-box bg-danger">
-                        <div class="inner">
-                          <h3 id="notstarted-tasks">0</h3>
-                          <p>No Iniciadas</p>
-                        </div>
-                        <div class="icon"><i class="fas fa-hourglass-start"></i></div>
-                      </div>
-                    </div>
-                    <div class="col-sm-3 col-6">
-                      <div class="small-box bg-warning">
-                        <div class="inner">
-                          <h3 id="started-tasks">0</h3>
-                          <p>En Progreso</p>
-                        </div>
-                        <div class="icon"><i class="fas fa-play"></i></div>
-                      </div>
-                    </div>
-                    <div class="col-sm-3 col-6">
-                      <div class="small-box bg-success">
-                        <div class="inner">
-                          <h3 id="completed-tasks">0</h3>
-                          <p>Completadas</p>
-                        </div>
-                        <div class="icon"><i class="fas fa-check"></i></div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="row">
-                    <div class="col-lg-6">
-                      <div class="card">
-                        <div class="card-header">
-                          <h3 class="card-title">Distribución por estado</h3>
-                        </div>
-                        <div class="card-body">
-                          <canvas id="tasks-pie-chart" height="200"></canvas>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-lg-6">
-                      <div class="card">
-                        <div class="card-header">
-                          <h3 class="card-title">Tareas por código de estado</h3>
-                        </div>
-                        <div class="card-body">
-                          <canvas id="tasks-bar-chart" height="200"></canvas>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-
-                  <div class="row">
-                    <div class="col-lg-6">
-                      <div class="card">
-                        <div class="card-header">
-                          <h3 class="card-title">Próximas a vencer (7 días)</h3>
-                        </div>
-                        <div class="card-body table-responsive p-0">
-                          <table class="table table-sm" id="table-upcoming">
-                            <thead><tr><th>Tarea</th><th>Fin</th></tr></thead>
-                            <tbody></tbody>
-                          </table>
-                        </div>
-                      </div>
-                    </div>
-                    <div class="col-lg-6">
-                      <div class="card">
-                        <div class="card-header">
-                          <h3 class="card-title">Atrasadas</h3>
-                        </div>
-                        <div class="card-body table-responsive p-0">
-                          <table class="table table-sm" id="table-overdue">
-                            <thead><tr><th>Tarea</th><th>Fin</th></tr></thead>
-                            <tbody></tbody>
-                          </table>
-                        </div>
-                      </div>
-                    </div>
-                  </div>
-                </div>
-              </div>
-              <!-- /.card -->
-
-              <!-- Removed unrelated cards to keep dashboard focused -->
-            </div>
-            <!-- /.col-md-6 -->
-            <div class="col-lg-6">
-              <!-- Removed extra analytics cards -->
-            </div>
-            <!-- /.col-md-6 -->
-          </div>
-          <!-- /.row -->
+<div class="content-wrapper">
+  <!-- Content Header -->
+  <div class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1 class="m-0">{% trans "Resumen de Tareas" %}</h1>
         </div>
-        <!-- /.container-fluid -->
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="#">{% trans "Home" %}</a></li>
+            <li class="breadcrumb-item active">{% trans "Dashboard" %}</li>
+          </ol>
+        </div>
       </div>
-      <!-- /.content -->
-
-
-      <!-- /.content -->
     </div>
-    <!-- /.content-wrapper -->
+  </div>
 
+  <!-- Main content -->
+  <div class="content">
+    <div class="container-fluid">
+      <!-- KPI Cards -->
+      <div class="row mb-3">
+        <div class="col-lg-2 col-md-4 col-sm-6 col-12">
+          <div class="small-box bg-info">
+            <div class="inner">
+              <h3 id="total-tasks">0</h3>
+              <p>{% trans "Total" %}</p>
+            </div>
+            <div class="icon"><i class="fas fa-tasks"></i></div>
+          </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-6 col-12">
+          <div class="small-box bg-danger">
+            <div class="inner">
+              <h3 id="notstarted-tasks">0</h3>
+              <p>{% trans "No iniciadas" %}</p>
+            </div>
+            <div class="icon"><i class="fas fa-hourglass-start"></i></div>
+          </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-6 col-12">
+          <div class="small-box bg-warning">
+            <div class="inner">
+              <h3 id="inprogress-tasks">0</h3>
+              <p>{% trans "En progreso" %}</p>
+            </div>
+            <div class="icon"><i class="fas fa-play"></i></div>
+          </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-6 col-12">
+          <div class="small-box bg-success">
+            <div class="inner">
+              <h3 id="completed-tasks">0</h3>
+              <p>{% trans "Completadas" %}</p>
+            </div>
+            <div class="icon"><i class="fas fa-check"></i></div>
+          </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-6 col-12">
+          <div class="small-box bg-primary">
+            <div class="inner">
+              <h3 id="planned-tasks">0</h3>
+              <p>{% trans "Planificadas" %}</p>
+            </div>
+            <div class="icon"><i class="fas fa-calendar"></i></div>
+          </div>
+        </div>
+        <div class="col-lg-2 col-md-4 col-sm-6 col-12">
+          <div class="small-box bg-secondary">
+            <div class="inner">
+              <h3 id="hold-tasks">0</h3>
+              <p>{% trans "Backlog" %}</p>
+            </div>
+            <div class="icon"><i class="fas fa-pause"></i></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Charts -->
+      <div class="row mb-3">
+        <div class="col-lg-6">
+          <div class="card card-info">
+            <div class="card-header">
+              <h3 class="card-title">{% trans "Distribución de estados" %}</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                  <i class="fas fa-minus"></i>
+                </button>
+              </div>
+            </div>
+            <div class="card-body">
+              <canvas id="pie-chart" height="280"></canvas>
+            </div>
+          </div>
+        </div>
+        <div class="col-lg-6">
+          <div class="card card-primary">
+            <div class="card-header">
+              <h3 class="card-title">{% trans "Conteo por estado" %}</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                  <i class="fas fa-minus"></i>
+                </button>
+              </div>
+            </div>
+            <div class="card-body">
+              <canvas id="bar-chart" height="280"></canvas>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Refresh Button -->
+      <div class="row">
+        <div class="col-12 text-center">
+          <button id="btn-refresh-dashboard" class="btn btn-primary btn-lg">
+            <i class="fas fa-sync-alt mr-2"></i>{% trans "Actualizar" %}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
 {% endblock %}
 
 {% block script %}
-  <!-- Required libs for dashboard -->
-  <script src="{% static 'assets/dist/js/axios.min.js' %}"></script>
-  <script src="{% static 'assets/plugins/chart.js/Chart.bundle.js' %}"></script>
-  <script src="{% static 'assets/dist/js-mine/dashboard.js' %}"></script>
-  <script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
-  <script>
-
-    // Enable pusher logging - don't include this in production
-    Pusher.logToConsole = true;
-
-    var pusher = new Pusher('59baf49e30451232f715', {
-      cluster: 'mt1'
-    });
-
-    var channel = pusher.subscribe('my-channel');
-    channel.bind('my-event', function(data) {
-      alert(JSON.stringify(data));
-    });
-  </script>
+<script src="{% static 'assets/dist/js/axios.min.js' %}"></script>
+<script src="{% static 'assets/plugins/chart.js/Chart.bundle.js' %}"></script>
+<script src="{% static 'assets/dist/js-mine/dashboard.js' %}"></script>
 {% endblock %}

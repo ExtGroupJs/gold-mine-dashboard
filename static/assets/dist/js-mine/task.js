@@ -41,13 +41,6 @@ $(document).ready(function () {
   $("table").DataTable({
     dom: '<"top"l>Bfrtip',
     buttons: [
-      {
-        text: "Crear",
-        className: " btn btn-primary btn-info",
-        action: function () {
-          $("#modal-crear-task").modal("show");
-        },
-      },
       { extend: "colvis", text: "Columnas" },
       { extend: "excel", text: "Excel" },
       { extend: "pdf", text: "PDF" },
@@ -104,10 +97,10 @@ $(document).ready(function () {
         });
     },
     columns: [
-      { data: "wbs", title: "WBS" },
-      { data: "task_code", title: "Código" },
+      // { data: "wbs", title: "WBS" },
+      // { data: "task_code", title: "Código" },
       { data: "task_name", title: "Tarea" },
-      { data: "status_code", title: "Estado" },
+      // { data: "status_code", title: "Estado" },
       {
         data: "resources",
         title: "Recursos",
@@ -128,16 +121,16 @@ $(document).ready(function () {
           const hasStart = !!row.act_start_date;
           const hasEnd = !!row.act_end_date;
           let actionButtons = `<div class="btn-group" role="group">`;
-          // Edit
-          actionButtons += `<button type="button" title="edit" class="btn bg-olive active btn-edit" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-edit"></i></button>`;
-          // Start / Stop buttons logic
+           // Start / Stop buttons logic
           if (!hasStart) {
             actionButtons += `<button type="button" title="iniciar" class="btn btn-warning btn-start" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-play"></i></button>`;
           } else if (hasStart && !hasEnd) {
             actionButtons += `<button type="button" title="terminar" class="btn btn-success btn-stop" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-stop"></i></button>`;
           }
           // Delete
-          actionButtons += `<button type="button" title="delete" class="btn bg-olive btn-delete" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-trash"></i></button>`;
+          // Assign (nuevo)
+          actionButtons += `<button type="button" title="asignar" class="btn btn-info btn-assign" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-user-plus"></i></button>`;
+          // Delete
           actionButtons += `</div>`;
           return actionButtons;
         },
@@ -182,15 +175,13 @@ $(document).ready(function () {
     });
   });
 
-  // Delegate edit/delete button clicks
-  $("table").on("click", ".btn-edit", function () {
-    const id = $(this).data("id");
-    openEditModal(id);
-  });
-  $("table").on("click", ".btn-delete", function () {
+
+
+  // Assign button -> open assign modal
+  $("table").on("click", ".btn-assign", function () {
     const id = $(this).data("id");
     const name = $(this).data("name");
-    function_delete(id, name);
+    openAssignModal(id, name);
   });
   // Start / Stop handlers
   $("table").on("click", ".btn-start", function () {
@@ -251,207 +242,65 @@ $(document).ready(function () {
 
 let selected_id = null;
 let isEditing = false;
+let selected_assign_id = null;
 
-// Modal show/hide handlers
-$("#modal-crear-task").on("hide.bs.modal", (event) => {
-  const form = event.currentTarget.querySelector("form");
-  form.reset();
-  isEditing = false;
-  selected_id = null;
-  const elements = [...form.elements];
-  elements.forEach((elem) => elem.classList.remove("is-invalid"));
-  $("#modal-crear-task .modal-title").text("Crear Tarea");
-  // reset select2 resources if present
-  if ($.fn.select2) {
-    $("#resources").val(null).trigger("change");
+
+
+
+
+// Open Assign modal and init select2 for roles
+function openAssignModal(id, name) {
+  selected_assign_id = id;
+  // clear previous values
+  $('#assign_roles').val(null).trigger('change');
+  $('#assign_start_date').val('');
+  // initialize select2 for roles if not already
+  if ($.fn.select2 && $('#assign_roles').data('select2') === undefined) {
+    $('#assign_roles').select2({
+      placeholder: $('#assign_roles').data('placeholder') || 'Selecciona roles',
+      ajax: {
+        url: '/business-gestion/roles/',
+        dataType: 'json',
+        delay: 250,
+        data: function (params) { return { search: params.term }; },
+        processResults: function (data) {
+          const items = (Array.isArray(data.results) ? data.results : (Array.isArray(data) ? data : [])).map(function (it) {
+            if (typeof it === 'object') return { id: it.id, text: it.name || it.label || it.id };
+            return { id: it, text: it };
+          });
+          return { results: items };
+        }
+      },
+      width: '100%'
+    });
   }
-});
+  // show modal
+  $('#modal-assign-task .modal-title').text('Asignar: ' + (name || ''));
+  $('#modal-assign-task').modal('show');
+}
 
-function openEditModal(id) {
-  selected_id = id;
-  isEditing = true;
-  $("#modal-crear-task .modal-title").text("Editar tarea");
-  axios
-    .get(API_URL + id + "/")
+// Handle assign form submit
+$('#form-assign-task').on('submit', function (e) {
+  e.preventDefault();
+  if (!selected_assign_id) return showError('Selecciona una tarea');
+  const selectedRoles = $('#assign_roles').val() || [];
+  const startVal = $('#assign_start_date').val();
+  const payload = {};
+  if (startVal) {
+    try { payload.act_start_date = new Date(startVal).toISOString(); } catch (err) { /* ignore */ }
+  }
+  // convert to integers where possible
+  payload.internal_responsibles = selectedRoles.map((v) => { const n = Number(v); return Number.isNaN(n) ? v : n; });
+
+  axios.patch(API_URL + selected_assign_id + '/', payload)
     .then((res) => {
-      const t = res.data;
-      const form = document.getElementById("form-create-task");
-      form.elements.wbs.value = t.wbs || "";
-      form.elements.task_code.value = t.task_code || "";
-      form.elements.task_name.value = t.task_name || "";
-      form.elements.status_code.value = t.status_code || "";
-      // populate select2 resources if present, otherwise fallback to comma string
-      if ($.fn.select2) {
-        const $res = $("#resources");
-        $res.val(null).trigger("change");
-        if (Array.isArray(t.resources)) {
-          t.resources.forEach(function (r) {
-            const value = typeof r === 'object' ? (r.name || r.id) : r;
-            if ($res.find("option[value='" + value + "']").length === 0) {
-              const newOption = new Option(value, value, true, true);
-              $res.append(newOption).trigger('change');
-            } else {
-              $res.find("option[value='" + value + "']").prop('selected', true);
-            }
-          });
-          $res.trigger('change');
-        }
-      } else {
-        form.elements.resources.value = Array.isArray(t.resources) ? t.resources.join(", ") : t.resources || "";
-      }
-      form.elements.target_drtn_hr_cnt.value = t.target_drtn_hr_cnt ?? "";
-      form.elements.remain_drtn_hr_cnt.value = t.remain_drtn_hr_cnt ?? "";
-      form.elements.total_float_hr_cnt.value = t.total_float_hr_cnt ?? "";
-      form.elements.target_cost.value = t.target_cost ?? "";
-      // convert to input datetime-local format yyyy-MM-ddTHH:mm for planned dates
-      if (t.start_date) form.elements.start_date.value = new Date(t.start_date).toISOString().slice(0, 16);
-      if (t.end_date) form.elements.end_date.value = new Date(t.end_date).toISOString().slice(0, 16);
-      // set hidden actual dates (act_start_date/act_end_date) if present
-      const actStartInput = document.getElementById('act_start_date');
-      const actEndInput = document.getElementById('act_end_date');
-      if (actStartInput) {
-        actStartInput.value = t.act_start_date ? new Date(t.act_start_date).toISOString().slice(0, 16) : '';
-      }
-      if (actEndInput) {
-        actEndInput.value = t.act_end_date ? new Date(t.act_end_date).toISOString().slice(0, 16) : '';
-      }
-      form.elements.delete_record_flag.checked = !!t.delete_record_flag;
-      $("#modal-crear-task").modal("show");
+      showSuccess('Asignado e iniciado');
+      $('#modal-assign-task').modal('hide');
+      // reload table
+      try { $('#tabla-de-Datos').DataTable().ajax.reload(null, false); } catch (err) { }
     })
-    .catch((err) => showError("Error al cargar tarea", err.message || ""));
-}
-
-// Validation
-$(function () {
-  $.validator.setDefaults({ language: "es" });
-  $("#form-create-task").validate({
-    rules: { wbs: { required: true }, task_name: { required: true } },
-    errorElement: "span",
-    errorPlacement: function (error, element) {
-      error.addClass("invalid-feedback");
-      element.closest(".form-group").append(error);
-    },
-    highlight: function (element) { $(element).addClass("is-invalid"); },
-    unhighlight: function (element) { $(element).removeClass("is-invalid"); },
-  });
+    .catch((err) => {
+      showError('Error asignando', err.response?.data?.detail || err.message || '');
+    });
 });
 
-// Initialize Select2 for resources with AJAX and tags
-function initResourcesSelect2() {
-  if (!$.fn.select2) return;
-  $("#resources").select2({
-    tags: true,
-    tokenSeparators: [","],
-    placeholder: $("#resources").data('placeholder') || 'Buscar o agregar recursos',
-    ajax: {
-      url: '/business-gestion/resources/',
-      dataType: 'json',
-      delay: 250,
-      data: function (params) {
-        return { search: params.term };
-      },
-      processResults: function (data) {
-        let items = [];
-        if (Array.isArray(data.results)) {
-          items = data.results.map(function (it) {
-            if (typeof it === 'string') return { id: it, text: it };
-            return { id: it.name || it.id, text: it.name || it.id };
-          });
-        } else if (Array.isArray(data)) {
-          items = data.map(function (it) { return { id: it, text: it }; });
-        }
-        return { results: items };
-      },
-      error: function () {
-        // ignore errors; tags mode still allows free entries
-      }
-    },
-    width: '100%'
-  });
-}
-
-// Run Select2 init after DOM ready
-$(function () { initResourcesSelect2(); });
-
-// Submit handler
-document.getElementById("form-create-task").addEventListener("submit", function (event) {
-  event.preventDefault();
-  if (!$(this).valid()) return;
-  const table = $("#tabla-de-Datos").DataTable();
-  const form = event.currentTarget;
-
-  const payload = {
-    wbs: form.elements.wbs.value || "",
-    task_code: form.elements.task_code.value || "",
-    task_name: form.elements.task_name.value || "",
-    status_code: form.elements.status_code.value || "",
-    resources: ($.fn.select2 ? ($('#resources').val() || []) : (form.elements.resources.value ? form.elements.resources.value.split(",").map((s) => s.trim()).filter(Boolean) : [])),
-    target_drtn_hr_cnt: form.elements.target_drtn_hr_cnt.value ? Number(form.elements.target_drtn_hr_cnt.value) : null,
-    remain_drtn_hr_cnt: form.elements.remain_drtn_hr_cnt.value ? Number(form.elements.remain_drtn_hr_cnt.value) : null,
-    total_float_hr_cnt: form.elements.total_float_hr_cnt.value ? Number(form.elements.total_float_hr_cnt.value) : null,
-    target_cost: form.elements.target_cost.value || "",
-    start_date: form.elements.start_date.value ? new Date(form.elements.start_date.value).toISOString() : null,
-    end_date: form.elements.end_date.value ? new Date(form.elements.end_date.value).toISOString() : null,
-    delete_record_flag: !!form.elements.delete_record_flag.checked,
-  };
-
-  if (isEditing && selected_id) {
-    axios
-      .patch(API_URL + selected_id + "/", payload)
-      .then((response) => {
-        showSuccess("Tarea actualizada");
-        $("#modal-crear-task").modal("hide");
-        table.ajax.reload(null, false);
-        isEditing = false;
-        selected_id = null;
-      })
-      .catch((error) => {
-        const dict = error.response?.data || {};
-        let textError = "Revise los siguientes campos: ";
-        for (const key in dict) textError += ", " + key;
-        showError("Error al actualizar tarea", textError);
-      });
-  } else {
-    axios
-      .post(API_URL, payload)
-      .then((response) => {
-        showSuccess("Tarea creada con éxito");
-        $("#modal-crear-task").modal("hide");
-        table.ajax.reload(null, false);
-      })
-      .catch((error) => {
-        const dict = error.response?.data || {};
-        let textError = "Revise los siguientes campos: ";
-        for (const key in dict) textError += ", " + key;
-        showError("Error al crear tarea", textError);
-      });
-  }
-});
-
-function function_delete(id, name) {
-  const table = $("#tabla-de-Datos").DataTable();
-  Swal.fire({
-    title: "Eliminar",
-    text: `Esta seguro que desea eliminar la tarea ${name}?`,
-    icon: "warning",
-    showCancelButton: true,
-    confirmButtonColor: "#3085d6",
-    cancelButtonColor: "#d33",
-    confirmButtonText: "Si, Eliminar",
-  }).then((result) => {
-    if (result.isConfirmed) {
-      axios
-        .delete(API_URL + id + "/")
-        .then((response) => {
-          if (response.status === 204) {
-            // reload table
-            table.ajax.reload(null, false);
-            showSuccess("Eliminar Tarea", "Tarea eliminada satisfactoriamente");
-          }
-        })
-        .catch((error) => {
-          showError("Error eliminando tarea", error.response?.data?.detail || error.message || "");
-        });
-    }
-  });
-}

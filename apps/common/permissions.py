@@ -10,7 +10,6 @@ COMMON_ROLES = [
     Groups.SUPER_ADMIN.value,
     Groups.SUPERVISOR.value,
     Groups.PLANNER.value,
-    Groups.OPERATOR.value,
 ]
 
 
