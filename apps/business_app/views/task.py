@@ -50,5 +50,4 @@ class TaskViewSet(viewsets.ModelViewSet, GenericAPIView):
                 internal_status=status
             ).count()
         resp["total"] = Task.objects.all().count()
-        resp[""]
         return Response(resp)

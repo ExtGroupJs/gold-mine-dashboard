@@ -313,7 +313,7 @@ else:
 CACHES = {"default": cache_backend}
 
 
-PUSHER_APP_ID = env.str("PUSHER_APP_ID", default=2095866)  # Example ID TODO: change it
+PUSHER_APP_ID = env.str("PUSHER_APP_ID", default="2095866")  # Example ID TODO: change it
 PUSHER_KEY = env.str(
     "PUSHER_KEY", default="59baf49e30451232f715"
 )  # Example key TODO: change it
