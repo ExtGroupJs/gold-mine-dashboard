@@ -97,21 +97,22 @@ $(document).ready(function () {
         });
     },
     columns: [
-      // { data: "wbs", title: "WBS" },
-      // { data: "task_code", title: "Código" },
+      // { data: "id", title: "ID" , visible: false},
+      { data: "wbs", title: "WBS" },
+      { data: "task_code", title: "Código" },
       { data: "task_name", title: "Tarea" },
       // { data: "status_code", title: "Estado" },
-      {
-        data: "resources",
-        title: "Recursos",
-        render: (data) => (Array.isArray(data) ? data.join(", ") : data || ""),
-      },
-      { data: "start_date", title: "Inicio", render: (d) => formatDateTime(d) },
+      // { data: "internal_status", title: "Estado interno" },
+      // { data: "internal_percent_complete", title: "% Interno" },
+      { data: "complete_pct", title: "% Completo" },
+      // { data: "internal_planned_date", title: "Fecha planificada", render: (d) => formatDateTime(d) },
+      { data: "resources", title: "Recursos", render: (data) => (Array.isArray(data) ? data.join(", ") : data || "") },
+      // { data: "internal_responsibles", title: "Responsables internos", render: (data) => (Array.isArray(data) ? data.join(", ") : (data || "")) },
+      // { data: "start_date", title: "Inicio", render: (d) => formatDateTime(d) },
       { data: "end_date", title: "Fin", render: (d) => formatDateTime(d) },
-      { data: "target_drtn_hr_cnt", title: "Duración (hrs)" },
-      { data: "remain_drtn_hr_cnt", title: "Horas restantes" },
-      { data: "target_cost", title: "Costo" },
-      { data: "total_float_hr_cnt", title: "Total float" },
+      { data: "act_start_date", title: "Inicio real", render: (d) => formatDateTime(d) },
+      { data: "act_end_date", title: "Fin real", render: (d) => formatDateTime(d) },
+      // { data: "delete_record_flag", title: "Eliminado", render: (d) => (d ? 'Sí' : 'No') },
       {
         data: "",
         title: "Acciones",
@@ -255,18 +256,19 @@ function openAssignModal(id, name) {
   $('#assign_roles').val(null).trigger('change');
   $('#assign_start_date').val('');
   // initialize select2 for roles if not already
-  if ($.fn.select2 && $('#assign_roles').data('select2') === undefined) {
+  if ($.fn.select2 && !$('#assign_roles').hasClass('select2-hidden-accessible')) {
     $('#assign_roles').select2({
-      placeholder: $('#assign_roles').data('placeholder') || 'Selecciona roles',
+      placeholder: $('#assign_roles').data('placeholder') || 'Selecciona rol',
       ajax: {
-        url: '/business-gestion/roles/',
+        url: '/user-gestion/roles/roles-for-tasks/',
         dataType: 'json',
         delay: 250,
         data: function (params) { return { search: params.term }; },
         processResults: function (data) {
-          const items = (Array.isArray(data.results) ? data.results : (Array.isArray(data) ? data : [])).map(function (it) {
-            if (typeof it === 'object') return { id: it.id, text: it.name || it.label || it.id };
-            return { id: it, text: it };
+          // API returns objects with {id, name, user_set}
+          const list = Array.isArray(data.results) ? data.results : (Array.isArray(data) ? data : []);
+          const items = list.map(function (it) {
+            return { id: it.id, text: it.name || String(it.id) };
           });
           return { results: items };
         }
@@ -274,6 +276,29 @@ function openAssignModal(id, name) {
       width: '100%'
     });
   }
+
+  // Load current internal_responsibles and act_start_date for the task to prefill modal
+  axios.get(API_URL + id + '/')
+    .then((res) => {
+      const t = res.data || {};
+      const current = Array.isArray(t.internal_responsibles) ? t.internal_responsibles : [];
+      // ensure options exist for current ids so select2 can show them
+      // pick first responsible if any (single-select)
+      if (current.length > 0) {
+        const val = current[0];
+        if ($('#assign_roles').find("option[value='" + val + "']").length === 0) {
+          const opt = new Option(String(val), String(val), true, true);
+          $('#assign_roles').append(opt);
+        }
+        $('#assign_roles').val(String(val)).trigger('change');
+      }
+      if (t.act_start_date) {
+        try { $('#assign_start_date').val(new Date(t.act_start_date).toISOString().slice(0,16)); } catch (e) { }
+      }
+    })
+    .catch(() => {
+      // ignore errors filling defaults
+    });
   // show modal
   $('#modal-assign-task .modal-title').text('Asignar: ' + (name || ''));
   $('#modal-assign-task').modal('show');
@@ -283,14 +308,19 @@ function openAssignModal(id, name) {
 $('#form-assign-task').on('submit', function (e) {
   e.preventDefault();
   if (!selected_assign_id) return showError('Selecciona una tarea');
-  const selectedRoles = $('#assign_roles').val() || [];
+  const selectedRole = $('#assign_roles').val() || null;
   const startVal = $('#assign_start_date').val();
   const payload = {};
   if (startVal) {
     try { payload.act_start_date = new Date(startVal).toISOString(); } catch (err) { /* ignore */ }
   }
-  // convert to integers where possible
-  payload.internal_responsibles = selectedRoles.map((v) => { const n = Number(v); return Number.isNaN(n) ? v : n; });
+  // internal_responsibles expects an array of ids; use single selected role
+  if (selectedRole) {
+    const n = Number(selectedRole);
+    payload.internal_responsibles = [ Number.isNaN(n) ? selectedRole : n ];
+  } else {
+    payload.internal_responsibles = [];
+  }
 
   axios.patch(API_URL + selected_assign_id + '/', payload)
     .then((res) => {
