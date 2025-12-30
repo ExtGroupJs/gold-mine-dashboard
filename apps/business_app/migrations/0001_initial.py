@@ -13,122 +13,321 @@ def add_excel_to_allowed_extensions(apps, schema_editor):
         extension=".xls", typical_app_name="Excel file (old format)"
     )
 
-class Migration(migrations.Migration):
 
+class Migration(migrations.Migration):
     initial = True
 
     dependencies = [
-        ('auth', '0012_alter_user_first_name_max_length'),
-        ('users_app', '0002_create_default_admin_user'),
+        ("auth", "0012_alter_user_first_name_max_length"),
+        ("users_app", "0002_create_default_admin_user"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='AllowedExtensions',
+            name="AllowedExtensions",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('extension', models.CharField(max_length=5, verbose_name='file extension')),
-                ('typical_app_name', models.CharField(max_length=150, verbose_name='Application')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "extension",
+                    models.CharField(max_length=5, verbose_name="file extension"),
+                ),
+                (
+                    "typical_app_name",
+                    models.CharField(max_length=150, verbose_name="Application"),
+                ),
             ],
             options={
-                'verbose_name': 'Allowed extension',
-                'verbose_name_plural': 'allowed Extensions',
+                "verbose_name": "Allowed extension",
+                "verbose_name_plural": "allowed Extensions",
             },
         ),
         migrations.CreateModel(
-            name='Resource',
+            name="Resource",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100)),
-                ('resource_type', models.CharField(max_length=50)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100)),
+                ("resource_type", models.CharField(max_length=50)),
             ],
             options={
-                'verbose_name': 'Resource',
-                'verbose_name_plural': 'Resources',
+                "verbose_name": "Resource",
+                "verbose_name_plural": "Resources",
             },
         ),
         migrations.CreateModel(
-            name='WBS',
+            name="WBS",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('wbs_id', models.CharField(max_length=100, unique=True)),
-                ('wbs_name', models.CharField(max_length=250, unique=True)),
-                ('description', models.TextField(blank=True, null=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("wbs_id", models.CharField(max_length=100, unique=True)),
+                ("wbs_name", models.CharField(max_length=250, unique=True)),
+                ("description", models.TextField(blank=True, null=True)),
             ],
             options={
-                'verbose_name': 'Work Breakdown Structure (WBS)',
-                'verbose_name_plural': 'Work Breakdown Structures (WBSs)',
+                "verbose_name": "Work Breakdown Structure (WBS)",
+                "verbose_name_plural": "Work Breakdown Structures (WBSs)",
             },
         ),
         migrations.CreateModel(
-            name='PrimaveraImportFile',
+            name="PrimaveraImportFile",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('file', models.FileField(upload_to='primavera_imports/', validators=[apps.business_app.models.primavera_import_file.FileExtensionValidator()])),
-                ('created_at', models.DateTimeField(auto_now_add=True)),
-                ('extra_info', models.TextField(blank=True, null=True)),
-                ('system_user', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='uploaded_files', to='users_app.systemuser')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "file",
+                    models.FileField(
+                        upload_to="primavera_imports/",
+                        validators=[
+                            apps.business_app.models.primavera_import_file.FileExtensionValidator()
+                        ],
+                    ),
+                ),
+                ("created_at", models.DateTimeField(auto_now_add=True)),
+                ("extra_info", models.TextField(blank=True, null=True)),
+                (
+                    "system_user",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="uploaded_files",
+                        to="users_app.systemuser",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Primavera imported File',
-                'verbose_name_plural': 'Primavera imported Files',
+                "verbose_name": "Primavera imported File",
+                "verbose_name_plural": "Primavera imported Files",
             },
         ),
         migrations.CreateModel(
-            name='Task',
+            name="Task",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('internal_status', models.CharField(blank=True, choices=[('P', 'Planned'), ('H', 'Hold'), ('I', 'In progress'), ('C', 'Completed'), ('N', 'Not started')], max_length=1, null=True, verbose_name='internal status')),
-                ('internal_percent_complete', models.IntegerField(default=0, validators=[django.core.validators.MinValueValidator(0), django.core.validators.MaxValueValidator(100)], verbose_name='percent complete')),
-                ('internal_planned_date', models.DateTimeField(blank=True, null=True, verbose_name='Planned Date')),
-                ('task_code', models.CharField(max_length=50, unique=True, verbose_name='Activity ID')),
-                ('status_code', models.CharField(max_length=50, verbose_name='Activity Status')),
-                ('task_name', models.TextField(verbose_name='Activity Name')),
-                ('start_date', models.DateTimeField(blank=True, null=True, verbose_name='(*)Start')),
-                ('end_date', models.DateTimeField(blank=True, null=True, verbose_name='(*)Finish')),
-                ('act_start_date', models.DateTimeField(blank=True, null=True, verbose_name='Actual Start')),
-                ('act_end_date', models.DateTimeField(blank=True, null=True, verbose_name='Actual Finish')),
-                ('delete_record_flag', models.BooleanField(default=False, verbose_name='Delete This Row')),
-                ('complete_pct', models.IntegerField(default=0, validators=[django.core.validators.MinValueValidator(0), django.core.validators.MaxValueValidator(100)], verbose_name='percent complete')),
-                ('internal_responsibles', models.ManyToManyField(blank=True, to='auth.group', verbose_name='Responsible Roles(s)')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "internal_status",
+                    models.CharField(
+                        blank=True,
+                        choices=[
+                            ("P", "Planned"),
+                            ("H", "Hold"),
+                            ("I", "In progress"),
+                            ("C", "Completed"),
+                            ("N", "Not started"),
+                        ],
+                        max_length=1,
+                        null=True,
+                        verbose_name="internal status",
+                    ),
+                ),
+                (
+                    "internal_percent_complete",
+                    models.IntegerField(
+                        default=0,
+                        validators=[
+                            django.core.validators.MinValueValidator(0),
+                            django.core.validators.MaxValueValidator(100),
+                        ],
+                        verbose_name="percent complete",
+                    ),
+                ),
+                (
+                    "internal_planned_date",
+                    models.DateTimeField(
+                        blank=True, null=True, verbose_name="Planned Date"
+                    ),
+                ),
+                (
+                    "task_code",
+                    models.CharField(
+                        max_length=50, unique=True, verbose_name="Activity ID"
+                    ),
+                ),
+                (
+                    "status_code",
+                    models.CharField(max_length=50, verbose_name="Activity Status"),
+                ),
+                ("task_name", models.TextField(verbose_name="Activity Name")),
+                (
+                    "start_date",
+                    models.DateTimeField(
+                        blank=True, null=True, verbose_name="(*)Start"
+                    ),
+                ),
+                (
+                    "end_date",
+                    models.DateTimeField(
+                        blank=True, null=True, verbose_name="(*)Finish"
+                    ),
+                ),
+                (
+                    "act_start_date",
+                    models.DateTimeField(
+                        blank=True, null=True, verbose_name="Actual Start"
+                    ),
+                ),
+                (
+                    "act_end_date",
+                    models.DateTimeField(
+                        blank=True, null=True, verbose_name="Actual Finish"
+                    ),
+                ),
+                (
+                    "delete_record_flag",
+                    models.BooleanField(default=False, verbose_name="Delete This Row"),
+                ),
+                (
+                    "complete_pct",
+                    models.IntegerField(
+                        default=0,
+                        validators=[
+                            django.core.validators.MinValueValidator(0),
+                            django.core.validators.MaxValueValidator(100),
+                        ],
+                        verbose_name="percent complete",
+                    ),
+                ),
+                (
+                    "internal_responsibles",
+                    models.ManyToManyField(
+                        blank=True, to="auth.group", verbose_name="Responsible Roles(s)"
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Task',
-                'verbose_name_plural': 'Tasks',
+                "verbose_name": "Task",
+                "verbose_name_plural": "Tasks",
             },
             bases=(apps.common.mixins.generic_log.GenericLogMixin, models.Model),
         ),
         migrations.CreateModel(
-            name='Alert',
+            name="Alert",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('kind', models.CharField(choices=[('I', 'information'), ('W', 'warning'), ('C', 'critical')], default='W', max_length=1, verbose_name='Alert type')),
-                ('short_description', models.CharField(max_length=100, verbose_name='Short Description')),
-                ('description', models.TextField(blank=True, null=True, verbose_name='Description')),
-                ('task', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, related_name='alerts', to='business_app.task', verbose_name='Task')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "kind",
+                    models.CharField(
+                        choices=[
+                            ("I", "information"),
+                            ("W", "warning"),
+                            ("C", "critical"),
+                        ],
+                        default="W",
+                        max_length=1,
+                        verbose_name="Alert type",
+                    ),
+                ),
+                (
+                    "short_description",
+                    models.CharField(max_length=100, verbose_name="Short Description"),
+                ),
+                (
+                    "description",
+                    models.TextField(blank=True, null=True, verbose_name="Description"),
+                ),
+                (
+                    "task",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        related_name="alerts",
+                        to="business_app.task",
+                        verbose_name="Task",
+                    ),
+                ),
             ],
         ),
         migrations.CreateModel(
-            name='TaskResource',
+            name="TaskResource",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('resource', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='business_app.resource')),
-                ('task', models.ForeignKey(on_delete=django.db.models.deletion.CASCADE, to='business_app.task')),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                (
+                    "resource",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="business_app.resource",
+                    ),
+                ),
+                (
+                    "task",
+                    models.ForeignKey(
+                        on_delete=django.db.models.deletion.CASCADE,
+                        to="business_app.task",
+                    ),
+                ),
             ],
             options={
-                'verbose_name': 'Task Resource',
-                'verbose_name_plural': 'Task Resources',
+                "verbose_name": "Task Resource",
+                "verbose_name_plural": "Task Resources",
             },
         ),
         migrations.AddField(
-            model_name='task',
-            name='resources',
-            field=models.ManyToManyField(through='business_app.TaskResource', to='business_app.resource', verbose_name='(*)Resources'),
+            model_name="task",
+            name="resources",
+            field=models.ManyToManyField(
+                through="business_app.TaskResource",
+                to="business_app.resource",
+                verbose_name="(*)Resources",
+            ),
         ),
         migrations.AddField(
-            model_name='task',
-            name='wbs',
-            field=models.ForeignKey(on_delete=django.db.models.deletion.DO_NOTHING, to='business_app.wbs', verbose_name='WBS Code'),
+            model_name="task",
+            name="wbs",
+            field=models.ForeignKey(
+                on_delete=django.db.models.deletion.DO_NOTHING,
+                to="business_app.wbs",
+                verbose_name="WBS Code",
+            ),
         ),
         migrations.RunPython(
             add_excel_to_allowed_extensions, migrations.RunPython.noop

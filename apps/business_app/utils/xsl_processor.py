@@ -65,7 +65,9 @@ class XslProcessor:
             try:
                 wbs, _ = WBS.objects.get_or_create(
                     wbs_id=row[ExcelNomenclators.sheet_task_column_wbs_id],
-                    defaults={"wbs_name": row[ExcelNomenclators.sheet_task_column_wbs_name]}
+                    defaults={
+                        "wbs_name": row[ExcelNomenclators.sheet_task_column_wbs_name]
+                    },
                 )
                 resources_names = (
                     []

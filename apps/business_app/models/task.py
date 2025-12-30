@@ -11,7 +11,6 @@ from django.core.validators import (
 from django.contrib.auth.models import Group
 
 
-
 class Task(GenericLogMixin, models.Model):
     ### INTERNAL FIELDS
 
