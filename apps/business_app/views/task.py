@@ -12,6 +12,7 @@ from rest_framework.decorators import action
 from ..models.task import Task
 from ..serializers.task import TaskSerializer
 from apps.common.mixins.common_view_mixin import CommonOrderingFilter
+from apps.users_app.models.groups import Groups
 
 
 # Create your views here.
@@ -36,6 +37,19 @@ class TaskViewSet(viewsets.ModelViewSet, GenericAPIView):
         filters.SearchFilter,
         CommonOrderingFilter,
     ]
+
+    def get_queryset(self):
+        queryset = super().get_queryset()
+        request_user = self.request.user if not self.request.user.is_anonymous else None
+        if request_user and (
+            request_user.groups.filter(id=Groups.PLANNER.value).exists()
+            or request_user.is_superuser
+        ):
+            return queryset
+        else:
+            return queryset.filter(
+                internal_responsibles__in=request_user.groups.all()
+            ).all()
 
     @extend_schema(
         request=None,

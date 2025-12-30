@@ -4,6 +4,7 @@ from termcolor import colored
 
 from apps.users_app.models.groups import Groups
 from django.contrib.auth.models import User
+from apps.users_app.models.system_user import SystemUser
 
 
 class Command(BaseCommand):
@@ -32,6 +33,57 @@ class Command(BaseCommand):
         print(
             colored(
                 "Promoted default admin user as SUPER_ADMIN",
+                "blue",
+                attrs=["blink"],
+            )
+        )
+        planner_user, _ = SystemUser.objects.get_or_create(
+            username="planner_user",
+            defaults={  
+            "email": "",
+            "password":"password",
+            "first_name": "Planner",
+            "last_name": "User",
+            },
+        )
+        planner_user.groups.add(Groups.PLANNER)
+        print(
+            colored(
+                "Created planner_user with PLANNER role",
+                "blue",
+                attrs=["blink"],
+            )
+        )
+        suspervior_a, _ = SystemUser.objects.get_or_create(
+            username="supervisor_a",
+            defaults={  
+            "email": "",
+            "password":"password",
+            "first_name": "Supervisor A",
+            "last_name": "User",
+            },
+        )
+        suspervior_a.groups.add(Groups.SUPERVISOR_AREA_A)
+        print(
+            colored(
+                "Created supervisor_a with SUPERVISOR_AREA_A role",
+                "blue",
+                attrs=["blink"],
+            )
+        )
+        suspervior_b, _ = SystemUser.objects.get_or_create(
+            username="supervisor_b",
+            defaults={  
+            "email": "",
+            "password":"password",
+            "first_name": "Supervisor B",
+            "last_name": "User",
+            },
+        )
+        suspervior_b.groups.add(Groups.SUPERVISOR_AREA_B)
+        print(
+            colored(
+                "Created supervisor_b with SUPERVISOR_AREA_B role",
                 "blue",
                 attrs=["blink"],
             )
