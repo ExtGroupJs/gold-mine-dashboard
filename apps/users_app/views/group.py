@@ -8,7 +8,7 @@ from rest_framework import filters
 from rest_framework.generics import GenericAPIView
 
 
-from apps.users_app.serializers import GroupSerializer
+from apps.users_app.serializers.group import GroupSerializer
 
 logger = logging.getLogger(__name__)
 

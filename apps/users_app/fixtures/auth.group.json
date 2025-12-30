@@ -32,7 +32,7 @@
     "model": "auth.group",
     "pk": 2,
     "fields": {
-      "name": "Editor",
+      "name": "Planner",
       "permissions": []
     }
   },
@@ -40,7 +40,15 @@
     "model": "auth.group",
     "pk": 3,
     "fields": {
-      "name": "Lector",
+      "name": "Dashboard Client",
+      "permissions": []
+    }
+  },
+  {
+    "model": "auth.group",
+    "pk": 11,
+    "fields": {
+      "name": "Supervisor",
       "permissions": []
     }
   }
