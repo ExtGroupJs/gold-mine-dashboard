@@ -13,6 +13,7 @@ from ..models.task import Task
 from ..serializers.task import TaskSerializer
 from apps.common.mixins.common_view_mixin import CommonOrderingFilter
 from apps.users_app.models.groups import Groups
+from ..utils.task_counters import get_task_counters
 
 
 # Create your views here.
@@ -58,10 +59,4 @@ class TaskViewSet(viewsets.ModelViewSet, GenericAPIView):
     )
     @action(detail=False, methods=["GET"])
     def counters(self, pk=None):
-        resp = {}
-        for status in Task.INTERNAL_STATUS:  # status es un miembro del enum
-            resp[str(status.label)] = Task.objects.filter(
-                internal_status=status
-            ).count()
-        resp["total"] = Task.objects.all().count()
-        return Response(resp)
+        return Response(get_task_counters())
