@@ -18,17 +18,14 @@ class XslProcessor:
 
         mandatory_task_columns_for_validation = (
             ExcelNomenclators.sheet_task_column_delete_record_flag,
-            ExcelNomenclators.sheet_task_column_total_float_hr_cnt,
-            ExcelNomenclators.sheet_task_column_target_cost,
             ExcelNomenclators.sheet_task_column_resource_list,
             ExcelNomenclators.sheet_task_column_end_date,
             ExcelNomenclators.sheet_task_column_start_date,
             ExcelNomenclators.sheet_task_column_act_start_date,
             ExcelNomenclators.sheet_task_column_act_end_date,
-            ExcelNomenclators.sheet_task_column_remain_drtn_hr_cnt,
-            ExcelNomenclators.sheet_task_column_target_drtn_hr_cnt,
             ExcelNomenclators.sheet_task_column_task_name,
             ExcelNomenclators.sheet_task_column_wbs_id,
+            ExcelNomenclators.sheet_task_column_wbs_name,
             ExcelNomenclators.sheet_task_column_status_code,
             ExcelNomenclators.sheet_task_column_task_code,
         )
@@ -68,7 +65,7 @@ class XslProcessor:
             try:
                 wbs, _ = WBS.objects.get_or_create(
                     wbs_id=row[ExcelNomenclators.sheet_task_column_wbs_id],
-                    defaults={"wbs_name": row[ExcelNomenclators.sheet_task_column_wbs_id]}
+                    defaults={"wbs_name": row[ExcelNomenclators.sheet_task_column_wbs_name]}
                 )
                 resources_names = (
                     []
