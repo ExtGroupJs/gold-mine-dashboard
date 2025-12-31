@@ -28,5 +28,26 @@ class AlertSerializer(serializers.ModelSerializer):
             else:
                 self.instance.task.internal_status = Task.INTERNAL_STATUS.IN_PROGRESS
             self.instance.task.save(update_fields=["internal_status"])        
-        return self.instance
+        return super().save(**kwargs)
+    def update_task_internal_status(self, alert):
+        task = alert.task
+        if alert.alert_type == Alert.KIND.CRITICAL:
+            task.internal_status = Task.INTERNAL_STATUS.HOLD
+        else:
+            if Task.objects.filter(id=task.id, alert__alert_type=Alert.KIND.CRITICAL).exists():
+                task.internal_status = Task.INTERNAL_STATUS.HOLD
+            else:
+                task.internal_status = Task.INTERNAL_STATUS.IN_PROGRESS
+        task.save(update_fields=["internal_status"])
+
+    def create(self, validated_data):
+        instance = super().create(validated_data)
+        self.update_task_internal_status(instance)
+        return instance
+
+    def update(self, instance, validated_data):
+        instance = super().update(instance, validated_data)
+        self.update_task_internal_status(instance)
+        return instance
+
 
