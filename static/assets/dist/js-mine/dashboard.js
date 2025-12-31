@@ -116,11 +116,10 @@ document.addEventListener('DOMContentLoaded', function() {
     renderCounters(data);
   }); 
   var alert_channel = pusher.subscribe('alert-channel');
+    alert_channel.bind('deleted-alert-event', function(data) {
+    Swal.fire({ icon: "info", title: `Alerta ELIMINADA en tarea ${data.task}`, text: `${data.alert_description}, LEVEL: ${data.level}`, showConfirmButton: true, timer: 10000 });
+  });
   alert_channel.bind('new-alert-event', function(data) {
     Swal.fire({ icon: "warning", title: `Alerta CREADA en tarea ${data.task}`, text: `${data.alert_description}, LEVEL: ${data.level}`, showConfirmButton: true, timer: 10000 });
   }); 
-
-  alert_channel.bind('deleted-alert-event', function(data) {
-    Swal.fire({ icon: "info", title: `Alerta ELIMINADA en tarea ${data.task}`, text: `${data.alert_description}, LEVEL: ${data.level}`, showConfirmButton: true, timer: 10000 });
-  });
 });
