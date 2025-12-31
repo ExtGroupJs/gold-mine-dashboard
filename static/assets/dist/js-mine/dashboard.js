@@ -150,21 +150,55 @@ document.addEventListener('DOMContentLoaded', function() {
   if (btn) btn.addEventListener('click', () => renderDashboard());
   renderDashboard();
   
-  var pusher = new Pusher(pusherKey, {
-    cluster: pusherCluster
-  });
+  // Configuración de Pusher
+  if (typeof pusherKey !== 'undefined' && typeof pusherCluster !== 'undefined') {
+      var pusher = new Pusher(pusherKey, {
+        cluster: pusherCluster
+      });
 
-  var dashboard_channel = pusher.subscribe('dashboard-channel');
-  dashboard_channel.bind('update-event', function(data) {
-    renderCounters(data);
-  }); 
-  
-  var alert_channel = pusher.subscribe('alert-channel');
-  alert_channel.bind('deleted-alert-event', function(data) {
-    Swal.fire({ icon: "info", title: `Alerta ELIMINADA en tarea ${data.task}`, text: `${data.alert_description}, LEVEL: ${data.level}`, showConfirmButton: true, timer: 10000 });
-  });
-  
-  alert_channel.bind('new-alert-event', function(data) {
-    Swal.fire({ icon: "warning", title: `Alerta CREADA en tarea ${data.task}`, text: `${data.alert_description}, LEVEL: ${data.level}`, showConfirmButton: true, timer: 10000 });
-  }); 
+      var dashboard_channel = pusher.subscribe('dashboard-channel');
+      dashboard_channel.bind('update-event', function(data) {
+        renderCounters(data);
+      }); 
+      
+      var alert_channel = pusher.subscribe('alert-channel');
+      
+      // --- Configuración de Toast (No intrusivo) ---
+      const Toast = Swal.mixin({
+        toast: true,
+        position: 'top-end', // Esquina superior derecha
+        showConfirmButton: false,
+        timer: 5000,         // Se cierra solo en 5 segundos
+        timerProgressBar: true,
+        didOpen: (toast) => {
+          toast.addEventListener('mouseenter', Swal.stopTimer)
+          toast.addEventListener('mouseleave', Swal.resumeTimer)
+        }
+      });
+
+      alert_channel.bind('deleted-alert-event', function(data) {
+        // Validamos que existan los datos para evitar errores
+        if(data && data.task) {
+            Toast.fire({ 
+              icon: "info", 
+              title: `Alerta ELIMINADA`, 
+              text: `${data.alert_description}`
+            });
+        }
+      });
+
+      alert_channel.bind('new-alert-event', function(data) {
+
+         // Validamos que existan los datos
+        if(data && data.task) {
+            Toast.fire({ 
+              icon: "warning", 
+              title: `¡Nueva Alerta!`, 
+              text: `${data.alert_description}` 
+            });
+        }
+      });
+  } else {
+      console.warn("Pusher keys no definidas. Las alertas en tiempo real no funcionarán.");
+  }
 });
