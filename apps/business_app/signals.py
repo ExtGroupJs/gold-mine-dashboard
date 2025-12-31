@@ -20,7 +20,7 @@ def remove_from_inventory(sender, instance, **kwargs):
     pusher_client = PusherClient()
     print("Enviando pusher")
     pusher_client.trigger(
-        "dashboard-channel", "update-event", {"data": get_task_counters()}
+        "dashboard-channel", "update-event",  get_task_counters()
     )
     print("pusher enviado")
 
