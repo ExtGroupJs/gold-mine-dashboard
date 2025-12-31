@@ -111,15 +111,16 @@ document.addEventListener('DOMContentLoaded', function() {
     cluster: pusherCluster
   });
 
-  var channel = pusher.subscribe('dashboard-channel');
-  channel.bind('update-event', function(data) {
+  var dashboard_channel = pusher.subscribe('dashboard-channel');
+  dashboard_channel.bind('update-event', function(data) {
     renderCounters(data);
-  });  
-  channel.bind('new-alert-event', function(data) {
+  }); 
+  var alert_channel = pusher.subscribe('alert-channel');
+  alert_channel.bind('new-alert-event', function(data) {
     Swal.fire({ icon: "warning", title: `Alerta CREADA en tarea ${data.task}`, text: `${data.alert_description}, LEVEL: ${data.level}`, showConfirmButton: true, timer: 10000 });
   }); 
-  
-  channel.bind('deleted-alert-event', function(data) {
+
+  alert_channel.bind('deleted-alert-event', function(data) {
     Swal.fire({ icon: "info", title: `Alerta ELIMINADA en tarea ${data.task}`, text: `${data.alert_description}, LEVEL: ${data.level}`, showConfirmButton: true, timer: 10000 });
   });
 });

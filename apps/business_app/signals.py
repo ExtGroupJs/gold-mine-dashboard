@@ -26,7 +26,7 @@ def update_dashboard(sender, instance, **kwargs):
 def notify_created_alert(sender, instance, **kwargs):
     pusher_client = PusherClient()
     pusher_client.trigger(
-        "dashboard-channel",
+        "alert-channel",
         "new-alert-event",
         {
             "task": instance.task.task_name,
@@ -39,7 +39,7 @@ def notify_created_alert(sender, instance, **kwargs):
 def notify_deleted_alert(sender, instance, **kwargs):
     pusher_client = PusherClient()
     pusher_client.trigger(
-        "dashboard-channel",
+        "alert-channel",
         "deleted-alert-event",
         {
             "task": instance.task.task_name,
