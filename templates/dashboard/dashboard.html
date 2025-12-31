@@ -136,5 +136,14 @@
 {% block script %}
 <script src="{% static 'assets/dist/js/axios.min.js' %}"></script>
 <script src="{% static 'assets/plugins/chart.js/Chart.bundle.js' %}"></script>
+<script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
+<script>
+    // Accede a las variables directamente desde el template
+    const pusherKey = "{{ pusher_key }}";
+    const pusherCluster = "{{ pusher_cluster }}";
+    const appId = "{{ app_id }}";
+    const pusherSecret = "{{ pusher_secret }}";
+</script>
 <script src="{% static 'assets/dist/js-mine/dashboard.js' %}"></script>
+
 {% endblock %}
