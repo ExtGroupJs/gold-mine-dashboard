@@ -12,8 +12,6 @@ def index(request):
         {
             "pusher_key": settings.PUSHER_KEY,
             "pusher_cluster": settings.PUSHER_CLUSTER,
-            "app_id": settings.PUSHER_APP_ID,
-            "pusher_secret": settings.PUSHER_SECRET,
         },
     )
 
