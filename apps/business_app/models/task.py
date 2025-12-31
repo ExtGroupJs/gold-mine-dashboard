@@ -17,6 +17,7 @@ class Task(GenericLogMixin, models.Model):
     class INTERNAL_STATUS(models.TextChoices):
         PLANNED = "P", _("Planned")  # ESTE ES ADICIONAL INTERNO
         HOLD = "H", _("Hold")  # ESTE ES ADICIONAL INTERNO
+        BACKLOG = "B", _("Backlog")  # ESTE ES ADICIONAL INTERNO
 
         IN_PROGRESS = (  # ESTE ESTÁ TAMBIÉN EN EL PRIMAVERA
             "I",

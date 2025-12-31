@@ -4,7 +4,16 @@ from django.shortcuts import render
 
 
 def index(request):
-    return render(request, "dashboard/dashboard.html")
+    from django.conf import settings
+
+    return render(
+        request,
+        "dashboard/dashboard.html",
+        {
+            "pusher_key": settings.PUSHER_KEY,
+            "pusher_cluster": settings.PUSHER_CLUSTER,
+        },
+    )
 
 
 def usuarios(request):

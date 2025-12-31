@@ -92,6 +92,7 @@ function renderBarChart(canvasId, labels, data) {
   });
 }
 
+
 // Render dashboard
 function renderDashboard() {
   fetchCounters()
@@ -106,4 +107,12 @@ document.addEventListener('DOMContentLoaded', function() {
   const btn = document.getElementById('btn-refresh-dashboard');
   if (btn) btn.addEventListener('click', () => renderDashboard());
   renderDashboard();
+  var pusher = new Pusher(pusherKey, {
+    cluster: pusherCluster
+  });
+
+  var channel = pusher.subscribe('dashboard-channel');
+  channel.bind('update-event', function(data) {
+    renderCounters(data);
+  });
 });
