@@ -29,19 +29,6 @@ function formatDateTime(iso) {
   }
 }
 
-function getStatusIcon(statusCode) {
-  const statusMap = {
-    'N': { icon: 'fa-circle', color: '#6c757d', label: 'Not started' },           // Gris
-    'C': { icon: 'fa-check-circle', color: '#28a745', label: 'Completed' },        // Verde
-    'I': { icon: 'fa-circle-notch', color: '#007bff', label: 'In progress' },      // Azul
-    'H': { icon: 'fa-pause-circle', color: '#ffc107', label: 'Hold' },             // Amarillo
-    'P': { icon: 'fa-hourglass-start', color: '#17a2b8', label: 'Planned' }        // Cian
-  };
-  
-  const status = statusMap[statusCode] || statusMap['N'];
-  return `<i class="fas ${status.icon}" style="color: ${status.color};" title="${status.label}"></i>`;
-}
-
 // Initialize helpers on DOM ready
 $(function () {
   bsCustomFileInput.init();
@@ -111,20 +98,21 @@ $(document).ready(function () {
     },
     columns: [
       // { data: "id", title: "ID" , visible: false},
-       // { data: "internal_percent_complete", title: "% Interno" },
-       // { data: "internal_planned_date", title: "Fecha planificada", render: (d) => formatDateTime(d) },
-        // { data: "delete_record_flag", title: "Eliminado", render: (d) => (d ? 'Sí' : 'No') },
-
       { data: "wbs", title: "WBS" },
       { data: "task_code", title: "Código" },
       { data: "task_name", title: "Tarea" },
-      { data: "internal_status", title: "Estado", render: (data) => getStatusIcon(data) },     
+      // { data: "status_code", title: "Estado" },
+      // { data: "internal_status", title: "Estado interno" },
+      // { data: "internal_percent_complete", title: "% Interno" },
       { data: "complete_pct", title: "% Completo" },
+      // { data: "internal_planned_date", title: "Fecha planificada", render: (d) => formatDateTime(d) },
       { data: "resources", title: "Recursos", render: (data) => (Array.isArray(data) ? data.join(", ") : data || "") },
-      { data: "internal_responsibles", title: "Responsables internos", render: (data) => (Array.isArray(data) ? data.join(", ") : (data || "")) },
-      { data: "end_date", title: "Fin", render: (d) => formatDateTime(d) },      
+      // { data: "internal_responsibles", title: "Responsables internos", render: (data) => (Array.isArray(data) ? data.join(", ") : (data || "")) },
+      // { data: "start_date", title: "Inicio", render: (d) => formatDateTime(d) },
+      { data: "end_date", title: "Fin", render: (d) => formatDateTime(d) },
+      { data: "internal_planned_date", title: "Inicio real", render: (d) => formatDateTime(d) },
       { data: "act_end_date", title: "Fin real", render: (d) => formatDateTime(d) },
-      { data: "internal_planned_date", title: "Inicio real", render: (d) => formatDateTime(d) },     
+      // { data: "delete_record_flag", title: "Eliminado", render: (d) => (d ? 'Sí' : 'No') },
       {
         data: "",
         title: "Acciones",
@@ -133,11 +121,17 @@ $(document).ready(function () {
           // use actual dates returned by API to decide which actions to show
           const hasStart = !!row.internal_planned_date;
           const hasEnd = !!row.act_end_date;
-          const hasInternal_status = row.internal_status;
-          let actionButtons = `<div class="btn-group" role="group">`;               
-          if(hasInternal_status=='N'){
-          actionButtons += `<button type="button" title="asignar" class="btn btn-info btn-assign" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-user-plus"></i></button>`;
+          let actionButtons = `<div class="btn-group" role="group">`;
+           // Start / Stop buttons logic
+          if (!hasStart) {
+            actionButtons += `<button type="button" title="iniciar" class="btn btn-warning btn-start" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-play"></i></button>`;
+          } else if (hasStart && !hasEnd) {
+            actionButtons += `<button type="button" title="terminar" class="btn btn-success btn-stop" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-stop"></i></button>`;
           }
+          // Delete
+          // Assign (nuevo)
+          actionButtons += `<button type="button" title="asignar" class="btn btn-info btn-assign" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-user-plus"></i></button>`;
+          // Delete
           actionButtons += `</div>`;
           return actionButtons;
         },
@@ -190,7 +184,52 @@ $(document).ready(function () {
     const name = $(this).data("name");
     openAssignModal(id, name);
   });
+  // Start / Stop handlers
+  $("table").on("click", ".btn-start", function () {
+    const id = $(this).data("id");
+    const $btn = $(this);
+    const $row = $(this).closest('tr');
+    const rowApi = table.row($row);
+    const rowData = rowApi.data() || {};
+    $btn.prop('disabled', true);
+    const now = new Date().toISOString();
+    // set actual start date field on the backend
+    axios.patch(API_URL + id + '/', { internal_planned_date: now })
+      .then(() => {
+        showSuccess('Tarea iniciada');
+        // update row data locally and redraw table minimally
+        rowData.internal_planned_date = now;
+        rowApi.data(rowData);
+        table.draw(false);
+      })
+      .catch((err) => {
+        showError('Error iniciando tarea', err.message || '');
+      })
+      .finally(() => $btn.prop('disabled', false));
+  });
 
+  $("table").on("click", ".btn-stop", function () {
+    const id = $(this).data("id");
+    const $btn = $(this);
+    const $row = $(this).closest('tr');
+    const rowApi = table.row($row);
+    const rowData = rowApi.data() || {};
+    $btn.prop('disabled', true);
+    const now = new Date().toISOString();
+    // set actual end date field on the backend
+    axios.patch(API_URL + id + '/', { act_end_date: now })
+      .then(() => {
+        showSuccess('Tarea terminada');
+        // update row data locally and redraw table minimally
+        rowData.act_end_date = now;
+        rowApi.data(rowData);
+        table.draw(false);
+      })
+      .catch((err) => {
+        showError('Error terminando tarea', err.message || '');
+      })
+      .finally(() => $btn.prop('disabled', false));
+  });
 
   // Filters buttons
   $("#btn-filter-dates").on('click', function () {
@@ -202,8 +241,12 @@ $(document).ready(function () {
   });
 });
 
-// Assign Modal Logic
+let selected_id = null;
+let isEditing = false;
 let selected_assign_id = null;
+
+
+
 
 
 function openAssignModal(id, name) {
