@@ -1,9 +1,12 @@
-from django.db.models.signals import post_save, pre_delete
+from django.db.models.signals import post_save
 from django.dispatch import receiver
 from .models.task import Task
 from .models.alert import Alert
 from .utils.pusher_client import PusherClient
 from .utils.task_counters import get_task_counters
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 # def update_inventory(inc_pos_dec_neg, instance):
@@ -14,39 +17,28 @@ from .utils.task_counters import get_task_counters
 #     if related_product:
 #         related_product.quantity += inc_pos_dec_neg * instance.quantity
 #         related_product.save(update_fields=["quantity"])
+def send_update_dashboard():
+    pusher_client = PusherClient()
+    data = get_task_counters()
+    pusher_client.trigger("dashboard-channel", "update-event", data)
 
 
 @receiver(post_save, sender=Task)
 def update_dashboard(sender, instance, **kwargs):
-    pusher_client = PusherClient()
-    pusher_client.trigger("dashboard-channel", "update-event", get_task_counters())
+    send_update_dashboard()
 
 
 @receiver(post_save, sender=Alert)
 def notify_created_alert(sender, instance, **kwargs):
     pusher_client = PusherClient()
-    pusher_client.trigger(
-        "alert-channel",
-        "new-alert-event",
-        {
-            "task": instance.task.task_name,
-            "alert_description": instance.short_description,
-            "level": f"{instance.KIND(instance.kind).label}",
-        },
-    )
-
-@receiver(pre_delete, sender=Alert)
-def notify_deleted_alert(sender, instance, **kwargs):
-    pusher_client = PusherClient()
-    pusher_client.trigger(
-        "alert-channel",
-        "deleted-alert-event",
-        {
-            "task": instance.task.task_name,
-            "alert_description": instance.short_description,
-            "level": f"{instance.KIND(instance.kind).label}",
-        },
-    )
+    payload = {
+        "task": instance.task.task_name,
+        "alert_description": instance.short_description,
+        "level": f"{instance.KIND(instance.kind).label}",
+    }
+    event = "new-alert-event" if not instance.deleted else "deleted-alert-event"
+    pusher_client.trigger("alert-channel", event, payload)
+    send_update_dashboard()
 
 
 # @receiver(post_delete, sender=Sell)

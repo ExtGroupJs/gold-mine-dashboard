@@ -1,5 +1,4 @@
 from django.shortcuts import redirect, render
-from django.contrib.auth.decorators import user_passes_test
 
 from apps.users_app.models.groups import Groups
 
@@ -57,6 +56,7 @@ def shop_products(request):
 def task(request):
     return render(request, "task/task.html")
 
+
 def taskSupervisor(request):
     return render(request, "task/taskSupervisor.html")
 
@@ -64,12 +64,13 @@ def taskSupervisor(request):
 def dashboard(request):
     return render(request, "dashboard/dashboard.html")
 
+
 def user_redirect(request):
     # Definimos la lista de los 3 grupos que pueden ver el dashboard
     allowed_groups = [
         Groups.DASHBOARD_CLIENT.value,
         Groups.PLANNER.value,
-        Groups.SUPER_ADMIN.value
+        Groups.SUPER_ADMIN.value,
     ]
 
     # Verificamos si el usuario pertenece a ALGUNO de los grupos de la lista
