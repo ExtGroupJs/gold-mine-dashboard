@@ -7,6 +7,5 @@ class BusinessAppConfig(AppConfig):
     name = "apps.business_app"
     verbose_name = _("Business Specific Application")
 
-    
     def ready(self):
         import apps.business_app.signals  # noqa: F401

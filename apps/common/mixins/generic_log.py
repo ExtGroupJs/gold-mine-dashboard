@@ -48,7 +48,9 @@ class GenericLogMixin:
                     if hasattr(old_value, "_meta") or isinstance(old_value, str):
                         old_value = old_value.__str__()
 
-                    if hasattr(incoming_value, "_meta") or isinstance(incoming_value, str):
+                    if hasattr(incoming_value, "_meta") or isinstance(
+                        incoming_value, str
+                    ):
                         new_value = incoming_value.__str__()
 
                     details[field] = {
