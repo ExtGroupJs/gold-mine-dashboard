@@ -148,7 +148,7 @@
             localStorage.setItem("avatar", res.data.photo);
             localStorage.setItem("id", res.data.id);
             localStorage.setItem("internal_status", res.data.internal_status);
-             window.location = "{% url 'index' %}";
+             window.location = "{% url 'redireccionar' %}";
           
             load.hidden = true;
           }

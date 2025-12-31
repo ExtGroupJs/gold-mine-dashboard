@@ -57,6 +57,7 @@ urlpatterns = [
     path("shops/", pages.shops, name="shops"),
     path("products/", pages.products, name="products"),
     path("shop_products/", pages.shop_products, name="shop_products"),
+    path("redireccionar/", login_required(pages.user_redirect), name="redireccionar"),
     # paginas para la mina
     path("task/", pages.task, name="task"),
     path("taskSupervisor/", pages.taskSupervisor, name="taskSupervisor"),

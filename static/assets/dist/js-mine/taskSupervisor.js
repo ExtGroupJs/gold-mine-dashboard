@@ -87,7 +87,7 @@ $(document).ready(function () {
   $("table").addClass("table table-hover");
 
   $("table").DataTable({
-    responsive: true,
+    scrollX: true,
     dom: '<"top"l>Bfrtip',
     buttons: [
       { extend: "colvis", text: "Columnas" },

@@ -17,7 +17,6 @@ function fetchCounters() {
 
 // Render counters on dashboard
 function renderCounters(countersData) {
-  // countersData expected shape: { task_info: {...}, alert_info: {...} }
   const taskInfo = (countersData && countersData.task_info) || {};
   const alertInfo = (countersData && countersData.alert_info) || {};
 
@@ -47,13 +46,14 @@ function renderCounters(countersData) {
   renderPieChart('pie-chart', pieLabels, pieData);
   renderBarChart('bar-chart', barLabels, barData);
 
-  // Alert charts (pie + bar) with severity colors
-  // show total in KPI but exclude it from the charts (total is aggregate)
+  // Alert charts (pie + bar)
   const alertTotal = alertInfo && (alertInfo.total || alertInfo['total']) ? (alertInfo.total || alertInfo['total']) : 0;
   updateElement('alerts-total', alertTotal || 0);
+  
   const rawAlertKeys = Object.keys(alertInfo || {});
   const alertLabels = rawAlertKeys.filter(k => k.toLowerCase() !== 'total');
   const alertData = alertLabels.map(k => alertInfo[k] || 0);
+  
   const severityColorMap = {
     'critical': '#dc3545',
     'warning': '#ffc107',
@@ -62,17 +62,28 @@ function renderCounters(countersData) {
   };
   const defaultAlertColor = '#6c757d';
   const alertColors = alertLabels.map(l => severityColorMap[l.toLowerCase()] || defaultAlertColor);
+  
   renderPieChart('alert-pie-chart', alertLabels, alertData, alertColors);
   renderBarChart('alert-bar-chart', alertLabels, alertData, alertColors);
 }
 
-let lastPieChart = null;
+// --- CORRECCIÓN AQUÍ ---
+// Usamos un objeto para guardar múltiples instancias de gráficos
+const chartInstances = {}; 
+
 function renderPieChart(canvasId, labels, data, colors = null) {
   const ctx = document.getElementById(canvasId);
   if (!ctx || !window.Chart) return;
-  if (lastPieChart) lastPieChart.destroy();
+
+  // Si ya existe un gráfico con ESTE ID específico, lo destruimos
+  if (chartInstances[canvasId]) {
+    chartInstances[canvasId].destroy();
+  }
+
   const background = colors && Array.isArray(colors) && colors.length ? colors : ['#dc3545', '#ffc107', '#28a745'];
-  lastPieChart = new Chart(ctx, {
+  
+  // Guardamos la nueva instancia usando el ID del canvas como clave
+  chartInstances[canvasId] = new Chart(ctx, {
     type: 'pie',
     data: {
       labels,
@@ -87,15 +98,21 @@ function renderPieChart(canvasId, labels, data, colors = null) {
   });
 }
 
-let lastBarChart = null;
 function renderBarChart(canvasId, labels, data, colors = null) {
   const ctx = document.getElementById(canvasId);
   if (!ctx || !window.Chart) return;
-  if (lastBarChart) lastBarChart.destroy();
+
+  // Si ya existe un gráfico con ESTE ID específico, lo destruimos
+  if (chartInstances[canvasId]) {
+    chartInstances[canvasId].destroy();
+  }
+
   const useArrayColors = colors && Array.isArray(colors) && colors.length;
   const background = useArrayColors ? colors : '#007bff';
   const border = useArrayColors ? colors.map(() => '#000') : '#0056b3';
-  lastBarChart = new Chart(ctx, {
+  
+  // Guardamos la nueva instancia usando el ID del canvas como clave
+  chartInstances[canvasId] = new Chart(ctx, {
     type: 'bar',
     data: {
       labels,
@@ -111,7 +128,7 @@ function renderBarChart(canvasId, labels, data, colors = null) {
       responsive: true,
       maintainAspectRatio: false,
       scales: {
-        yAxes: [{ ticks: { beginAtZero: true } }]
+        yAxes: [{ ticks: { beginAtZero: true } }] // Nota: Esto es sintaxis de Chart.js v2. Si usas v3+, esto podría fallar.
       }
     }
   });
@@ -132,6 +149,7 @@ document.addEventListener('DOMContentLoaded', function() {
   const btn = document.getElementById('btn-refresh-dashboard');
   if (btn) btn.addEventListener('click', () => renderDashboard());
   renderDashboard();
+  
   var pusher = new Pusher(pusherKey, {
     cluster: pusherCluster
   });
@@ -140,10 +158,12 @@ document.addEventListener('DOMContentLoaded', function() {
   dashboard_channel.bind('update-event', function(data) {
     renderCounters(data);
   }); 
+  
   var alert_channel = pusher.subscribe('alert-channel');
-    alert_channel.bind('deleted-alert-event', function(data) {
+  alert_channel.bind('deleted-alert-event', function(data) {
     Swal.fire({ icon: "info", title: `Alerta ELIMINADA en tarea ${data.task}`, text: `${data.alert_description}, LEVEL: ${data.level}`, showConfirmButton: true, timer: 10000 });
   });
+  
   alert_channel.bind('new-alert-event', function(data) {
     Swal.fire({ icon: "warning", title: `Alerta CREADA en tarea ${data.task}`, text: `${data.alert_description}, LEVEL: ${data.level}`, showConfirmButton: true, timer: 10000 });
   }); 

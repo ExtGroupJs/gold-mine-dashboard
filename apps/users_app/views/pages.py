@@ -1,4 +1,7 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
+from django.contrib.auth.decorators import user_passes_test
+
+from apps.users_app.models.groups import Groups
 
 # Create your views here.
 
@@ -60,3 +63,17 @@ def taskSupervisor(request):
 
 def dashboard(request):
     return render(request, "dashboard/dashboard.html")
+
+def user_redirect(request):
+    # Definimos la lista de los 3 grupos que pueden ver el dashboard
+    allowed_groups = [
+        Groups.DASHBOARD_CLIENT.value,
+        Groups.PLANNER.value,
+        Groups.SUPER_ADMIN.value
+    ]
+
+    # Verificamos si el usuario pertenece a ALGUNO de los grupos de la lista
+    if request.user.groups.filter(id__in=allowed_groups).exists():
+        return redirect("dashboard")
+    else:
+        return redirect("taskSupervisor")
