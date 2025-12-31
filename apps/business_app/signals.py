@@ -4,6 +4,9 @@ from .models.task import Task
 from .models.alert import Alert
 from .utils.pusher_client import PusherClient
 from .utils.task_counters import get_task_counters
+import logging
+
+logger = logging.getLogger(__name__)
 
 
 # def update_inventory(inc_pos_dec_neg, instance):
@@ -19,34 +22,32 @@ from .utils.task_counters import get_task_counters
 @receiver(post_save, sender=Task)
 def update_dashboard(sender, instance, **kwargs):
     pusher_client = PusherClient()
-    pusher_client.trigger("dashboard-channel", "update-event", get_task_counters())
+    data = get_task_counters()
+    logger.debug('Triggering dashboard update-event with data: %s', data)
+    pusher_client.trigger("dashboard-channel", "update-event", data)
 
 
 @receiver(post_save, sender=Alert)
 def notify_created_alert(sender, instance, **kwargs):
     pusher_client = PusherClient()
-    pusher_client.trigger(
-        "alert-channel",
-        "new-alert-event",
-        {
-            "task": instance.task.task_name,
-            "alert_description": instance.short_description,
-            "level": f"{instance.KIND(instance.kind).label}",
-        },
-    )
+    payload = {
+        "task": instance.task.task_name,
+        "alert_description": instance.short_description,
+        "level": f"{instance.KIND(instance.kind).label}",
+    }
+    logger.debug('Triggering new-alert-event with payload: %s', payload)
+    pusher_client.trigger("alert-channel", "new-alert-event", payload)
 
 @receiver(pre_delete, sender=Alert)
 def notify_deleted_alert(sender, instance, **kwargs):
     pusher_client = PusherClient()
-    pusher_client.trigger(
-        "alert-channel",
-        "deleted-alert-event",
-        {
-            "task": instance.task.task_name,
-            "alert_description": instance.short_description,
-            "level": f"{instance.KIND(instance.kind).label}",
-        },
-    )
+    payload = {
+        "task": instance.task.task_name,
+        "alert_description": instance.short_description,
+        "level": f"{instance.KIND(instance.kind).label}",
+    }
+    logger.debug('Triggering deleted-alert-event with payload: %s', payload)
+    pusher_client.trigger("alert-channel", "deleted-alert-event", payload)
 
 
 # @receiver(post_delete, sender=Sell)
