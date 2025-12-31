@@ -116,6 +116,10 @@ document.addEventListener('DOMContentLoaded', function() {
     renderCounters(data);
   });  
   channel.bind('new-alert-event', function(data) {
-    Swal.fire({ icon: "info", title: `Alerta en tarea ${data.task}`, text: `${data.alert_description}, LEVEL: ${data.level}`, showConfirmButton: true, timer: 10000 });
+    Swal.fire({ icon: "warning", title: `Alerta CREADA en tarea ${data.task}`, text: `${data.alert_description}, LEVEL: ${data.level}`, showConfirmButton: true, timer: 10000 });
+  }); 
+  
+  channel.bind('deleted-alert-event', function(data) {
+    Swal.fire({ icon: "info", title: `Alerta ELIMINADA en tarea ${data.task}`, text: `${data.alert_description}, LEVEL: ${data.level}`, showConfirmButton: true, timer: 10000 });
   });
 });

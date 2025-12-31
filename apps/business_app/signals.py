@@ -1,4 +1,4 @@
-from django.db.models.signals import post_save
+from django.db.models.signals import post_save, pre_delete
 from django.dispatch import receiver
 from .models.task import Task
 from .models.alert import Alert
@@ -23,11 +23,24 @@ def update_dashboard(sender, instance, **kwargs):
 
 
 @receiver(post_save, sender=Alert)
-def notify_alert(sender, instance, **kwargs):
+def notify_created_alert(sender, instance, **kwargs):
     pusher_client = PusherClient()
     pusher_client.trigger(
         "dashboard-channel",
         "new-alert-event",
+        {
+            "task": instance.task.task_name,
+            "alert_description": instance.short_description,
+            "level": f"{instance.KIND(instance.kind).label}",
+        },
+    )
+
+@receiver(pre_delete, sender=Alert)
+def notify_deleted_alert(sender, instance, **kwargs):
+    pusher_client = PusherClient()
+    pusher_client.trigger(
+        "dashboard-channel",
+        "deleted-alert-event",
         {
             "task": instance.task.task_name,
             "alert_description": instance.short_description,
