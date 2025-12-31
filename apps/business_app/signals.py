@@ -19,9 +19,7 @@ from .utils.task_counters import get_task_counters
 def remove_from_inventory(sender, instance, **kwargs):
     pusher_client = PusherClient()
     print("Enviando pusher")
-    pusher_client.trigger(
-        "dashboard-channel", "update-event",  get_task_counters()
-    )
+    pusher_client.trigger("dashboard-channel", "update-event", get_task_counters())
     print("pusher enviado")
 
 

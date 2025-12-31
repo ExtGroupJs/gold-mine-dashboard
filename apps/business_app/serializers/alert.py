@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from ..models.alert import Alert
+from ..models.task import Task
 
 
 class AlertSerializer(serializers.ModelSerializer):
@@ -11,13 +12,12 @@ class AlertSerializer(serializers.ModelSerializer):
             "id",
             "task",
             "task_name",
-            "alert_type",
-            "alert_message",
-            "created_at",
-            "updated_at",
+            "kind",
+            "short_description",
+            "description",
         ]
         read_only_fields = ["created_at", "updated_at"]
-    
+
     def save(self, **kwargs):
         validated_data = {**self.validated_data, **kwargs}
         if not self.instance:
@@ -27,14 +27,19 @@ class AlertSerializer(serializers.ModelSerializer):
                 self.instance.task.internal_status = Task.INTERNAL_STATUS.HOLD
             else:
                 self.instance.task.internal_status = Task.INTERNAL_STATUS.IN_PROGRESS
-            self.instance.task.save(update_fields=["internal_status"])        
+            self.instance.task.save(update_fields=["internal_status"])
         return super().save(**kwargs)
+
     def update_task_internal_status(self, alert):
         task = alert.task
-        if alert.alert_type == Alert.KIND.CRITICAL:
+        if task.internal_status == Task.INTERNAL_STATUS.COMPLETED:
+            return
+        if alert.kind == Alert.KIND.CRITICAL:
             task.internal_status = Task.INTERNAL_STATUS.HOLD
         else:
-            if Task.objects.filter(id=task.id, alert__alert_type=Alert.KIND.CRITICAL).exists():
+            if Task.objects.filter(
+                id=task.id, alert__kind=Alert.KIND.CRITICAL
+            ).exists():
                 task.internal_status = Task.INTERNAL_STATUS.HOLD
             else:
                 task.internal_status = Task.INTERNAL_STATUS.IN_PROGRESS
@@ -49,5 +54,3 @@ class AlertSerializer(serializers.ModelSerializer):
         instance = super().update(instance, validated_data)
         self.update_task_internal_status(instance)
         return instance
-
-

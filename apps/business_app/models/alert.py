@@ -26,4 +26,4 @@ class Alert(GenericLogMixin, SafeDeleteModel, models.Model):
     description = models.TextField(null=True, blank=True, verbose_name=_("Description"))
 
     def __str__(self):
-        return f"{self.kind} - {self.short_description}"
+        return f"{self.short_description} ({self.KIND(self.kind).label})"

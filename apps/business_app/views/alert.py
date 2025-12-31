@@ -1,7 +1,7 @@
 from django_filters.rest_framework import DjangoFilterBackend
 from rest_framework import filters, viewsets
 from rest_framework.generics import GenericAPIView
-
+from rest_framework import permissions
 
 from ..models.alert import Alert
 from ..serializers.alert import AlertSerializer
@@ -15,9 +15,7 @@ from apps.common.permissions import IsAuthenticatedAndReadOnly
 class AlertViewSet(viewsets.ModelViewSet, GenericAPIView):
     """ """
 
-    queryset = (
-        Alert.objects.all().select_related("task").prefetch_related("task__resources")
-    )
+    queryset = Alert.objects.all().select_related("task")
     serializer_class = AlertSerializer
     search_fields = [
         "task__task_code",
@@ -26,7 +24,7 @@ class AlertViewSet(viewsets.ModelViewSet, GenericAPIView):
         "task__resources__name",
     ]
     ordering_fields = "__all__"
-    permission_classes = [IsAuthenticatedAndReadOnly]
+    permission_classes = [permissions.IsAuthenticated]
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,

@@ -6,7 +6,10 @@ from datetime import datetime
 class TaskSerializer(serializers.ModelSerializer):
     wbs = serializers.StringRelatedField()
     resources = serializers.StringRelatedField(many=True)
-    internal_responsibles_names = serializers.StringRelatedField(source="internal_responsibles", many=True)
+    internal_responsibles_names = serializers.StringRelatedField(
+        source="internal_responsibles", many=True
+    )
+    alert_names = serializers.StringRelatedField(source="alerts", many=True)
 
     class Meta:
         model = Task
@@ -27,6 +30,8 @@ class TaskSerializer(serializers.ModelSerializer):
             "act_end_date",
             "complete_pct",
             "resources",
+            "alerts",
+            "alert_names",
         ]
 
     def update(self, instance, validated_data):

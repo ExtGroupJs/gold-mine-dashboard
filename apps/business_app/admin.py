@@ -6,6 +6,7 @@ from apps.common.admin import (
 
 from .models.resource import Resource
 from .models.task import Task
+from .models.alert import Alert
 from .models.task_resource import TaskResource
 from .models.wbs import WBS
 from .models.primavera_import_file import PrimaveraImportFile
@@ -25,6 +26,11 @@ class ResourceAdmin(GenericModelAdmin):
 @admin.register(Task)
 class TaskAdmin(GenericModelAdmin):
     EXCLUDED_FIELDS_FOR_EDITING = {"taskresource"}
+
+
+@admin.register(Alert)
+class AlertAdmin(GenericModelAdmin):
+    EXCLUDED_FIELDS_FOR_EDITING = {"deleted", "deleted_by_cascade"}
 
 
 @admin.register(TaskResource)
