@@ -17,47 +17,69 @@ function fetchCounters() {
 
 // Render counters on dashboard
 function renderCounters(countersData) {
+  // countersData expected shape: { task_info: {...}, alert_info: {...} }
+  const taskInfo = (countersData && countersData.task_info) || {};
+  const alertInfo = (countersData && countersData.alert_info) || {};
+
   const updateElement = (id, value) => {
     const node = document.getElementById(id);
     if (node) node.textContent = value || 0;
   };
 
-  updateElement('total-tasks', countersData.total || 0);
-  updateElement('notstarted-tasks', countersData['Not started'] || 0);
-  updateElement('inprogress-tasks', countersData['In progress'] || 0);
-  updateElement('completed-tasks', countersData['Completed'] || 0);
-  updateElement('planned-tasks', countersData['Planned'] || 0);
-  updateElement('hold-tasks', countersData['Hold'] || 0);
+  updateElement('total-tasks', taskInfo.total || 0);
+  updateElement('notstarted-tasks', taskInfo['Not started'] || 0);
+  updateElement('inprogress-tasks', taskInfo['In progress'] || 0);
+  updateElement('completed-tasks', taskInfo['Completed'] || 0);
+  updateElement('planned-tasks', taskInfo['Planned'] || 0);
+  updateElement('hold-tasks', taskInfo['Hold'] || 0);
 
-  // Data for pie chart
+  // Task charts (pie + bar)
   const pieLabels = ['No iniciadas', 'En progreso', 'Completadas'];
   const pieData = [
-    countersData['Not started'] || 0,
-    countersData['In progress'] || 0,
-    countersData['Completed'] || 0
+    taskInfo['Not started'] || 0,
+    taskInfo['In progress'] || 0,
+    taskInfo['Completed'] || 0
   ];
 
-  // Data for bar chart (all statuses)
-  const barLabels = Object.keys(countersData).filter(k => k !== 'total');
-  const barData = barLabels.map(k => countersData[k]);
+  const barLabels = Object.keys(taskInfo).filter(k => k !== 'total');
+  const barData = barLabels.map(k => taskInfo[k]);
 
   renderPieChart('pie-chart', pieLabels, pieData);
   renderBarChart('bar-chart', barLabels, barData);
+
+  // Alert charts (pie + bar) with severity colors
+  // show total in KPI but exclude it from the charts (total is aggregate)
+  const alertTotal = alertInfo && (alertInfo.total || alertInfo['total']) ? (alertInfo.total || alertInfo['total']) : 0;
+  updateElement('alerts-total', alertTotal || 0);
+  const rawAlertKeys = Object.keys(alertInfo || {});
+  const alertLabels = rawAlertKeys.filter(k => k.toLowerCase() !== 'total');
+  const alertData = alertLabels.map(k => alertInfo[k] || 0);
+  const severityColorMap = {
+    'critical': '#dc3545',
+    'warning': '#ffc107',
+    'information': '#28a745',
+    'info': '#28a745'
+  };
+  const defaultAlertColor = '#6c757d';
+  const alertColors = alertLabels.map(l => severityColorMap[l.toLowerCase()] || defaultAlertColor);
+  renderPieChart('alert-pie-chart', alertLabels, alertData, alertColors);
+  renderBarChart('alert-bar-chart', alertLabels, alertData, alertColors);
 }
 
 let lastPieChart = null;
-function renderPieChart(canvasId, labels, data) {
+function renderPieChart(canvasId, labels, data, colors = null) {
   const ctx = document.getElementById(canvasId);
   if (!ctx || !window.Chart) return;
   if (lastPieChart) lastPieChart.destroy();
+  const background = colors && Array.isArray(colors) && colors.length ? colors : ['#dc3545', '#ffc107', '#28a745'];
   lastPieChart = new Chart(ctx, {
     type: 'pie',
     data: {
       labels,
       datasets: [{
         data,
-        backgroundColor: ['#dc3545', '#ffc107', '#28a745'],
-        borderColor: ['#fff', '#fff', '#fff'],
+        backgroundColor: background,
+        borderColor: background.map(() => '#fff'),
         borderWidth: 2
       }]
     },
@@ -66,10 +88,13 @@ function renderPieChart(canvasId, labels, data) {
 }
 
 let lastBarChart = null;
-function renderBarChart(canvasId, labels, data) {
+function renderBarChart(canvasId, labels, data, colors = null) {
   const ctx = document.getElementById(canvasId);
   if (!ctx || !window.Chart) return;
   if (lastBarChart) lastBarChart.destroy();
+  const useArrayColors = colors && Array.isArray(colors) && colors.length;
+  const background = useArrayColors ? colors : '#007bff';
+  const border = useArrayColors ? colors.map(() => '#000') : '#0056b3';
   lastBarChart = new Chart(ctx, {
     type: 'bar',
     data: {
@@ -77,8 +102,8 @@ function renderBarChart(canvasId, labels, data) {
       datasets: [{
         label: 'Tareas',
         data,
-        backgroundColor: '#007bff',
-        borderColor: '#0056b3',
+        backgroundColor: background,
+        borderColor: border,
         borderWidth: 1
       }]
     },

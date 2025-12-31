@@ -84,6 +84,15 @@
             <div class="icon"><i class="fas fa-pause"></i></div>
           </div>
         </div>
+        <div class="col-lg-2 col-md-4 col-sm-6 col-12">
+          <div class="small-box bg-danger">
+            <div class="inner">
+              <h3 id="alerts-total">0</h3>
+              <p>{% trans "Alertas (total)" %}</p>
+            </div>
+            <div class="icon"><i class="fas fa-exclamation-triangle"></i></div>
+          </div>
+        </div>
       </div>
 
       <!-- Charts -->
@@ -119,6 +128,40 @@
           </div>
         </div>
       </div>
+
+        <!-- Alert Charts -->
+        <div class="row mb-3">
+          <div class="col-lg-6">
+            <div class="card card-warning">
+              <div class="card-header">
+                <h3 class="card-title">{% trans "Alertas por severidad" %}</h3>
+                <div class="card-tools">
+                  <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                    <i class="fas fa-minus"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="card-body">
+                <canvas id="alert-pie-chart" height="280"></canvas>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="card card-secondary">
+              <div class="card-header">
+                <h3 class="card-title">{% trans "Conteo de alertas" %}</h3>
+                <div class="card-tools">
+                  <button type="button" class="btn btn-tool" data-card-widget="collapse">
+                    <i class="fas fa-minus"></i>
+                  </button>
+                </div>
+              </div>
+              <div class="card-body">
+                <canvas id="alert-bar-chart" height="280"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
 
       <!-- Refresh Button -->
       <div class="row">
