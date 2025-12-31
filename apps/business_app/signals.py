@@ -16,11 +16,9 @@ from .utils.task_counters import get_task_counters
 
 
 @receiver(post_save, sender=Task)
-def remove_from_inventory(sender, instance, **kwargs):
+def update_dashboard(sender, instance, **kwargs):
     pusher_client = PusherClient()
-    print("Enviando pusher")
     pusher_client.trigger("dashboard-channel", "update-event", get_task_counters())
-    print("pusher enviado")
 
 
 # @receiver(post_delete, sender=Sell)
