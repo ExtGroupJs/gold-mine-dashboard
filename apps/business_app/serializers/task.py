@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from ..models.task import Task
 from datetime import datetime
+from .alert import AlertSerializer
 
 
 class TaskSerializer(serializers.ModelSerializer):
@@ -9,7 +10,7 @@ class TaskSerializer(serializers.ModelSerializer):
     internal_responsibles_names = serializers.StringRelatedField(
         source="internal_responsibles", many=True
     )
-    alert_names = serializers.StringRelatedField(source="alerts", many=True)
+    alert_list = AlertSerializer(source="alerts", many=True, read_only=True)
 
     class Meta:
         model = Task
@@ -31,7 +32,7 @@ class TaskSerializer(serializers.ModelSerializer):
             "complete_pct",
             "resources",
             "alerts",
-            "alert_names",
+            "alert_list",
         ]
 
     def update(self, instance, validated_data):
