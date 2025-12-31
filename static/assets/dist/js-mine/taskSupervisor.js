@@ -170,7 +170,7 @@ $(document).ready(function () {
       // { data: "delete_record_flag", title: "Eliminado", render: (d) => (d ? 'Sí' : 'No') },
 
       { data: "wbs", title: "WBS" },
-      { data: "task_code", title: "Código" },
+      // { data: "task_code", title: "Código" },
       { data: "task_name", title: "Tarea" },
       {
         data: "internal_status",
@@ -192,18 +192,25 @@ $(document).ready(function () {
       // { data: "alert_names", title: "Alertas", render: (data) => (Array.isArray(data) ? data.join(", ") : (data || "")), orderable: false },
       { data: "end_date", title: "Fin", render: (d) => formatDateTime(d) },
       {
+        data: "act_start_date",
+        title: "Inicio real",
+        render: (d) => formatDateTime(d),
+      },
+      {
         data: "act_end_date",
         title: "Fin real",
         render: (d) => formatDateTime(d),
       },
+      
       {
         data: "internal_planned_date",
-        title: "Inicio real",
+        title: "Inicio planificado",
         render: (d) => formatDateTime(d),
       },
 
       {
-        data: "",
+        data: null,
+        defaultContent: "",
         className: "column-text-center",
         title: "Acciones",
         orderable: false,
