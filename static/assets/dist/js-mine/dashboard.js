@@ -56,6 +56,15 @@ function renderCounters(countersData) {
   // Alert charts (pie + bar)
   const alertTotal = alertInfo && (alertInfo.total || alertInfo['total']) ? (alertInfo.total || alertInfo['total']) : 0;
   updateElement('alerts-total', alertTotal || 0);
+    // helper to get alert values case-insensitively while preserving original keys
+    const getAlertValue = (name) => {
+      if (!alertInfo) return 0;
+      const k = Object.keys(alertInfo).find(key => key.toLowerCase() === name.toLowerCase());
+      return k ? alertInfo[k] : 0;
+    };
+    updateElement('alerts-information', getAlertValue('Information'));
+    updateElement('alerts-warning', getAlertValue('Warning'));
+    updateElement('alerts-critical', getAlertValue('Critical'));
   
   const rawAlertKeys = Object.keys(alertInfo || {});
   const alertLabels = rawAlertKeys.filter(k => k.toLowerCase() !== 'total');
