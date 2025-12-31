@@ -7,9 +7,9 @@ from safedelete.models import SafeDeleteModel
 
 class Alert(GenericLogMixin, SafeDeleteModel, models.Model):
     class KIND(models.TextChoices):
-        INFO = "I", _("information")
-        WARNING = "W", _("warning")
-        CRITICAL = "C", _("critical")
+        INFO = "I", _("Information")
+        WARNING = "W", _("Warning")
+        CRITICAL = "C", _("Critical")
 
     task = models.ForeignKey(
         to=Task, on_delete=models.CASCADE, related_name="alerts", verbose_name=_("Task")
