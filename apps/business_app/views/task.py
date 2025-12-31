@@ -30,6 +30,7 @@ class TaskViewSet(viewsets.ModelViewSet, GenericAPIView):
         "task_code",
         "task_name",
         "wbs__wbs_id",
+        "wbs__wbs_name",
     ]
     ordering_fields = "__all__"
     permission_classes = [ShopProductsViewSetPermission]
@@ -38,6 +39,15 @@ class TaskViewSet(viewsets.ModelViewSet, GenericAPIView):
         filters.SearchFilter,
         CommonOrderingFilter,
     ]
+    filterset_fields = {
+        "internal_status": ["exact", "in"],
+        "wbs__id": ["exact", "in"],
+        "internal_responsibles__id": ["exact", "in"],
+        "internal_planned_date": ["exact", "lt", "gt", "lte", "gte"],
+        "act_start_date": ["exact", "lt", "gt", "lte", "gte"],
+        "act_end_date": ["exact", "lt", "gt", "lte", "gte"],
+        "alerts__kind": ["exact", "in"],
+    }
 
     def get_queryset(self):
         queryset = super().get_queryset()
