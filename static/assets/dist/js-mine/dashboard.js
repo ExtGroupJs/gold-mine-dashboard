@@ -32,19 +32,17 @@ function renderCounters(countersData) {
   updateElement('planned-tasks', taskInfo['Planned'] || 0);
   updateElement('hold-tasks', taskInfo['Hold'] || 0);
 
-  // Task charts (pie + bar)
-  const pieLabels = ['No iniciadas', 'En progreso', 'Completadas'];
-  const pieData = [
-    taskInfo['Not started'] || 0,
-    taskInfo['In progress'] || 0,
-    taskInfo['Completed'] || 0
-  ];
+  // Task charts (pie + bar) — include all keys from taskInfo except 'total'
+  const rawTaskKeys = Object.keys(taskInfo || {});
+  const taskLabels = rawTaskKeys.filter(k => k.toLowerCase() !== 'total');
+  const taskData = taskLabels.map(k => taskInfo[k] || 0);
 
-  const barLabels = Object.keys(taskInfo).filter(k => k !== 'total');
-  const barData = barLabels.map(k => taskInfo[k]);
+  // simple color palette (will cycle if more labels than colors)
+  const taskPalette = ['#007bff', '#28a745', '#ffc107', '#6c757d', '#17a2b8', '#fd7e14', '#6610f2'];
+  const taskColors = taskLabels.map((_, i) => taskPalette[i % taskPalette.length]);
 
-  renderPieChart('pie-chart', pieLabels, pieData);
-  renderBarChart('bar-chart', barLabels, barData);
+  renderPieChart('pie-chart', taskLabels, taskData, taskColors);
+  renderBarChart('bar-chart', taskLabels, taskData, taskColors);
 
   // Alert charts (pie + bar)
   const alertTotal = alertInfo && (alertInfo.total || alertInfo['total']) ? (alertInfo.total || alertInfo['total']) : 0;
