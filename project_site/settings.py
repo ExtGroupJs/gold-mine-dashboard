@@ -95,7 +95,7 @@ MIDDLEWARE = [
     "django.middleware.clickjacking.XFrameOptionsMiddleware",
     #  "apps.common.middlewares.GetRequestUserMiddleware",
     # "django_browser_reload.middleware.BrowserReloadMiddleware",
-     "debug_toolbar.middleware.DebugToolbarMiddleware",
+    "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
 if not DEBUG:
     SESSION_EXPIRE_SECONDS = env.int("SESSION_EXPIRE_SECONDS")

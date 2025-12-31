@@ -25,8 +25,12 @@ class PusherClient:
 
     def trigger(self, channel, event, data):
         try:
-            logger.debug('Pusher trigger -> channel=%s event=%s data=%s', channel, event, data)
+            logger.debug(
+                "Pusher trigger -> channel=%s event=%s data=%s", channel, event, data
+            )
             return self._client.trigger(channel, event, data)
-        except Exception as e:
-            logger.exception('Error triggering pusher event %s on channel %s', event, channel)
+        except Exception:
+            logger.exception(
+                "Error triggering pusher event %s on channel %s", event, channel
+            )
             raise
