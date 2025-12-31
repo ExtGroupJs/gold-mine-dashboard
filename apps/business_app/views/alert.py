@@ -34,6 +34,9 @@ class AlertViewSet(viewsets.ModelViewSet, GenericAPIView):
     ]
     filterset_fields = {
         "kind": ["exact", "in"],
+        "task": ["exact", "in"],
+        "task__internal_status": ["exact", "in"],
+        "task__internal_responsibles__id": ["exact", "in"],
         "task__wbs__id": ["exact", "in"],
         "task__resources__id": ["exact", "in"],
     }
