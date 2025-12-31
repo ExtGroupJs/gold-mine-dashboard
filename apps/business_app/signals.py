@@ -1,6 +1,7 @@
 from django.db.models.signals import post_save
 from django.dispatch import receiver
 from .models.task import Task
+from .models.alert import Alert
 from .utils.pusher_client import PusherClient
 from .utils.task_counters import get_task_counters
 
@@ -19,6 +20,20 @@ from .utils.task_counters import get_task_counters
 def update_dashboard(sender, instance, **kwargs):
     pusher_client = PusherClient()
     pusher_client.trigger("dashboard-channel", "update-event", get_task_counters())
+
+
+@receiver(post_save, sender=Alert)
+def notify_alert(sender, instance, **kwargs):
+    pusher_client = PusherClient()
+    pusher_client.trigger(
+        "dashboard-channel",
+        "new-alert-event",
+        {
+            "task": instance.task.task_name,
+            "alert_description": instance.short_description,
+            "level": f"{instance.KIND(instance.kind).label}",
+        },
+    )
 
 
 # @receiver(post_delete, sender=Sell)

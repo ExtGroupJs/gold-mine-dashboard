@@ -114,5 +114,8 @@ document.addEventListener('DOMContentLoaded', function() {
   var channel = pusher.subscribe('dashboard-channel');
   channel.bind('update-event', function(data) {
     renderCounters(data);
+  });  
+  channel.bind('new-alert-event', function(data) {
+    Swal.fire({ icon: "info", title: `Alerta en tarea ${data.task}`, text: `${data.alert_description}, LEVEL: ${data.level}`, showConfirmButton: true, timer: 10000 });
   });
 });
