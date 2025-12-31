@@ -45,6 +45,9 @@ def shop_products(request):
 def task(request):
     return render(request, "task/task.html")
 
+def taskSupervisor(request):
+    return render(request, "task/taskSupervisor.html")
+
 
 def dashboard(request):
     return render(request, "dashboard/dashboard.html")
