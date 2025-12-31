@@ -66,13 +66,13 @@ function renderCounters(countersData) {
   renderBarChart('alert-bar-chart', alertLabels, alertData, alertColors);
 }
 
-let lastPieChart = null;
+const pieCharts = {};
 function renderPieChart(canvasId, labels, data, colors = null) {
   const ctx = document.getElementById(canvasId);
   if (!ctx || !window.Chart) return;
-  if (lastPieChart) lastPieChart.destroy();
+  if (pieCharts[canvasId]) pieCharts[canvasId].destroy();
   const background = colors && Array.isArray(colors) && colors.length ? colors : ['#dc3545', '#ffc107', '#28a745'];
-  lastPieChart = new Chart(ctx, {
+  pieCharts[canvasId] = new Chart(ctx, {
     type: 'pie',
     data: {
       labels,
@@ -87,15 +87,15 @@ function renderPieChart(canvasId, labels, data, colors = null) {
   });
 }
 
-let lastBarChart = null;
+const barCharts = {};
 function renderBarChart(canvasId, labels, data, colors = null) {
   const ctx = document.getElementById(canvasId);
   if (!ctx || !window.Chart) return;
-  if (lastBarChart) lastBarChart.destroy();
+  if (barCharts[canvasId]) barCharts[canvasId].destroy();
   const useArrayColors = colors && Array.isArray(colors) && colors.length;
   const background = useArrayColors ? colors : '#007bff';
   const border = useArrayColors ? colors.map(() => '#000') : '#0056b3';
-  lastBarChart = new Chart(ctx, {
+  barCharts[canvasId] = new Chart(ctx, {
     type: 'bar',
     data: {
       labels,
