@@ -37,9 +37,18 @@ function renderCounters(countersData) {
   const taskLabels = rawTaskKeys.filter(k => k.toLowerCase() !== 'total');
   const taskData = taskLabels.map(k => taskInfo[k] || 0);
 
-  // simple color palette (will cycle if more labels than colors)
+  // map task states to the same colors used in the KPI small-boxes
+  const taskColorMap = {
+    'not started': '#dc3545', // danger (red)
+    'in progress': '#ffc107', // warning (yellow)
+    'completed': '#28a745',   // success (green)
+    'planned': '#007bff',     // primary (blue)
+    'hold': '#6c757d',        // secondary (gray)
+    'backlog': '#6c757d'      // secondary (gray)
+  };
+  // fallback palette if a label is unknown
   const taskPalette = ['#007bff', '#28a745', '#ffc107', '#6c757d', '#17a2b8', '#fd7e14', '#6610f2'];
-  const taskColors = taskLabels.map((_, i) => taskPalette[i % taskPalette.length]);
+  const taskColors = taskLabels.map((label, i) => taskColorMap[label.toLowerCase()] || taskPalette[i % taskPalette.length]);
 
   renderPieChart('pie-chart', taskLabels, taskData, taskColors);
   renderBarChart('bar-chart', taskLabels, taskData, taskColors);
