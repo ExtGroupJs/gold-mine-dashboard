@@ -25,7 +25,7 @@ class ResourceAdmin(GenericModelAdmin):
 
 @admin.register(Task)
 class TaskAdmin(GenericModelAdmin):
-    EXCLUDED_FIELDS_FOR_EDITING = {"taskresource"}
+    EXCLUDED_FIELDS_FOR_EDITING = {"taskresource", "alerts"}
 
 
 @admin.register(Alert)

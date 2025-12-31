@@ -10,7 +10,10 @@ from apps.common.mixins.common_view_mixin import CommonOrderingFilter
 from rest_framework.response import Response
 from rest_framework import status
 
-
+from drf_spectacular.utils import extend_schema
+from django.utils.translation import gettext_lazy as _
+from rest_framework.decorators import action
+from ..utils.task_counters import get_alert_counters
 # Create your views here.
 
 
@@ -51,3 +54,12 @@ class AlertViewSet(viewsets.ModelViewSet, GenericAPIView):
             task.internal_status = Task.INTERNAL_STATUS.IN_PROGRESS
         task.save(update_fields=["internal_status"])
         return Response(status=status.HTTP_204_NO_CONTENT)
+
+    @extend_schema(
+        request=None,
+        methods=["GET"],
+        description=_("Get tasks in every state"),
+    )
+    @action(detail=False, methods=["GET"])
+    def counters(self, pk=None):
+        return Response(get_alert_counters())

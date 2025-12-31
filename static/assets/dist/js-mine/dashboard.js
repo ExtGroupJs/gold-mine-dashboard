@@ -1,6 +1,7 @@
 /* Dashboard script - Task counters and metrics */
 
-const COUNTERS_URL = "/business-gestion/task/counters/";
+const TASK_COUNTERS_URL = "/business-gestion/task/counters/";
+const ALERT_COUNTERS_URL = "/business-gestion/alert/counters/";
 
 function showError(title, text = "", timer = 3000) {
   if (window.Swal) {
@@ -10,16 +11,19 @@ function showError(title, text = "", timer = 3000) {
   }
 }
 
-// Fetch counters from endpoint
-function fetchCounters() {
-  return axios.get(COUNTERS_URL);
+// Fetch counters from endpoints
+function fetchTaskCounters() {
+  return axios.get(TASK_COUNTERS_URL);
+}
+
+function fetchAlertCounters() {
+  return axios.get(ALERT_COUNTERS_URL);
 }
 
 // Render counters on dashboard
-function renderCounters(countersData) {
-  const taskInfo = (countersData && countersData.task_info) || {};
-  const alertInfo = (countersData && countersData.alert_info) || {};
-
+// Render task counters and charts (separated so updates can be independent)
+function renderTaskCounters(taskInfo) {
+  taskInfo = taskInfo || {};
   const updateElement = (id, value) => {
     const node = document.getElementById(id);
     if (node) node.textContent = value || 0;
@@ -37,39 +41,45 @@ function renderCounters(countersData) {
   const taskLabels = rawTaskKeys.filter(k => k.toLowerCase() !== 'total');
   const taskData = taskLabels.map(k => taskInfo[k] || 0);
 
-  // map task states to the same colors used in the KPI small-boxes
   const taskColorMap = {
-    'not started': '#dc3545', // danger (red)
-    'in progress': '#ffc107', // warning (yellow)
-    'completed': '#28a745',   // success (green)
-    'planned': '#007bff',     // primary (blue)
-    'hold': '#6c757d',        // secondary (gray)
-    'backlog': '#6c757d'      // secondary (gray)
+    'not started': '#dc3545',
+    'in progress': '#ffc107',
+    'completed': '#28a745',
+    'planned': '#007bff',
+    'hold': '#6c757d',
+    'backlog': '#6c757d'
   };
-  // fallback palette if a label is unknown
   const taskPalette = ['#007bff', '#28a745', '#ffc107', '#6c757d', '#17a2b8', '#fd7e14', '#6610f2'];
   const taskColors = taskLabels.map((label, i) => taskColorMap[label.toLowerCase()] || taskPalette[i % taskPalette.length]);
 
   renderPieChart('pie-chart', taskLabels, taskData, taskColors);
   renderBarChart('bar-chart', taskLabels, taskData, taskColors);
+}
 
-  // Alert charts (pie + bar)
+// Render alert counters and charts (separated so updates can be independent)
+function renderAlertCounters(alertInfo) {
+  alertInfo = alertInfo || {};
+  const updateElement = (id, value) => {
+    const node = document.getElementById(id);
+    if (node) node.textContent = value || 0;
+  };
+
   const alertTotal = alertInfo && (alertInfo.total || alertInfo['total']) ? (alertInfo.total || alertInfo['total']) : 0;
   updateElement('alerts-total', alertTotal || 0);
-    // helper to get alert values case-insensitively while preserving original keys
-    const getAlertValue = (name) => {
-      if (!alertInfo) return 0;
-      const k = Object.keys(alertInfo).find(key => key.toLowerCase() === name.toLowerCase());
-      return k ? alertInfo[k] : 0;
-    };
-    updateElement('alerts-information', getAlertValue('Information'));
-    updateElement('alerts-warning', getAlertValue('Warning'));
-    updateElement('alerts-critical', getAlertValue('Critical'));
-  
+
+  const getAlertValue = (name) => {
+    if (!alertInfo) return 0;
+    const k = Object.keys(alertInfo).find(key => key.toLowerCase() === name.toLowerCase());
+    return k ? alertInfo[k] : 0;
+  };
+  updateElement('alerts-information', getAlertValue('Information'));
+  updateElement('alerts-warning', getAlertValue('Warning'));
+  updateElement('alerts-critical', getAlertValue('Critical'));
+
   const rawAlertKeys = Object.keys(alertInfo || {});
   const alertLabels = rawAlertKeys.filter(k => k.toLowerCase() !== 'total');
   const alertData = alertLabels.map(k => alertInfo[k] || 0);
-  
+
   const severityColorMap = {
     'critical': '#dc3545',
     'warning': '#ffc107',
@@ -78,7 +88,7 @@ function renderCounters(countersData) {
   };
   const defaultAlertColor = '#6c757d';
   const alertColors = alertLabels.map(l => severityColorMap[l.toLowerCase()] || defaultAlertColor);
-  
+
   renderPieChart('alert-pie-chart', alertLabels, alertData, alertColors);
   renderBarChart('alert-bar-chart', alertLabels, alertData, alertColors);
 }
@@ -153,11 +163,22 @@ function renderBarChart(canvasId, labels, data, colors = null) {
 
 // Render dashboard
 function renderDashboard() {
-  fetchCounters()
+  // Fetch and render task counters independently
+  fetchTaskCounters()
     .then((res) => {
-      renderCounters(res.data);
+      // Endpoint may return object directly or under `task_info`
+      const payload = res.data && res.data.task_info ? res.data.task_info : res.data;
+      renderTaskCounters(payload);
     })
-    .catch((err) => showError('Error cargando dashboard', err.message || ''));
+    .catch((err) => showError('Error cargando contadores de tareas', err.message || ''));
+
+  // Fetch and render alert counters independently
+  fetchAlertCounters()
+    .then((res) => {
+      const payload = res.data && res.data.alert_info ? res.data.alert_info : res.data;
+      renderAlertCounters(payload);
+    })
+    .catch((err) => showError('Error cargando contadores de alertas', err.message || ''));
 }
 
 // Initialize
@@ -173,8 +194,14 @@ document.addEventListener('DOMContentLoaded', function() {
       });
 
       var dashboard_channel = pusher.subscribe('dashboard-channel');
-      dashboard_channel.bind('update-event', function(data) {
-        renderCounters(data);
+      // The realtime update may contain task or alert data (or both).
+      dashboard_channel.bind('update-task-event', function(data) {
+        // If it's the combined structure with task_info/alert_info
+          renderTaskCounters(data);
+      }); 
+      dashboard_channel.bind('update-alert-event', function(data) {
+        // If it's the combined structure with task_info/alert_info
+          renderAlertCounters(data);
       }); 
       
       var alert_channel = pusher.subscribe('alert-channel');
