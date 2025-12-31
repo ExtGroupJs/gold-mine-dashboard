@@ -44,6 +44,7 @@ function getStatusIcon(statusCode) {
 
 // Initialize helpers on DOM ready
 $(function () {
+  
   bsCustomFileInput.init();
 });
 
@@ -121,10 +122,11 @@ $(document).ready(function () {
       { data: "internal_status", title: "Estado", render: (data) => getStatusIcon(data) },     
       { data: "complete_pct", title: "% Completo" },
       { data: "resources", title: "Recursos", render: (data) => (Array.isArray(data) ? data.join(", ") : data || "") },
-      { data: "internal_responsibles", title: "Responsables internos", render: (data) => (Array.isArray(data) ? data.join(", ") : (data || "")) },
+      { data: "internal_responsibles", title: "Responsables", render: (data) => (Array.isArray(data) ? data.join(", ") : (data || "")) },
       { data: "end_date", title: "Fin", render: (d) => formatDateTime(d) },      
       { data: "act_end_date", title: "Fin real", render: (d) => formatDateTime(d) },
-      { data: "internal_planned_date", title: "Inicio real", render: (d) => formatDateTime(d) },     
+      { data: "internal_planned_date", title: "Inicio real", render: (d) => formatDateTime(d) },  
+         
       {
         data: "",
         title: "Acciones",
@@ -245,6 +247,7 @@ function openAssignModal(id, name) {
     axios.get(API_URL + id + '/')
   ])
     .then(([rolesRes, taskRes]) => {
+      load.hidden = false;
       const roles = Array.isArray(rolesRes.data.results) ? rolesRes.data.results : (Array.isArray(rolesRes.data) ? rolesRes.data : []);
       const rolesMap = {};
       roles.forEach(r => { rolesMap[r.id] = r.name || String(r.id); });
@@ -263,8 +266,11 @@ function openAssignModal(id, name) {
       if (t.internal_planned_date) {
         try { $('#assign_start_date').val(new Date(t.internal_planned_date).toISOString().slice(0,16)); } catch (e) { }
       }
+       load.hidden = true;
     })
+     
     .catch(() => {
+      load.hidden = true;
       // ignorar errores
     });
 
@@ -274,6 +280,7 @@ function openAssignModal(id, name) {
 
 // Handle assign form submit
 $('#form-assign-task').on('submit', function (e) {
+   load.hidden = false;
   e.preventDefault();
   if (!selected_assign_id) return showError('Selecciona una tarea');
   const selectedRole = $('#assign_roles').val() || null;
@@ -296,8 +303,10 @@ $('#form-assign-task').on('submit', function (e) {
       $('#modal-assign-task').modal('hide');
       // reload table
       try { $('#tabla-de-Datos').DataTable().ajax.reload(null, false); } catch (err) { }
+        load.hidden = true;
     })
     .catch((err) => {
+       load.hidden = true;
       showError('Error asignando', err.response?.data?.detail || err.message || '');
     });
 });
