@@ -59,6 +59,7 @@ urlpatterns = [
     path("shop_products/", pages.shop_products, name="shop_products"),
     # paginas para la mina
     path("task/", pages.task, name="task"),
+    path("taskSupervisor/", pages.taskSupervisor, name="taskSupervisor"),
     path("dashboard/", pages.dashboard, name="dashboard"),
 ]
 
