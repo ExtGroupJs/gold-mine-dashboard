@@ -197,8 +197,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if(data && data.task) {
             Toast.fire({ 
               icon: "info", 
-              title: `Alerta ELIMINADA`, 
-              text: `${data.alert_description}`
+              title: `Alerta ELIMINADA para: ${data.task}`, 
+              text: `(${data.level.toUpperCase()}) ${data.alert_description}`
             });
         }
       });
@@ -209,8 +209,8 @@ document.addEventListener('DOMContentLoaded', function() {
         if(data && data.task) {
             Toast.fire({ 
               icon: "warning", 
-              title: `¡Nueva Alerta!`, 
-              text: `${data.alert_description}` 
+              title: `¡NUEVA Alerta para: ${data.task}!`, 
+              text: `(${data.level.toUpperCase()}) ${data.alert_description}`
             });
         }
       });
