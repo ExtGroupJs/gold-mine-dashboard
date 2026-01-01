@@ -14,11 +14,17 @@ class Alert(GenericLogMixin, SafeDeleteModel, models.Model):
     task = models.ForeignKey(
         to=Task, on_delete=models.CASCADE, related_name="alerts", verbose_name=_("Task")
     )
+    task = models.ForeignKey(
+        to=Task, on_delete=models.CASCADE, related_name="alerts", verbose_name=_("Task")
+    )
     kind = models.CharField(
         _("Alert type"),
         choices=KIND.choices,
         default=KIND.WARNING,
         max_length=1,
+    )
+    short_description = models.CharField(
+        max_length=100, verbose_name=_("Short Description")
     )
     short_description = models.CharField(
         max_length=100, verbose_name=_("Short Description")

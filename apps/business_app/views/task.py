@@ -25,6 +25,9 @@ class TaskViewSet(viewsets.ModelViewSet, GenericAPIView):
     queryset = (
         Task.objects.all().select_related("wbs").prefetch_related("resources", "alerts")
     )
+    queryset = (
+        Task.objects.all().select_related("wbs").prefetch_related("resources", "alerts")
+    )
     serializer_class = TaskSerializer
     search_fields = [
         "task_code",
@@ -33,7 +36,8 @@ class TaskViewSet(viewsets.ModelViewSet, GenericAPIView):
         "wbs__wbs_name",
     ]
     ordering_fields = "__all__"
-    permission_classes = [ShopProductsViewSetPermission]
+    # permission_classes = [ShopProductsViewSetPermission]
+    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
