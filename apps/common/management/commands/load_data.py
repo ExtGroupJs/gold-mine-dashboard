@@ -37,8 +37,8 @@ class Command(BaseCommand):
                 attrs=["blink"],
             )
         )
-        planner_user, _ = SystemUser.objects.get_or_create(
-            username="planner_user",
+        planner, _ = SystemUser.objects.get_or_create(
+            username="planner",
             defaults={
                 "email": "",
                 "password": "password",
@@ -84,6 +84,25 @@ class Command(BaseCommand):
         print(
             colored(
                 "Created supervisor_b with SUPERVISOR_AREA_B role",
+                "blue",
+                attrs=["blink"],
+            )
+        )
+
+        board_client, _ = SystemUser.objects.get_or_create(
+            username="board_client",
+            defaults={
+                "email": "",
+                "password": "password",
+                "first_name": "Board Client",
+                "last_name": "User",
+                "last_name": "User",
+            },
+        )
+        board_client.groups.add(Groups.DASHBOARD_CLIENT)
+        print(
+            colored(
+                "Created board_client with DASHBOARD_CLIENT role",
                 "blue",
                 attrs=["blink"],
             )
