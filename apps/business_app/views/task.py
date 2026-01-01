@@ -3,10 +3,10 @@ from rest_framework import filters, viewsets
 from rest_framework.response import Response
 from rest_framework.generics import GenericAPIView
 
-from apps.common.permissions import ShopProductsViewSetPermission
 from drf_spectacular.utils import extend_schema
 from django.utils.translation import gettext_lazy as _
 from rest_framework.decorators import action
+from rest_framework import permissions
 
 
 from ..models.task import Task

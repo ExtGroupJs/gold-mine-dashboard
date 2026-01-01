@@ -42,7 +42,6 @@ class Task(GenericLogMixin, models.Model):
         _("percent complete"),
         default=0,
         validators=[MinValueValidator(0), MaxValueValidator(100)],
-        validators=[MinValueValidator(0), MaxValueValidator(100)],
     )
     internal_planned_date = models.DateTimeField(
         null=True, blank=True, verbose_name="Planned Date"

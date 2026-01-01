@@ -46,7 +46,7 @@ class Command(BaseCommand):
                 "last_name": "User",
             },
         )
-        planner_user.groups.add(Groups.PLANNER)
+        planner.groups.add(Groups.PLANNER)
         print(
             colored(
                 "Created planner_user with PLANNER role",
@@ -95,7 +95,6 @@ class Command(BaseCommand):
                 "email": "",
                 "password": "password",
                 "first_name": "Board Client",
-                "last_name": "User",
                 "last_name": "User",
             },
         )
