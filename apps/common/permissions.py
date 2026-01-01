@@ -8,9 +8,8 @@ from apps.users_app.models.groups import Groups
 
 COMMON_ROLES = [
     Groups.SUPER_ADMIN.value,
-    Groups.SUPERVISOR.value,
+    Groups.SUPERVISOR_AREA_A.value,
     Groups.PLANNER.value,
-    Groups.OPERATOR.value,
 ]
 
 

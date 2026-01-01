@@ -39,7 +39,7 @@
   
   <div class="login-box bg-warning">
     <div class="login-logo bg-warning">
-      <a href="{% url 'index' %}"><img width="10%" src="{% static 'assets/dist/img/AdminLTELogo.png' %}" alt=""
+      <a href="{% url 'index' %}"><img width="25%" src="{% static 'assets/dist/img/AdminLTELogo.png' %}" alt=""
           title=""><b>
           La </b>Victoria</a>
     </div>
@@ -78,12 +78,12 @@
             <!-- /.col -->
 
           </div>
-          <div class="social-auth-links text-center mb-3">
+          <!-- <div class="social-auth-links text-center mb-3">
             <p>- OR -</p>
             <p class="mb-0">
               <a href="{% url 'register' %}" class="text-center">Register a new membership</a>
             </p>
-          </div>
+          </div> -->
         </form>
 
         <div class="social-auth-links text-center mb-3">
@@ -148,7 +148,7 @@
             localStorage.setItem("avatar", res.data.photo);
             localStorage.setItem("id", res.data.id);
             localStorage.setItem("internal_status", res.data.internal_status);
-             window.location = "{% url 'index' %}";
+             window.location = "{% url 'redireccionar' %}";
           
             load.hidden = true;
           }

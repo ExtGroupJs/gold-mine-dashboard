@@ -18,17 +18,14 @@ class XslProcessor:
 
         mandatory_task_columns_for_validation = (
             ExcelNomenclators.sheet_task_column_delete_record_flag,
-            ExcelNomenclators.sheet_task_column_total_float_hr_cnt,
-            ExcelNomenclators.sheet_task_column_target_cost,
             ExcelNomenclators.sheet_task_column_resource_list,
             ExcelNomenclators.sheet_task_column_end_date,
             ExcelNomenclators.sheet_task_column_start_date,
             ExcelNomenclators.sheet_task_column_act_start_date,
             ExcelNomenclators.sheet_task_column_act_end_date,
-            ExcelNomenclators.sheet_task_column_remain_drtn_hr_cnt,
-            ExcelNomenclators.sheet_task_column_target_drtn_hr_cnt,
             ExcelNomenclators.sheet_task_column_task_name,
             ExcelNomenclators.sheet_task_column_wbs_id,
+            ExcelNomenclators.sheet_task_column_wbs_name,
             ExcelNomenclators.sheet_task_column_status_code,
             ExcelNomenclators.sheet_task_column_task_code,
         )
@@ -67,7 +64,10 @@ class XslProcessor:
                 continue
             try:
                 wbs, _ = WBS.objects.get_or_create(
-                    wbs_id=row[ExcelNomenclators.sheet_task_column_wbs_id]
+                    wbs_id=row[ExcelNomenclators.sheet_task_column_wbs_id],
+                    defaults={
+                        "wbs_name": row[ExcelNomenclators.sheet_task_column_wbs_name]
+                    },
                 )
                 resources_names = (
                     []
@@ -108,11 +108,8 @@ class XslProcessor:
                             ExcelNomenclators.sheet_task_column_status_code
                         ],
                         "task_name": row[ExcelNomenclators.sheet_task_column_task_name],
-                        "target_drtn_hr_cnt": int(
-                            row[ExcelNomenclators.sheet_task_column_target_drtn_hr_cnt]
-                        ),
-                        "remain_drtn_hr_cnt": int(
-                            row[ExcelNomenclators.sheet_task_column_remain_drtn_hr_cnt]
+                        "complete_pct": int(
+                            row[ExcelNomenclators.sheet_task_column_complete_pct]
                         ),
                         "start_date": start_date.isoformat()
                         if pd.notna(start_date)
@@ -126,20 +123,6 @@ class XslProcessor:
                         "act_end_date": act_end_date.isoformat()
                         if pd.notna(act_end_date)
                         else None,
-                        "total_float_hr_cnt": int(
-                            row[ExcelNomenclators.sheet_task_column_total_float_hr_cnt]
-                        )
-                        if not pd.isna(
-                            row[ExcelNomenclators.sheet_task_column_total_float_hr_cnt]
-                        )
-                        else 0,
-                        "target_cost": float(
-                            row[ExcelNomenclators.sheet_task_column_target_cost]
-                        )
-                        if not pd.isna(
-                            row[ExcelNomenclators.sheet_task_column_target_cost]
-                        )
-                        else 0,
                         "delete_record_flag": bool(
                             row[ExcelNomenclators.sheet_task_column_delete_record_flag]
                         )
@@ -149,6 +132,13 @@ class XslProcessor:
                         else False,
                     },
                 )
+                internal_status_code = str(
+                    row[ExcelNomenclators.sheet_task_column_status_code]
+                )[0].upper()
+
+                if internal_status_code in Task.PRIMAVERA_IMPORTED_STATUS:
+                    task.internal_status = internal_status_code
+                task.save()
                 task.resources.set(resources)
 
             except Exception as e:

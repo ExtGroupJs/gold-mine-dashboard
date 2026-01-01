@@ -3,11 +3,12 @@ from django.utils.translation import gettext_lazy as _
 
 
 class Groups(models.IntegerChoices):
+    r"""Update apps\users_app\fixtures\auth.group.json and run python manage.py load_data"""
+
     # ** Administrativo
     SUPER_ADMIN = 1, _("Super Admin")
     PLANNER = 2, _("Planner")
-    SUPERVISOR = 3, _("Supervisor")
-    DASHBOARD_CLIENT = 4, _("Dashboard Client")
-    # ** Operacional
-    OPERATOR = 10, _("Operator")
-    TECHNICIAN = 11, _("Technician")
+    DASHBOARD_CLIENT = 3, _("Dashboard Client")
+
+    SUPERVISOR_AREA_A = 11, _("Supervisor Área A")
+    SUPERVISOR_AREA_B = 12, _("Supervisor Área B")

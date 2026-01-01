@@ -38,17 +38,21 @@ class GenericLogMixin:
             for field, new_value in updated_object_dict.items():
                 old_value = getattr(original_object, field)
                 incoming_value = getattr(self, field)
-                if isinstance(old_value, date):
-                    old_value = self.normalize_to_utc(old_value.isoformat())
-                    if incoming_value is not None:
+                if isinstance(incoming_value, date) or isinstance(old_value, date):
+                    if old_value:
+                        old_value = self.normalize_to_utc(old_value.isoformat())
+                    if incoming_value:
                         incoming_value = self.normalize_to_utc(incoming_value)
 
                 if old_value != incoming_value:
-                    if hasattr(old_value, "_meta"):
+                    if hasattr(old_value, "_meta") or isinstance(old_value, str):
                         old_value = old_value.__str__()
 
-                    if hasattr(incoming_value, "_meta"):
+                    if hasattr(incoming_value, "_meta") or isinstance(
+                        incoming_value, str
+                    ):
                         new_value = incoming_value.__str__()
+
                     details[field] = {
                         "old_value": old_value,
                         "new_value": new_value,

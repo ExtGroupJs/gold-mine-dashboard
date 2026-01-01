@@ -87,6 +87,7 @@ $(document).ready(function () {
   $("table").addClass("table table-hover");
 
   $("table").DataTable({
+    scrollX: true,
     dom: '<"top"l>Bfrtip',
     buttons: [
       { extend: "colvis", text: "Columnas" },
@@ -169,7 +170,7 @@ $(document).ready(function () {
       // { data: "delete_record_flag", title: "Eliminado", render: (d) => (d ? 'Sí' : 'No') },
 
       { data: "wbs", title: "WBS" },
-      { data: "task_code", title: "Código" },
+      // { data: "task_code", title: "Código" },
       { data: "task_name", title: "Tarea" },
       {
         data: "internal_status",
@@ -191,32 +192,52 @@ $(document).ready(function () {
       // { data: "alert_names", title: "Alertas", render: (data) => (Array.isArray(data) ? data.join(", ") : (data || "")), orderable: false },
       { data: "end_date", title: "Fin", render: (d) => formatDateTime(d) },
       {
+        data: "act_start_date",
+        title: "Inicio real",
+        render: (d) => formatDateTime(d),
+      },
+      {
         data: "act_end_date",
         title: "Fin real",
         render: (d) => formatDateTime(d),
       },
+      
       {
         data: "internal_planned_date",
-        title: "Inicio real",
+        title: "Inicio planificado",
         render: (d) => formatDateTime(d),
       },
 
       {
-        data: "",
+        data: null,
+        defaultContent: "",
         className: "column-text-center",
         title: "Acciones",
         orderable: false,
         render: (data, type, row) => {
-          // use actual dates returned by API to decide which actions to show
           const hasStart = !!row.internal_planned_date;
           const hasEnd = !!row.act_end_date;
-          const hasInternal_status = row.internal_status;
+          const isCompleted = row.complete_pct === 100;
           let actionButtons = `<div class="btn-group" role="group">`;
-          // Alert button (abrir modal para crear alerta)
-          actionButtons += `<button type="button" title="alerta" class="btn btn-danger btn-alert" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-bell"></i></button>`;
-          if (hasInternal_status == "N") {
-            actionButtons += `<button type="button" title="asignar" class="btn btn-info btn-assign" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-user-plus"></i></button>`;
+          
+          // Botón Iniciar: se muestra solo si no hay act_start_date
+          if (!hasStart) {
+            actionButtons += `<button type="button" title="iniciar" class="btn btn-success btn-start" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-play"></i></button>`;
           }
+          
+          // Botón Terminar: se muestra si ya está iniciado pero no terminado
+          if (hasStart && !hasEnd) {
+            actionButtons += `<button type="button" title="terminar" class="btn btn-warning btn-end" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-stop"></i></button>`;
+          }
+          
+          // Botón Porcentaje: se muestra si no está completado (100%)
+          if (!isCompleted) {
+            actionButtons += `<button type="button" title="porcentaje" class="btn btn-info btn-completion" data-id="${row.id}" data-name="${row.task_name}" data-completion="${row.complete_pct || 0}"><i class="fas fa-percent"></i></button>`;
+          }
+          
+          // Alert button
+          actionButtons += `<button type="button" title="alerta" class="btn btn-danger btn-alert" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-bell"></i></button>`;
+          
           actionButtons += `</div>`;
           return actionButtons;
         },
@@ -271,6 +292,42 @@ $(document).ready(function () {
     const id = $(this).data("id");
     const name = $(this).data("name");
     openAssignModal(id, name);
+  });
+
+  // Botón Iniciar: establece act_start_date a ahora
+  $("table").on("click", ".btn-start", function () {
+    const id = $(this).data("id");
+    const now = new Date().toISOString();
+    axios.patch(API_URL + id + "/", { internal_planned_date: now })
+      .then(() => {
+        showSuccess("Tarea iniciada");
+        $("table").DataTable().ajax.reload(null, false);
+      })
+      .catch((err) => {
+        showError("Error al iniciar", err.response?.data?.detail || err.message);
+      });
+  });
+
+  // Botón Terminar: establece act_end_date a ahora
+  $("table").on("click", ".btn-end", function () {
+    const id = $(this).data("id");
+    const now = new Date().toISOString();
+    axios.patch(API_URL + id + "/", { act_end_date: now })
+      .then(() => {
+        showSuccess("Tarea finalizada");
+        $("table").DataTable().ajax.reload(null, false);
+      })
+      .catch((err) => {
+        showError("Error al finalizar", err.response?.data?.detail || err.message);
+      });
+  });
+
+  // Botón Porcentaje: abre modal para actualizar complete_pct
+  $("table").on("click", ".btn-completion", function () {
+    const id = $(this).data("id");
+    const name = $(this).data("name");
+    const currentCompletion = $(this).data("completion") || 0;
+    openCompletionModal(id, name, currentCompletion);
   });
 
   // Filters buttons
@@ -407,6 +464,56 @@ $("#form-assign-task").on("submit", function (e) {
     .catch((err) => {
       showError(
         "Error asignando",
+        err.response?.data?.detail || err.message || ""
+      );
+    });
+});
+
+// --- Porcentaje de Cumplimiento ---
+let selected_completion_id = null;
+
+function openCompletionModal(taskId, taskName, currentValue) {
+  selected_completion_id = taskId;
+  $("#completion_task_id").val(taskId);
+  $("#completion_percentage").val(currentValue || 0);
+  updateCompletionProgressBar(currentValue || 0);
+  $("#modal-completion .modal-title").text(
+    "Porcentaje de Cumplimiento: " + (taskName || "")
+  );
+  $("#modal-completion").modal("show");
+}
+
+function updateCompletionProgressBar(value) {
+  const bar = $("#completion-progress-bar");
+  const pct = Math.min(100, Math.max(0, Number(value)));
+  bar.css("width", pct + "%");
+  bar.attr("aria-valuenow", pct);
+}
+
+$("#completion_percentage").on("input", function () {
+  updateCompletionProgressBar($(this).val());
+});
+
+$("#form-completion").on("submit", function (e) {
+  e.preventDefault();
+  if (!selected_completion_id) return showError("Tarea inválida");
+  const pct = Number($("#completion_percentage").val());
+  if (isNaN(pct) || pct < 0 || pct > 100) {
+    return showError("Ingresa un porcentaje válido (0-100)");
+  }
+
+  axios
+    .patch(API_URL + selected_completion_id + "/", { complete_pct: pct })
+    .then(() => {
+      showSuccess("Porcentaje actualizado");
+      $("#modal-completion").modal("hide");
+      try {
+        $("#tabla-de-Datos").DataTable().ajax.reload(null, false);
+      } catch (err) {}
+    })
+    .catch((err) => {
+      showError(
+        "Error actualizando porcentaje",
         err.response?.data?.detail || err.message || ""
       );
     });

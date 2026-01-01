@@ -1,10 +1,21 @@
-from django.shortcuts import render
+from django.shortcuts import redirect, render
+
+from apps.users_app.models.groups import Groups
 
 # Create your views here.
 
 
 def index(request):
-    return render(request, "dashboard/dashboard.html")
+    from django.conf import settings
+
+    return render(
+        request,
+        "dashboard/dashboard.html",
+        {
+            "pusher_key": settings.PUSHER_KEY,
+            "pusher_cluster": settings.PUSHER_CLUSTER,
+        },
+    )
 
 
 def usuarios(request):
@@ -46,5 +57,24 @@ def task(request):
     return render(request, "task/task.html")
 
 
+def taskSupervisor(request):
+    return render(request, "task/taskSupervisor.html")
+
+
 def dashboard(request):
     return render(request, "dashboard/dashboard.html")
+
+
+def user_redirect(request):
+    # Definimos la lista de los 3 grupos que pueden ver el dashboard
+    allowed_groups = [
+        Groups.DASHBOARD_CLIENT.value,
+        Groups.PLANNER.value,
+        Groups.SUPER_ADMIN.value,
+    ]
+
+    # Verificamos si el usuario pertenece a ALGUNO de los grupos de la lista
+    if request.user.groups.filter(id__in=allowed_groups).exists():
+        return redirect("dashboard")
+    else:
+        return redirect("taskSupervisor")
