@@ -153,7 +153,7 @@ $(document).ready(function () {
         });
     },
     columns: [
-       {
+      {
         data: null,
         title: "",
         orderable: false,
@@ -166,7 +166,7 @@ $(document).ready(function () {
       },
       // { data: "id", title: "ID" , visible: false},
       // { data: "internal_percent_complete", title: "% Interno" },
-       //{ data: "internal_planned_date", title: "Fecha planificada", render: (d) => formatDateTime(d) },
+      //{ data: "internal_planned_date", title: "Fecha planificada", render: (d) => formatDateTime(d) },
       // { data: "delete_record_flag", title: "Eliminado", render: (d) => (d ? 'Sí' : 'No') },
 
       { data: "wbs", title: "WBS" },
@@ -197,14 +197,12 @@ $(document).ready(function () {
         title: "Inicio real",
         render: (d) => formatDateTime(d),
       },
-      
+
       {
         data: "act_end_date",
         title: "Fin real",
         render: (d) => formatDateTime(d),
       },
-     
-
 
       {
         data: null,
@@ -217,25 +215,29 @@ $(document).ready(function () {
           const hasEnd = !!row.act_end_date;
           const isCompleted = row.complete_pct === 100;
           let actionButtons = `<div class="btn-group" role="group">`;
-          
+
           // Botón Iniciar: se muestra solo si no hay act_start_date
           if (!hasStart) {
             actionButtons += `<button type="button" title="iniciar" class="btn btn-success btn-start" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-play"></i></button>`;
           }
-          
+
           // Botón Terminar: se muestra si ya está iniciado pero no terminado
           if (hasStart && !hasEnd) {
             actionButtons += `<button type="button" title="terminar" class="btn btn-warning btn-end" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-stop"></i></button>`;
           }
-          
+
           // Botón Porcentaje: se muestra si no está completado (100%)
           if (!isCompleted) {
-            actionButtons += `<button type="button" title="porcentaje" class="btn btn-info btn-completion" data-id="${row.id}" data-name="${row.task_name}" data-completion="${row.complete_pct || 0}"><i class="fas fa-percent"></i></button>`;
+            actionButtons += `<button type="button" title="porcentaje" class="btn btn-info btn-completion" data-id="${
+              row.id
+            }" data-name="${row.task_name}" data-completion="${
+              row.complete_pct || 0
+            }"><i class="fas fa-percent"></i></button>`;
           }
-          
+
           // Alert button
           actionButtons += `<button type="button" title="alerta" class="btn btn-danger btn-alert" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-bell"></i></button>`;
-          
+
           actionButtons += `</div>`;
           return actionButtons;
         },
@@ -296,13 +298,17 @@ $(document).ready(function () {
   $("table").on("click", ".btn-start", function () {
     const id = $(this).data("id");
     const now = new Date().toISOString();
-    axios.patch(API_URL + id + "/", { act_start_date: now })
+    axios
+      .patch(API_URL + id + "/", { act_start_date: now })
       .then(() => {
         showSuccess("Tarea iniciada");
         $("table").DataTable().ajax.reload(null, false);
       })
       .catch((err) => {
-        showError("Error al iniciar", err.response?.data?.detail || err.message);
+        showError(
+          "Error al iniciar",
+          err.response?.data?.detail || err.message
+        );
       });
   });
 
@@ -310,13 +316,17 @@ $(document).ready(function () {
   $("table").on("click", ".btn-end", function () {
     const id = $(this).data("id");
     const now = new Date().toISOString();
-    axios.patch(API_URL + id + "/", { act_end_date: now })
+    axios
+      .patch(API_URL + id + "/", { act_end_date: now })
       .then(() => {
         showSuccess("Tarea finalizada");
         $("table").DataTable().ajax.reload(null, false);
       })
       .catch((err) => {
-        showError("Error al finalizar", err.response?.data?.detail || err.message);
+        showError(
+          "Error al finalizar",
+          err.response?.data?.detail || err.message
+        );
       });
   });
 
@@ -337,8 +347,7 @@ $(document).ready(function () {
     $("table").DataTable().ajax.reload();
   });
 
-actualizarTareasSupervisor();
-
+  actualizarTareasSupervisor();
 });
 
 // Assign Modal Logic
@@ -663,20 +672,20 @@ function formatAlertsHtml(alerts) {
     };
 
     // --- NUEVA LÓGICA DE POSICIONAMIENTO (FLEX) ---
-    
+
     // 1. Convertimos el <li> en un contenedor flexible horizontal
-    li.classList.add('d-flex', 'justify-content-between', 'align-items-center');
+    li.classList.add("d-flex", "justify-content-between", "align-items-center");
 
     // 2. Creamos un contenedor auxiliar para meter todo el contenido de texto actual
-    const contentWrapper = document.createElement('div');
-    contentWrapper.className = 'flex-grow-1'; // Hace que ocupe todo el ancho disponible empujando el botón a la derecha
+    const contentWrapper = document.createElement("div");
+    contentWrapper.className = "flex-grow-1"; // Hace que ocupe todo el ancho disponible empujando el botón a la derecha
 
     // 3. Movemos todos los hijos actuales del <li> dentro de este contenedor
     // Esto hace que querySelector siga funcionando porque los elementos siguen dentro de li
     while (li.firstChild) {
       contentWrapper.appendChild(li.firstChild);
     }
-    
+
     // 4. Reinsertamos el contenedor dentro del li
     li.appendChild(contentWrapper);
     // ------------------------------------------------
@@ -695,7 +704,7 @@ function formatAlertsHtml(alerts) {
     // --- Lógica del Botón Eliminar ---
     const deleteBtn = document.createElement("button");
     // Eliminamos ml-auto porque justify-content-between ya lo coloca a la derecha
-    deleteBtn.className = "btn btn-sm btn-outline-danger"; 
+    deleteBtn.className = "btn btn-sm btn-outline-danger";
     deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
     deleteBtn.title = "Eliminar alerta";
 
@@ -737,76 +746,20 @@ $(document).on("click", "tbody td.details-control", function () {
 });
 
 function actualizarTareasSupervisor() {
-  // helper para obtener user id desde localStorage/sessionStorage
-  function getLoggedUserId() {
-    const keys = [
-      "user_id",
-      "userid",
-      "userId",
-      "usuario_id",
-      "logged_user_id",
-      "current_user_id",
-      "id",
-    ];
-    for (const k of keys) {
+  var pusher = new Pusher(pusherKey, {
+    cluster: pusherCluster,
+  });
+  var channel = pusher.subscribe("task-channel");
+
+  channel.bind("update-task-event-for-supervisor", function (data) {
+    let groups = JSON.parse(localStorage.getItem("groups")) || [];
+    logedUser = data.internal_responsibles;
+    if (groups.some((elemento) => logedUser.includes(elemento))) {
       try {
-        const raw = localStorage.getItem(k) || sessionStorage.getItem(k);
-        if (!raw) continue;
-        let val = raw;
-        try {
-          val = JSON.parse(raw);
-        } catch (e) {}
-        if (val && typeof val === "object") {
-          if (val.id !== undefined && val.id !== null) {
-            const n = Number(val.id);
-            return !Number.isNaN(n) ? n : val.id;
-          }
-          if (val.user_id !== undefined && val.user_id !== null) {
-            const n = Number(val.user_id);
-            return !Number.isNaN(n) ? n : val.user_id;
-          }
-        }
-        if (typeof val === "number" && !Number.isNaN(val)) return val;
-        if (typeof val === "string" && val.trim() !== "") {
-          const n = Number(val);
-          if (!Number.isNaN(n)) return n;
-          return val;
-        }
-      } catch (e) {
-        // ignore and continue
+        $("table").DataTable().ajax.reload(null, false);
+      } catch (err) {
+        location.reload();
       }
     }
-    return null;
-  }
-
-  if (typeof Pusher !== "undefined" && typeof pusherKey !== "undefined" && typeof pusherCluster !== "undefined") {
-    var pusher = new Pusher(pusherKey, { cluster: pusherCluster });
-
-    var task_channel = pusher.subscribe("task-channel");
-    task_channel.bind("update-task-event-for-supervisor", function (payload) {
-      try {
-        const list = Array.isArray(payload && payload.internal_responsibles)
-          ? payload.internal_responsibles
-          : null;
-        if (!list) return;
-
-        // const logged = getLoggedUserId();
-        const logged = localStorage.getItem('id');
-        if (logged === null) return;
-
-        const set = new Set(list.map((v) => String(v)));
-        if (set.has(String(logged))) {
-          try {
-          $("table").DataTable().ajax.reload(null, false);
-          } catch (e) {
-            location.reload();
-          }
-        }
-      } catch (e) {
-        console.error("error procesando update-task-event-for-supervisor", e);
-      }
-    });
-  } else {
-    console.warn("Pusher keys o Pusher no definidas. Actualización de tabla deshabilitada.");
-  }
+  });
 }
