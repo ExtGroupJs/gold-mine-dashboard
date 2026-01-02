@@ -47,6 +47,8 @@ class Command(BaseCommand):
             },
         )
         planner.groups.add(Groups.PLANNER)
+        planner.set_password("3edcvfr4")
+        planner.save()
         print(
             colored(
                 "Created planner_user with PLANNER role",
@@ -58,12 +60,13 @@ class Command(BaseCommand):
             username="supervisor_a",
             defaults={
                 "email": "",
-                "password": "3edcvfr4",
                 "first_name": "Supervisor A",
                 "last_name": "User",
             },
         )
         supervisor_a.groups.add(Groups.SUPERVISOR_AREA_A)
+        supervisor_a.set_password("3edcvfr4")
+        supervisor_a.save()
         print(
             colored(
                 "Created supervisor_a with SUPERVISOR_AREA_A role",
@@ -75,12 +78,13 @@ class Command(BaseCommand):
             username="supervisor_b",
             defaults={
                 "email": "",
-                "password": "3edcvfr4",
                 "first_name": "Supervisor B",
                 "last_name": "User",
             },
         )
         supervisor_b.groups.add(Groups.SUPERVISOR_AREA_B)
+        supervisor_b.set_password("3edcvfr4")
+        supervisor_b.save()
         print(
             colored(
                 "Created supervisor_b with SUPERVISOR_AREA_B role",
@@ -93,12 +97,14 @@ class Command(BaseCommand):
             username="board_client",
             defaults={
                 "email": "",
-                "password": "2wsxcde3",
                 "first_name": "Board Client",
                 "last_name": "User",
             },
         )
         board_client.groups.add(Groups.DASHBOARD_CLIENT)
+        board_client.set_password("2wsxcde3")
+        board_client.save()
+
         print(
             colored(
                 "Created board_client with DASHBOARD_CLIENT role",
