@@ -309,16 +309,17 @@ else:
 
 CACHES = {"default": cache_backend}
 
+pusher_prefix = "DEBUG_" if DEBUG else "DEPLOY_"
 
 PUSHER_APP_ID = env.str(
-    "PUSHER_APP_ID", default=""
+    f"{pusher_prefix}PUSHER_APP_ID", default=""
 )  # Example ID TODO: change it
 PUSHER_KEY = env.str(
-    "PUSHER_KEY", default=""
+    f"{pusher_prefix}PUSHER_KEY", default=""
 )  # Example key TODO: change it
 PUSHER_SECRET = env.str(
-    "PUSHER_SECRET", default=""
+    f"{pusher_prefix}PUSHER_SECRET", default=""
 )  # Example secret TODO: change it
 PUSHER_CLUSTER = env.str(
-    "PUSHER_CLUSTER", default=""
+    f"{pusher_prefix}PUSHER_CLUSTER", default=""
 )  # Example cluster TODO: change it
