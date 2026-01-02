@@ -1,13 +1,12 @@
 from django.shortcuts import redirect, render
 
 from apps.users_app.models.groups import Groups
+from django.conf import settings
 
 # Create your views here.
 
 
 def index(request):
-    from django.conf import settings
-
     return render(
         request,
         "dashboard/dashboard.html",
@@ -62,7 +61,14 @@ def taskSupervisor(request):
 
 
 def dashboard(request):
-    return render(request, "dashboard/dashboard.html")
+    return render(
+        request,
+        "dashboard/dashboard.html",
+        {
+            "pusher_key": settings.PUSHER_KEY,
+            "pusher_cluster": settings.PUSHER_CLUSTER,
+        },
+    )
 
 
 def user_redirect(request):

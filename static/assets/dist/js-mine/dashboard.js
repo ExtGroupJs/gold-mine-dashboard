@@ -221,6 +221,7 @@ document.addEventListener('DOMContentLoaded', function() {
 
       alert_channel.bind('deleted-alert-event', function(data) {
         // Validamos que existan los datos para evitar errores
+        console.log("Alerta eliminada recibida:", data);
         if(data && data.task) {
             Toast.fire({ 
               icon: "info", 

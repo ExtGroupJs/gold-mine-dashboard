@@ -60,7 +60,9 @@ urlpatterns = [
     path("redireccionar/", login_required(pages.user_redirect), name="redireccionar"),
     # paginas para la mina
     path("task/", login_required(pages.task), name="task"),
-    path("taskSupervisor/", login_required(pages.taskSupervisor), name="taskSupervisor"),
+    path(
+        "taskSupervisor/", login_required(pages.taskSupervisor), name="taskSupervisor"
+    ),
     path("dashboard/", login_required(pages.dashboard), name="dashboard"),
 ]
 
