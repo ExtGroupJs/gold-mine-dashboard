@@ -2,6 +2,7 @@ from rest_framework import serializers
 from ..models.task import Task
 from datetime import datetime
 from .alert import AlertSerializer
+from ..utils.pusher_client import PusherClient
 
 
 class TaskSerializer(serializers.ModelSerializer):
@@ -68,5 +69,15 @@ class TaskSerializer(serializers.ModelSerializer):
             validated_data["internal_status"] = Task.INTERNAL_STATUS.COMPLETED
         if "act_start_date" in validated_data:
             validated_data["internal_status"] = Task.INTERNAL_STATUS.IN_PROGRESS
+
+        if validated_data.get("internal_responsibles", []) != []:
+            pusher_client = PusherClient()
+            payload = validated_data.get("internal_responsibles")
+
+            pusher_client.trigger(
+                PusherClient.TASK_CHANNEL,
+                PusherClient.UPDATE_TASK_EVENT_FOR_SUPERVISOR,
+                {"internal_responsibles": [rol.id for rol in payload]},
+            )
 
         return super().update(instance, validated_data)

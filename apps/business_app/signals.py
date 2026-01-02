@@ -12,13 +12,17 @@ logger = logging.getLogger(__name__)
 def send_update_task_dashboard():
     pusher_client = PusherClient()
     data = get_task_counters()
-    pusher_client.trigger("dashboard-channel", "update-task-event", data)
+    pusher_client.trigger(
+        PusherClient.DASHBOARD_CHANNEL, PusherClient.UPDATE_TASK_EVENT, data
+    )
 
 
 def send_update_alert_dashboard():
     pusher_client = PusherClient()
     data = get_alert_counters()
-    pusher_client.trigger("dashboard-channel", "update-alert-event", data)
+    pusher_client.trigger(
+        PusherClient.DASHBOARD_CHANNEL, PusherClient.UPDATE_ALERT_EVENT, data
+    )
 
 
 @receiver(post_save, sender=Task)
@@ -34,6 +38,10 @@ def notify_created_alert(sender, instance, **kwargs):
         "alert_description": instance.short_description,
         "level": f"{instance.KIND(instance.kind).label}",
     }
-    event = "new-alert-event" if not instance.deleted else "deleted-alert-event"
-    pusher_client.trigger("alert-channel", event, payload)
+    event = (
+        PusherClient.NEW_ALERT_EVENT
+        if not instance.deleted
+        else PusherClient.DELETED_ALERT_EVENT
+    )
+    pusher_client.trigger(PusherClient.ALERT_CHANNEL, event, payload)
     send_update_alert_dashboard()
