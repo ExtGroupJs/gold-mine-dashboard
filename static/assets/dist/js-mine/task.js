@@ -303,7 +303,7 @@ function openAssignModal(id, name) {
 
   // 2. Inicializa Select2 con dropdownParent
   $("#assign_roles").select2({
-    placeholder: $("#assign_roles").data("placeholder") || "Selecciona rol",
+    placeholder: $("#assign_roles").data("placeholder"),
     dropdownParent: $("#modal-assign-task"),
     theme: "bootstrap4",
     width: "100%",
@@ -375,12 +375,21 @@ function openAssignModal(id, name) {
 }
 
 // Handle assign form submit
-$("#form-assign-task").on("submit", function (e) {
+ $("#form-assign-task").on("submit", function (e) {
   // load.hidden = false;  <-- ELIMINADO: El interceptor ahora maneja esto
   e.preventDefault();
   if (!selected_assign_id) return showError("Selecciona una tarea");
-  const selectedRole = $("#assign_roles").val() || null;
+
+  const selectedRole = $("#assign_roles").val();
   const startVal = $("#assign_start_date").val();
+
+  // --- INICIO VALIDACIÓN ---
+  if (!startVal || !selectedRole) {
+    showError("La fecha y el rol son obligatorios");
+    return;
+  }
+  // --- FIN VALIDACIÓN ---
+
   const payload = {};
   if (startVal) {
     try {
@@ -389,6 +398,7 @@ $("#form-assign-task").on("submit", function (e) {
       /* ignore */
     }
   }
+  
   // internal_responsibles expects an array of ids; use single selected role
   if (selectedRole) {
     const n = Number(selectedRole);
