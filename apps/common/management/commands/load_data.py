@@ -41,7 +41,7 @@ class Command(BaseCommand):
             username="planner",
             defaults={
                 "email": "",
-                "password": "password",
+                "password": "3edcvfr4",
                 "first_name": "Planner",
                 "last_name": "User",
             },
@@ -58,7 +58,7 @@ class Command(BaseCommand):
             username="supervisor_a",
             defaults={
                 "email": "",
-                "password": "password",
+                "password": "3edcvfr4",
                 "first_name": "Supervisor A",
                 "last_name": "User",
             },
@@ -75,7 +75,7 @@ class Command(BaseCommand):
             username="supervisor_b",
             defaults={
                 "email": "",
-                "password": "password",
+                "password": "3edcvfr4",
                 "first_name": "Supervisor B",
                 "last_name": "User",
             },
@@ -93,7 +93,7 @@ class Command(BaseCommand):
             username="board_client",
             defaults={
                 "email": "",
-                "password": "password",
+                "password": "2wsxcde3",
                 "first_name": "Board Client",
                 "last_name": "User",
             },

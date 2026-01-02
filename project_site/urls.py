@@ -50,8 +50,8 @@ urlpatterns = [
     path("usuarios/", login_required(pages.usuarios), name="usuarios"),
     path("login/", pages.first_login, name="first_login"),
     path("register/", pages.register, name="register"),
-    path("index/", pages.index, name="index"),
-    path("", pages.index, name="index"),
+    path("index/", pages.first_login, name="index"),
+    path("", pages.first_login, name="index"),
     path("brands/", pages.brands, name="brands"),
     path("models/", pages.models, name="models"),
     path("shops/", pages.shops, name="shops"),
@@ -59,9 +59,9 @@ urlpatterns = [
     path("shop_products/", pages.shop_products, name="shop_products"),
     path("redireccionar/", login_required(pages.user_redirect), name="redireccionar"),
     # paginas para la mina
-    path("task/", pages.task, name="task"),
-    path("taskSupervisor/", pages.taskSupervisor, name="taskSupervisor"),
-    path("dashboard/", pages.dashboard, name="dashboard"),
+    path("task/", login_required(pages.task), name="task"),
+    path("taskSupervisor/", login_required(pages.taskSupervisor), name="taskSupervisor"),
+    path("dashboard/", login_required(pages.dashboard), name="dashboard"),
 ]
 
 # This is for serving media on development stages
