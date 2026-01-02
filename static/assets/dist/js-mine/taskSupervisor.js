@@ -153,7 +153,7 @@ $(document).ready(function () {
         });
     },
     columns: [
-      {
+       {
         data: null,
         title: "",
         orderable: false,
@@ -166,11 +166,11 @@ $(document).ready(function () {
       },
       // { data: "id", title: "ID" , visible: false},
       // { data: "internal_percent_complete", title: "% Interno" },
-      // { data: "internal_planned_date", title: "Fecha planificada", render: (d) => formatDateTime(d) },
+       //{ data: "internal_planned_date", title: "Fecha planificada", render: (d) => formatDateTime(d) },
       // { data: "delete_record_flag", title: "Eliminado", render: (d) => (d ? 'Sí' : 'No') },
 
       { data: "wbs", title: "WBS" },
-      // { data: "task_code", title: "Código" },
+      { data: "task_code", title: "Código" },
       { data: "task_name", title: "Tarea" },
       {
         data: "internal_status",
@@ -190,23 +190,21 @@ $(document).ready(function () {
         render: (data) => (Array.isArray(data) ? data.join(", ") : data || ""),
       },
       // { data: "alert_names", title: "Alertas", render: (data) => (Array.isArray(data) ? data.join(", ") : (data || "")), orderable: false },
+      { data: "start_date", title: "Inicio", render: (d) => formatDateTime(d) },
       { data: "end_date", title: "Fin", render: (d) => formatDateTime(d) },
       {
         data: "act_start_date",
         title: "Inicio real",
         render: (d) => formatDateTime(d),
       },
+      
       {
         data: "act_end_date",
         title: "Fin real",
         render: (d) => formatDateTime(d),
       },
-      
-      {
-        data: "internal_planned_date",
-        title: "Inicio planificado",
-        render: (d) => formatDateTime(d),
-      },
+     
+
 
       {
         data: null,
@@ -215,7 +213,7 @@ $(document).ready(function () {
         title: "Acciones",
         orderable: false,
         render: (data, type, row) => {
-          const hasStart = !!row.internal_planned_date;
+          const hasStart = !!row.act_start_date;
           const hasEnd = !!row.act_end_date;
           const isCompleted = row.complete_pct === 100;
           let actionButtons = `<div class="btn-group" role="group">`;
@@ -298,7 +296,7 @@ $(document).ready(function () {
   $("table").on("click", ".btn-start", function () {
     const id = $(this).data("id");
     const now = new Date().toISOString();
-    axios.patch(API_URL + id + "/", { internal_planned_date: now })
+    axios.patch(API_URL + id + "/", { act_start_date: now })
       .then(() => {
         showSuccess("Tarea iniciada");
         $("table").DataTable().ajax.reload(null, false);

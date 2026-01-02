@@ -165,7 +165,7 @@ $(document).ready(function () {
       },
       // { data: "id", title: "ID" , visible: false},
       // { data: "internal_percent_complete", title: "% Interno" },
-      // { data: "internal_planned_date", title: "Fecha planificada", render: (d) => formatDateTime(d) },
+       //{ data: "internal_planned_date", title: "Fecha planificada", render: (d) => formatDateTime(d) },
       // { data: "delete_record_flag", title: "Eliminado", render: (d) => (d ? 'Sí' : 'No') },
 
       { data: "wbs", title: "WBS" },
@@ -189,17 +189,20 @@ $(document).ready(function () {
         render: (data) => (Array.isArray(data) ? data.join(", ") : data || ""),
       },
       // { data: "alert_names", title: "Alertas", render: (data) => (Array.isArray(data) ? data.join(", ") : (data || "")), orderable: false },
+      { data: "start_date", title: "Inicio", render: (d) => formatDateTime(d) },
       { data: "end_date", title: "Fin", render: (d) => formatDateTime(d) },
+      {
+        data: "act_start_date",
+        title: "Inicio real",
+        render: (d) => formatDateTime(d),
+      },
+      
       {
         data: "act_end_date",
         title: "Fin real",
         render: (d) => formatDateTime(d),
       },
-      {
-        data: "internal_planned_date",
-        title: "Inicio real",
-        render: (d) => formatDateTime(d),
-      },
+     
 
       {
         data: "",
