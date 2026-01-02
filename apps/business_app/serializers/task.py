@@ -35,6 +35,23 @@ class TaskSerializer(serializers.ModelSerializer):
             "alert_list",
         ]
 
+    def validate(self, data):
+        if (
+            "internal_planned_date" in data
+            and data.get("internal_responsibles", []) == []
+        ):
+            raise serializers.ValidationError(
+                "Responsible Roles must be set when Planned Date is set."
+            )
+        if (
+            data.get("internal_responsibles", []) != []
+            and not "internal_planned_date" in data
+        ):
+            raise serializers.ValidationError(
+                "Planned Date must be set when Responsible Roles are set."
+            )
+        return data
+
     def update(self, instance, validated_data):
         if (
             not instance.internal_planned_date
