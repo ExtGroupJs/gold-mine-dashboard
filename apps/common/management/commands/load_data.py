@@ -54,7 +54,7 @@ class Command(BaseCommand):
                 attrs=["blink"],
             )
         )
-        suspervior_a, _ = SystemUser.objects.get_or_create(
+        supervisor_a, _ = SystemUser.objects.get_or_create(
             username="supervisor_a",
             defaults={
                 "email": "",
@@ -63,7 +63,7 @@ class Command(BaseCommand):
                 "last_name": "User",
             },
         )
-        suspervior_a.groups.add(Groups.SUPERVISOR_AREA_A)
+        supervisor_a.groups.add(Groups.SUPERVISOR_AREA_A)
         print(
             colored(
                 "Created supervisor_a with SUPERVISOR_AREA_A role",
@@ -71,7 +71,7 @@ class Command(BaseCommand):
                 attrs=["blink"],
             )
         )
-        suspervior_b, _ = SystemUser.objects.get_or_create(
+        supervisor_b, _ = SystemUser.objects.get_or_create(
             username="supervisor_b",
             defaults={
                 "email": "",
@@ -80,7 +80,7 @@ class Command(BaseCommand):
                 "last_name": "User",
             },
         )
-        suspervior_b.groups.add(Groups.SUPERVISOR_AREA_B)
+        supervisor_b.groups.add(Groups.SUPERVISOR_AREA_B)
         print(
             colored(
                 "Created supervisor_b with SUPERVISOR_AREA_B role",
