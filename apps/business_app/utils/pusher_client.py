@@ -20,8 +20,7 @@ class PusherClient:
                 secret=settings.PUSHER_SECRET,
                 cluster=settings.PUSHER_CLUSTER,
                 ssl=True,
-                ssl_verify=True,
-                request_timeout=30,
+                timeout=30,
             )
         return cls._instance
 
