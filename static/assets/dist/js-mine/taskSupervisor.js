@@ -336,6 +336,9 @@ $(document).ready(function () {
     $("#start_from, #start_to, #end_from, #end_to").val("");
     $("table").DataTable().ajax.reload();
   });
+
+actualizarTareasSupervisor();
+
 });
 
 // Assign Modal Logic
@@ -732,3 +735,78 @@ $(document).on("click", "tbody td.details-control", function () {
     $(this).find("i").removeClass("fa-plus-square").addClass("fa-minus-square");
   }
 });
+
+function actualizarTareasSupervisor() {
+  // helper para obtener user id desde localStorage/sessionStorage
+  function getLoggedUserId() {
+    const keys = [
+      "user_id",
+      "userid",
+      "userId",
+      "usuario_id",
+      "logged_user_id",
+      "current_user_id",
+      "id",
+    ];
+    for (const k of keys) {
+      try {
+        const raw = localStorage.getItem(k) || sessionStorage.getItem(k);
+        if (!raw) continue;
+        let val = raw;
+        try {
+          val = JSON.parse(raw);
+        } catch (e) {}
+        if (val && typeof val === "object") {
+          if (val.id !== undefined && val.id !== null) {
+            const n = Number(val.id);
+            return !Number.isNaN(n) ? n : val.id;
+          }
+          if (val.user_id !== undefined && val.user_id !== null) {
+            const n = Number(val.user_id);
+            return !Number.isNaN(n) ? n : val.user_id;
+          }
+        }
+        if (typeof val === "number" && !Number.isNaN(val)) return val;
+        if (typeof val === "string" && val.trim() !== "") {
+          const n = Number(val);
+          if (!Number.isNaN(n)) return n;
+          return val;
+        }
+      } catch (e) {
+        // ignore and continue
+      }
+    }
+    return null;
+  }
+
+  if (typeof Pusher !== "undefined" && typeof pusherKey !== "undefined" && typeof pusherCluster !== "undefined") {
+    var pusher = new Pusher(pusherKey, { cluster: pusherCluster });
+
+    var task_channel = pusher.subscribe("task-channel");
+    task_channel.bind("update-task-event-for-supervisor", function (payload) {
+      try {
+        const list = Array.isArray(payload && payload.internal_responsibles)
+          ? payload.internal_responsibles
+          : null;
+        if (!list) return;
+
+        // const logged = getLoggedUserId();
+        const logged = localStorage.getItem('id');
+        if (logged === null) return;
+
+        const set = new Set(list.map((v) => String(v)));
+        if (set.has(String(logged))) {
+          try {
+          $("table").DataTable().ajax.reload(null, false);
+          } catch (e) {
+            location.reload();
+          }
+        }
+      } catch (e) {
+        console.error("error procesando update-task-event-for-supervisor", e);
+      }
+    });
+  } else {
+    console.warn("Pusher keys o Pusher no definidas. Actualización de tabla deshabilitada.");
+  }
+}

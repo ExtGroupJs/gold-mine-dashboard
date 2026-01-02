@@ -275,7 +275,12 @@ scratch. This page gets rid of all links and provides the needed markup only.
 
   <script src="{% static 'assets/plugins/toastr/toastr.min.js' %}"></script>
   <script src="{% static 'assets/plugins/sweetalert2/sweetalert2.min.js' %}"></script>
-
+<script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
+<script>
+    // Accede a las variables directamente desde el template
+    const pusherKey = "{{ pusher_key }}";
+    const pusherCluster = "{{ pusher_cluster }}";
+</script>
 
 
   <script>
