@@ -4,6 +4,10 @@
 
 {% block head-extra %}
 <link rel="stylesheet" href="{% static 'assets/dist/css/adminlte.min.css' %}">
+<link rel="stylesheet" href="{% static 'assets/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css' %}">
+<link rel="stylesheet" href="{% static 'assets/plugins/datatables-responsive/css/responsive.bootstrap4.min.css' %}">
+<link rel="stylesheet" href="{% static 'assets/plugins/datatables-buttons/css/buttons.bootstrap4.min.css' %}">
+
 {% endblock %}
 
 {% block content %}
@@ -34,7 +38,7 @@
           <div class="small-box bg-info">
             <div class="inner">
               <h3 id="total-tasks">0</h3>
-              <p>{% trans "Total" %}</p>
+              <p>{% trans "Total de tareas <br>(Total tasks)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-tasks"></i></div>
           </div>
@@ -43,7 +47,7 @@
           <div class="small-box bg-danger">
             <div class="inner">
               <h3 id="notstarted-tasks">0</h3>
-              <p>{% trans "No iniciadas" %}</p>
+              <p>{% trans "Tareas no iniciadas <br>(task not started)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-hourglass-start"></i></div>
           </div>
@@ -52,7 +56,7 @@
           <div class="small-box bg-warning">
             <div class="inner">
               <h3 id="inprogress-tasks">0</h3>
-              <p>{% trans "En progreso" %}</p>
+              <p>{% trans "Tareas en progreso <br>(Task in progress)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-play"></i></div>
           </div>
@@ -61,7 +65,7 @@
           <div class="small-box bg-success">
             <div class="inner">
               <h3 id="completed-tasks">0</h3>
-              <p>{% trans "Completadas" %}</p>
+              <p>{% trans "Tareas completadas <br>(Task completed)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-check"></i></div>
           </div>
@@ -70,7 +74,7 @@
           <div class="small-box bg-primary">
             <div class="inner">
               <h3 id="planned-tasks">0</h3>
-              <p>{% trans "Planificadas" %}</p>
+              <p>{% trans "Tareas nuevas <br>(New task)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-calendar"></i></div>
           </div>
@@ -88,7 +92,7 @@
           <div class="small-box bg-danger">
             <div class="inner">
               <h3 id="alerts-total">0</h3>
-              <p>{% trans "Alertas (total)" %}</p>
+              <p>{% trans "Total de Alertas <br>(Total alerts)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-exclamation-triangle"></i></div>
           </div>
@@ -97,7 +101,7 @@
           <div class="small-box bg-success">
             <div class="inner">
               <h3 id="alerts-information">0</h3>
-              <p>{% trans "Información" %}</p>
+              <p>{% trans "Información <br>(information kind)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-info-circle"></i></div>
           </div>
@@ -106,7 +110,7 @@
           <div class="small-box bg-warning">
             <div class="inner">
               <h3 id="alerts-warning">0</h3>
-              <p>{% trans "Advertencias" %}</p>
+              <p>{% trans "Advertencias <br>(warning kind)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-exclamation-circle"></i></div>
           </div>
@@ -115,7 +119,7 @@
           <div class="small-box bg-danger">
             <div class="inner">
               <h3 id="alerts-critical">0</h3>
-              <p>{% trans "Críticas" %}</p>
+              <p>{% trans "Críticas <br>(critical kind)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-fire"></i></div>
           </div>
@@ -127,11 +131,9 @@
         <div class="col-lg-6">
           <div class="card card-info">
             <div class="card-header">
-              <h3 class="card-title">{% trans "Distribución de estados" %}</h3>
+              <h3 class="card-title">{% trans "Distribución de estados <br>(Status distribution)" %}</h3>
               <div class="card-tools">
-                <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                  <i class="fas fa-minus"></i>
-                </button>
+               
               </div>
             </div>
             <div class="card-body">
@@ -142,11 +144,9 @@
         <div class="col-lg-6">
           <div class="card card-primary">
             <div class="card-header">
-              <h3 class="card-title">{% trans "Conteo por estado" %}</h3>
+              <h3 class="card-title">{% trans "Conteo de tareas <br> (Tasks count)" %}</h3>
               <div class="card-tools">
-                <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                  <i class="fas fa-minus"></i>
-                </button>
+                
               </div>
             </div>
             <div class="card-body">
@@ -161,11 +161,9 @@
           <div class="col-lg-6">
             <div class="card card-warning">
               <div class="card-header">
-                <h3 class="card-title">{% trans "Alertas por severidad" %}</h3>
+                <h3 class="card-title">{% trans "Alertas por severidad <br>(Alerts by severity)" %}</h3>
                 <div class="card-tools">
-                  <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                    <i class="fas fa-minus"></i>
-                  </button>
+                
                 </div>
               </div>
               <div class="card-body">
@@ -176,11 +174,9 @@
           <div class="col-lg-6">
             <div class="card card-secondary">
               <div class="card-header">
-                <h3 class="card-title">{% trans "Conteo de alertas" %}</h3>
+                <h3 class="card-title">{% trans "Conteo de alertas <br>(Alerts count)" %}</h3>
                 <div class="card-tools">
-                  <button type="button" class="btn btn-tool" data-card-widget="collapse">
-                    <i class="fas fa-minus"></i>
-                  </button>
+                  
                 </div>
               </div>
               <div class="card-body">
@@ -189,21 +185,71 @@
             </div>
           </div>
         </div>
+        <!-- Table -->
+        <div class="row mb-3">
+          <div class="col-lg-6">
+            <div class="card card-warning">
+              <div class="card-header">
+                <h3 class="card-title">{% trans "Tareas <br>(Task)" %}</h3>
+                <div class="card-tools">
+               
+                </div>
+              </div>
+              <div class="card-body">
+              <table id="tabla-de-Datos" class="table table-bordered table-striped " style="text-align: center;width: 100%;">
 
-      <!-- Refresh Button -->
-      <div class="row">
-        <div class="col-12 text-center">
-          <!-- <button id="btn-refresh-dashboard" class="btn btn-primary btn-lg">
-            <i class="fas fa-sync-alt mr-2"></i>{% trans "Actualizar" %}
-          </button> -->
+              </table>
+              </div>
+            </div>
+          </div>
+          <div class="col-lg-6">
+            <div class="card card-secondary">
+              <div class="card-header">
+                <h3 class="card-title">{% trans "Alertas <br>(Alerts)" %}</h3>
+                <div class="card-tools">
+                 
+                </div>
+              </div>
+              <div class="card-body">
+               <table id="tabla-de-Datos-alerts" class="table table-bordered table-striped " style="text-align: center;width: 100%;">
+ </table>
+              </div>
+            </div>
+          </div>
         </div>
-      </div>
+
+  
     </div>
   </div>
 </div>
 {% endblock %}
 
-{% block script %}
+{% block script %} <!-- DataTables & Plugins -->
+<script src="{% static 'assets/plugins/datatables/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'assets/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
+<script src="{% static 'assets/plugins/datatables-responsive/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'assets/plugins/datatables-responsive/js/responsive.bootstrap4.min.js' %}"></script>
+<script src="{% static 'assets/plugins/datatables-buttons/js/dataTables.buttons.min.js' %}"></script>
+<script src="{% static 'assets/plugins/datatables-buttons/js/buttons.bootstrap4.min.js' %}"></script>
+<script src="{% static 'assets/plugins/jszip/jszip.min.js' %}"></script>
+<script src="{% static 'assets/plugins/pdfmake/pdfmake.min.js' %}"></script>
+<script src="{% static 'assets/plugins/pdfmake/vfs_fonts.js' %}"></script>
+<script src="{% static 'assets/plugins/datatables-buttons/js/buttons.html5.min.js' %}"></script>
+<script src="{% static 'assets/plugins/datatables-buttons/js/buttons.print.min.js' %}"></script>
+<script src="{% static 'assets/plugins/datatables-buttons/js/buttons.colVis.min.js' %}"></script>
+<script src="{% static 'assets/plugins/bs-custom-file-input/bs-custom-file-input.min.js' %}"></script>
+<script src="{% static 'assets/plugins/jquery-validation/jquery.validate.min.js' %}"></script>
+<script src="{% static 'assets/plugins/jquery-validation/additional-methods.min.js' %}"></script>
+<script src="{% static 'assets/plugins/jquery-validation/localization/messages_es.js' %}"></script>
+<script src="{% static 'assets/dist/js/axios.min.js' %}"></script>
+
+
+<script src="{% static 'assets/plugins/select2/js/select2.full.min.js' %}"></script>
+
+<!-- Page specific script -->
+
+
+
 <script src="{% static 'assets/dist/js/axios.min.js' %}"></script>
 <script src="{% static 'assets/plugins/chart.js/Chart.bundle.js' %}"></script>
 <script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
@@ -215,3 +261,4 @@
 <script src="{% static 'assets/dist/js-mine/dashboard.js' %}"></script>
 
 {% endblock %}
+

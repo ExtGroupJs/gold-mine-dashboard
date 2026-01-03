@@ -13,7 +13,7 @@ from rest_framework import status
 from drf_spectacular.utils import extend_schema
 from django.utils.translation import gettext_lazy as _
 from rest_framework.decorators import action
-from ..utils.task_counters import get_alert_counters
+from ..utils.counters import get_alert_counters
 # Create your views here.
 
 

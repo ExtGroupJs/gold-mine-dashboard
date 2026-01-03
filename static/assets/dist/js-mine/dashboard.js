@@ -29,31 +29,44 @@ function renderTaskCounters(taskInfo) {
     if (node) node.textContent = value || 0;
   };
 
-  updateElement('total-tasks', taskInfo.total || 0);
-  updateElement('notstarted-tasks', taskInfo['Not started'] || 0);
-  updateElement('inprogress-tasks', taskInfo['In progress'] || 0);
-  updateElement('completed-tasks', taskInfo['Completed'] || 0);
-  updateElement('planned-tasks', taskInfo['Planned'] || 0);
-  updateElement('hold-tasks', taskInfo['Hold'] || 0);
+  updateElement("total-tasks", taskInfo.total || 0);
+  updateElement("notstarted-tasks", taskInfo["Not started"] || 0);
+  updateElement("inprogress-tasks", taskInfo["In progress"] || 0);
+  updateElement("completed-tasks", taskInfo["Completed"] || 0);
+  updateElement("planned-tasks", taskInfo["Planned"] || 0);
+  updateElement("hold-tasks", taskInfo["Hold"] || 0);
 
-  // Task charts (pie + bar) — include all keys from taskInfo except 'total'
+  // Task charts (pie + bar) — use percentages for charts
   const rawTaskKeys = Object.keys(taskInfo || {});
-  const taskLabels = rawTaskKeys.filter(k => k.toLowerCase() !== 'total');
-  const taskData = taskLabels.map(k => taskInfo[k] || 0);
+  const taskLabels = rawTaskKeys.filter(
+    (k) => k.toLowerCase() !== "total" && !k.includes("_percent")
+  );
+  const taskData = taskLabels.map((k) => taskInfo[k + "_percent"] || 0);
 
   const taskColorMap = {
-    'not started': '#dc3545',
-    'in progress': '#ffc107',
-    'completed': '#28a745',
-    'planned': '#007bff',
-    'hold': '#6c757d',
-    'backlog': '#6c757d'
+    "not started": "#dc3545",
+    "in progress": "#ffc107",
+    completed: "#28a745",
+    planned: "#007bff",
+    hold: "#6c757d",
+    backlog: "#6c757d",
   };
-  const taskPalette = ['#007bff', '#28a745', '#ffc107', '#6c757d', '#17a2b8', '#fd7e14', '#6610f2'];
-  const taskColors = taskLabels.map((label, i) => taskColorMap[label.toLowerCase()] || taskPalette[i % taskPalette.length]);
+  const taskPalette = [
+    "#007bff",
+    "#28a745",
+    "#ffc107",
+    "#6c757d",
+    "#17a2b8",
+    "#fd7e14",
+    "#6610f2",
+  ];
+  const taskColors = taskLabels.map(
+    (label, i) =>
+      taskColorMap[label.toLowerCase()] || taskPalette[i % taskPalette.length]
+  );
 
-  renderPieChart('pie-chart', taskLabels, taskData, taskColors);
-  renderBarChart('bar-chart', taskLabels, taskData, taskColors);
+  renderPieChart("pie-chart", taskLabels, taskData, taskColors);
+  renderBarChart("bar-chart", taskLabels, taskData, taskColors);
 }
 
 // Render alert counters and charts (separated so updates can be independent)
@@ -64,38 +77,47 @@ function renderAlertCounters(alertInfo) {
     if (node) node.textContent = value || 0;
   };
 
-  const alertTotal = alertInfo && (alertInfo.total || alertInfo['total']) ? (alertInfo.total || alertInfo['total']) : 0;
-  updateElement('alerts-total', alertTotal || 0);
+  const alertTotal =
+    alertInfo && (alertInfo.total || alertInfo["total"])
+      ? alertInfo.total || alertInfo["total"]
+      : 0;
+  updateElement("alerts-total", alertTotal || 0);
 
   const getAlertValue = (name) => {
     if (!alertInfo) return 0;
-    const k = Object.keys(alertInfo).find(key => key.toLowerCase() === name.toLowerCase());
+    const k = Object.keys(alertInfo).find(
+      (key) => key.toLowerCase() === name.toLowerCase()
+    );
     return k ? alertInfo[k] : 0;
   };
-  updateElement('alerts-information', getAlertValue('Information'));
-  updateElement('alerts-warning', getAlertValue('Warning'));
-  updateElement('alerts-critical', getAlertValue('Critical'));
+  updateElement("alerts-information", getAlertValue("Information"));
+  updateElement("alerts-warning", getAlertValue("Warning"));
+  updateElement("alerts-critical", getAlertValue("Critical"));
 
   const rawAlertKeys = Object.keys(alertInfo || {});
-  const alertLabels = rawAlertKeys.filter(k => k.toLowerCase() !== 'total');
-  const alertData = alertLabels.map(k => alertInfo[k] || 0);
+  const alertLabels = rawAlertKeys.filter(
+    (k) => k.toLowerCase() !== "total" && !k.includes("_percent")
+  );
+  const alertData = alertLabels.map((k) => alertInfo[k + "_percent"] || 0);
 
   const severityColorMap = {
-    'critical': '#dc3545',
-    'warning': '#ffc107',
-    'information': '#28a745',
-    'info': '#28a745'
+    critical: "#dc3545",
+    warning: "#ffc107",
+    information: "#28a745",
+    info: "#28a745",
   };
-  const defaultAlertColor = '#6c757d';
-  const alertColors = alertLabels.map(l => severityColorMap[l.toLowerCase()] || defaultAlertColor);
+  const defaultAlertColor = "#6c757d";
+  const alertColors = alertLabels.map(
+    (l) => severityColorMap[l.toLowerCase()] || defaultAlertColor
+  );
 
-  renderPieChart('alert-pie-chart', alertLabels, alertData, alertColors);
-  renderBarChart('alert-bar-chart', alertLabels, alertData, alertColors);
+  renderPieChart("alert-pie-chart", alertLabels, alertData, alertColors);
+  renderBarChart("alert-bar-chart", alertLabels, alertData, alertColors);
 }
 
 // --- CORRECCIÓN AQUÍ ---
 // Usamos un objeto para guardar múltiples instancias de gráficos
-const chartInstances = {}; 
+const chartInstances = {};
 
 function renderPieChart(canvasId, labels, data, colors = null) {
   const ctx = document.getElementById(canvasId);
@@ -106,21 +128,72 @@ function renderPieChart(canvasId, labels, data, colors = null) {
     chartInstances[canvasId].destroy();
   }
 
-  const background = colors && Array.isArray(colors) && colors.length ? colors : ['#dc3545', '#ffc107', '#28a745'];
-  
+  const background =
+    colors && Array.isArray(colors) && colors.length
+      ? colors
+      : ["#dc3545", "#ffc107", "#28a745"];
+
   // Guardamos la nueva instancia usando el ID del canvas como clave
   chartInstances[canvasId] = new Chart(ctx, {
-    type: 'pie',
+    type: "pie",
     data: {
-      labels,
-      datasets: [{
-        data,
-        backgroundColor: background,
-        borderColor: background.map(() => '#fff'),
-        borderWidth: 2
-      }]
+      labels, // Estos nombres son los base para la leyenda
+      datasets: [
+        {
+          data,
+          backgroundColor: background,
+          borderColor: background.map(() => "#fff"),
+          borderWidth: 2,
+        },
+      ],
     },
-    options: { responsive: true, maintainAspectRatio: false }
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: "right", // Puedes poner 'top', 'bottom', 'left' o 'right'
+          labels: {
+            // Esta función personaliza el texto de cada item de la leyenda
+            generateLabels: function (chart) {
+              const data = chart.data;
+              if (data.labels.length && data.datasets.length) {
+                // Calculamos el total para mostrar porcentaje (opcional)
+                const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
+
+                return data.labels.map((label, i) => {
+                  const value = data.datasets[0].data[i];
+                  const percentage = ((value / total) * 100).toFixed(1) + "%";
+
+                  return {
+                    text: `${label}: ${value} (${percentage})`, // Formato: "Etiqueta: Valor (Porcentaje)"
+                    fillStyle: data.datasets[0].backgroundColor[i],
+                    hidden: false,
+                    index: i,
+                  };
+                });
+              }
+              return [];
+            },
+          },
+        },
+        tooltip: {
+          // Esto es opcional, pero ayuda a ver el dato al pasar el mouse
+          callbacks: {
+            label: function (context) {
+              let label = context.label || "";
+              if (label) {
+                label += ": ";
+              }
+              let value = context.raw;
+              let total = context.chart._metasets[context.datasetIndex].total;
+              let percentage = ((value / total) * 100).toFixed(1) + "%";
+              return label + value + " (" + percentage + ")";
+            },
+          },
+        },
+      },
+    },
   });
 }
 
@@ -134,32 +207,33 @@ function renderBarChart(canvasId, labels, data, colors = null) {
   }
 
   const useArrayColors = colors && Array.isArray(colors) && colors.length;
-  const background = useArrayColors ? colors : '#007bff';
-  const border = useArrayColors ? colors.map(() => '#000') : '#0056b3';
-  
+  const background = useArrayColors ? colors : "#007bff";
+  const border = useArrayColors ? colors.map(() => "#000") : "#0056b3";
+
   // Guardamos la nueva instancia usando el ID del canvas como clave
   chartInstances[canvasId] = new Chart(ctx, {
-    type: 'bar',
+    type: "bar",
     data: {
       labels,
-      datasets: [{
-        label: 'Tareas',
-        data,
-        backgroundColor: background,
-        borderColor: border,
-        borderWidth: 1
-      }]
+      datasets: [
+        {
+          label: "Tareas",
+          data,
+          backgroundColor: background,
+          borderColor: border,
+          borderWidth: 1,
+        },
+      ],
     },
     options: {
       responsive: true,
       maintainAspectRatio: false,
       scales: {
-        yAxes: [{ ticks: { beginAtZero: true } }] // Nota: Esto es sintaxis de Chart.js v2. Si usas v3+, esto podría fallar.
-      }
-    }
+        yAxes: [{ ticks: { beginAtZero: true } }], // Nota: Esto es sintaxis de Chart.js v2. Si usas v3+, esto podría fallar.
+      },
+    },
   });
 }
-
 
 // Render dashboard
 function renderDashboard() {
@@ -167,82 +241,268 @@ function renderDashboard() {
   fetchTaskCounters()
     .then((res) => {
       // Endpoint may return object directly or under `task_info`
-      const payload = res.data && res.data.task_info ? res.data.task_info : res.data;
+      const payload =
+        res.data && res.data.task_info ? res.data.task_info : res.data;
       renderTaskCounters(payload);
     })
-    .catch((err) => showError('Error cargando contadores de tareas', err.message || ''));
+    .catch((err) =>
+      showError("Error cargando contadores de tareas", err.message || "")
+    );
 
   // Fetch and render alert counters independently
   fetchAlertCounters()
     .then((res) => {
-      const payload = res.data && res.data.alert_info ? res.data.alert_info : res.data;
+      const payload =
+        res.data && res.data.alert_info ? res.data.alert_info : res.data;
       renderAlertCounters(payload);
     })
-    .catch((err) => showError('Error cargando contadores de alertas', err.message || ''));
+    .catch((err) =>
+      showError("Error cargando contadores de alertas", err.message || "")
+    );
 }
 
 // Initialize
-document.addEventListener('DOMContentLoaded', function() {
-  const btn = document.getElementById('btn-refresh-dashboard');
-  if (btn) btn.addEventListener('click', () => renderDashboard());
+document.addEventListener("DOMContentLoaded", function () {
+  const btn = document.getElementById("btn-refresh-dashboard");
+  if (btn) btn.addEventListener("click", () => renderDashboard());
   renderDashboard();
-  
+
   // Configuración de Pusher
-  if (typeof pusherKey !== 'undefined' && typeof pusherCluster !== 'undefined') {
-      var pusher = new Pusher(pusherKey, {
-        cluster: pusherCluster
-      });
+  if (
+    typeof pusherKey !== "undefined" &&
+    typeof pusherCluster !== "undefined"
+  ) {
+    var pusher = new Pusher(pusherKey, {
+      cluster: pusherCluster,
+    });
 
-      var dashboard_channel = pusher.subscribe('dashboard-channel');
-      // The realtime update may contain task or alert data (or both).
-      dashboard_channel.bind('update-task-event', function(data) {
-        // If it's the combined structure with task_info/alert_info
-          renderTaskCounters(data);
-      }); 
-      dashboard_channel.bind('update-alert-event', function(data) {
-        // If it's the combined structure with task_info/alert_info
-          renderAlertCounters(data);
-      }); 
-      
-      var alert_channel = pusher.subscribe('alert-channel');
-      
-      // --- Configuración de Toast (No intrusivo) ---
-      const Toast = Swal.mixin({
-        toast: true,
-        position: 'top-end', // Esquina superior derecha
-        showConfirmButton: false,
-        timer: 5000,         // Se cierra solo en 5 segundos
-        timerProgressBar: true,
-        didOpen: (toast) => {
-          toast.addEventListener('mouseenter', Swal.stopTimer)
-          toast.addEventListener('mouseleave', Swal.resumeTimer)
-        }
-      });
+    var dashboard_channel = pusher.subscribe("dashboard-channel");
+    // The realtime update may contain task or alert data (or both).
+    dashboard_channel.bind("update-task-event", function (data) {
+      // If it's the combined structure with task_info/alert_info
+      renderTaskCounters(data);
+      $("#tabla-de-Datos").DataTable().ajax.reload(null, false);
+      $("#tabla-de-Datos-alerts").DataTable().ajax.reload(null, false);
+    });
+    dashboard_channel.bind("update-alert-event", function (data) {
+      // If it's the combined structure with task_info/alert_info
+      renderAlertCounters(data);
+    });
 
-      alert_channel.bind('deleted-alert-event', function(data) {
-        // Validamos que existan los datos para evitar errores
-        console.log("Alerta eliminada recibida:", data);
-        if(data && data.task) {
-            Toast.fire({ 
-              icon: "info", 
-              title: `Alerta ELIMINADA para: ${data.task}`, 
-              text: `(${data.level.toUpperCase()}) ${data.alert_description}`
-            });
-        }
-      });
+    var alert_channel = pusher.subscribe("alert-channel");
 
-      alert_channel.bind('new-alert-event', function(data) {
+    // --- Configuración de Toast (No intrusivo) ---
+    const Toast = Swal.mixin({
+      toast: true,
+      position: "top-end", // Esquina superior derecha
+      showConfirmButton: false,
+      timer: 5000, // Se cierra solo en 5 segundos
+      timerProgressBar: true,
+      didOpen: (toast) => {
+        toast.addEventListener("mouseenter", Swal.stopTimer);
+        toast.addEventListener("mouseleave", Swal.resumeTimer);
+      },
+    });
 
-         // Validamos que existan los datos
-        if(data && data.task) {
-            Toast.fire({ 
-              icon: "warning", 
-              title: `¡NUEVA Alerta para: ${data.task}!`, 
-              text: `(${data.level.toUpperCase()}) ${data.alert_description}`
-            });
-        }
-      });
+    alert_channel.bind("deleted-alert-event", function (data) {
+      // Validamos que existan los datos para evitar errores
+      console.log("Alerta eliminada recibida:", data);
+      if (data && data.task) {
+        Toast.fire({
+          icon: "info",
+          title: `Alerta ELIMINADA para: ${data.task}`,
+          text: `(${data.level.toUpperCase()}) ${data.alert_description}`,
+        });
+      }
+    });
+
+    alert_channel.bind("new-alert-event", function (data) {
+      // Validamos que existan los datos
+      if (data && data.task) {
+        Toast.fire({
+          icon: "warning",
+          title: `¡NUEVA Alerta para: ${data.task}!`,
+          text: `(${data.level.toUpperCase()}) ${data.alert_description}`,
+        });
+      }
+    });
   } else {
-      console.warn("Pusher keys no definidas. Las alertas en tiempo real no funcionarán.");
+    console.warn(
+      "Pusher keys no definidas. Las alertas en tiempo real no funcionarán."
+    );
   }
+
+  paintTaskTable();
+  paintTaskTableAlerts();
+
 });
+
+function paintTaskTable() {
+  $("#tabla-de-Datos").addClass("table table-hover");
+
+  $("#tabla-de-Datos").DataTable({
+    dom: '<"row"<"col-sm-6"l><"col-sm-6"f>> t i p',
+    serverSide: true,
+    processing: true,
+    search: { return: true },
+    ajax: function (data, callback, settings) {
+      let dir = "";
+      if (data.order && data.order[0].dir === "desc") dir = "-";
+      const orderCol = data.columns && data.columns[data.order[0].column].data;
+
+      // include date filters when present
+      const params = {
+        page_size: data.length,
+        page: data.start / data.length + 1,
+        search: data.search.value,
+        ordering: dir + orderCol,
+      };
+    
+      const API_URL = "/business-gestion/task/";
+      axios
+        .get(API_URL, { params })
+        .then((res) => {
+          callback({
+            recordsTotal: res.data.count,
+            recordsFiltered: res.data.count,
+            data: res.data.results,
+          });
+        })
+        .catch((err) => {
+          showError("Error cargando datos", err.message || "");
+        });
+    },
+    columns: [
+      { data: "wbs", title: "WBS" },
+      { data: "task_code", title: "Código" },
+      { data: "task_name", title: "Tarea" },
+      {
+        data: "internal_status",
+        className: 'dt-body-center',
+        title: "Estado",
+        render: (data) => getStatusIcon(data),
+      },
+      { data: "complete_pct", title: "% Completo" },
+      
+    ],
+    columnDefs: [],
+  });
+
+  // Color rows based on start/end dates after table draw
+  const table = $("#tabla-de-Datos").DataTable();
+
+  table.on("draw", function () {
+    const rows = table.rows({ page: "current" }).nodes();
+    table
+      .rows({ page: "current" })
+      .data()
+      .each(function (d, i) {
+        const rowNode = rows[i];
+      
+        $(rowNode).removeClass(
+          "task-status-started task-status-completed task-status-notstarted"
+        );
+        // now using actual dates returned by the API
+        const estatus = d.internal_status;
+     
+        if (d.internal_status=="H") {
+          $(rowNode).addClass("bg-danger");
+        } else if (d.internal_status=='C') {
+          $(rowNode).addClass("bg-success");
+        } else if (d.internal_status=='N') {          
+            $(rowNode).addClass("bg-gray");        
+        }else if (d.internal_status=='I') {          
+            $(rowNode).addClass("bg-primary");        
+        }else if (d.internal_status=='P') {          
+            $(rowNode).addClass("bg-info");        
+        }
+      });
+  });
+}
+function paintTaskTableAlerts() {
+  $("#tabla-de-Datos-alerts").addClass("table table-hover");
+
+  $("#tabla-de-Datos-alerts").DataTable({
+    dom: '<"row"<"col-sm-6"l><"col-sm-6"f>> t i p',
+    serverSide: true,
+    processing: true,
+    search: { return: true },
+    ajax: function (data, callback, settings) {
+      let dir = "";
+      if (data.order && data.order[0].dir === "desc") dir = "-";
+      const orderCol = data.columns && data.columns[data.order[0].column].data;
+
+      // include date filters when present
+      const params = {
+        page_size: data.length,
+        page: data.start / data.length + 1,
+        search: data.search.value,
+        ordering: dir + orderCol,
+      };
+    
+      const API_URL = "/business-gestion/alert/";
+      axios
+        .get(API_URL, { params })
+        .then((res) => {
+          callback({
+            recordsTotal: res.data.count,
+            recordsFiltered: res.data.count,
+            data: res.data.results,
+          });
+        })
+        .catch((err) => {
+          showError("Error cargando datos", err.message || "");
+        });
+    },
+    columns: [
+      { data: "task_name", title: "Tarea" },
+      { data: "short_description", title: "Descripción Corta" },
+      { data: "description", title: "Descripción" },
+      { data: "kind", title: "típo" },
+      
+    
+    ],
+    columnDefs: [],
+  });
+
+  // Color rows based on start/end dates after table draw
+  const table = $("#tabla-de-Datos-alerts").DataTable();
+
+  table.on("draw", function () {
+    const rows = table.rows({ page: "current" }).nodes();
+    table
+      .rows({ page: "current" })
+      .data()
+      .each(function (d, i) {
+        const rowNode = rows[i];
+      
+        $(rowNode).removeClass(
+          "task-status-started task-status-completed task-status-notstarted"
+        );
+        // now using actual dates returned by the API
+        
+     
+        if (d.kind=="C") {
+          $(rowNode).addClass("bg-danger");
+        } else if (d.kind=='W') {
+          $(rowNode).addClass("bg-warning");
+        } else if (d.kind=='I') {          
+            $(rowNode).addClass("bg-info");        
+        }
+      });
+  });
+}
+
+function getStatusIcon(statusCode) {
+  const statusMap = {
+    N: { icon: "fa-circle", color: "#6c757d", label: "Not started" }, // Gris
+    C: { icon: "fa-check-circle", color: "#28a745", label: "Completed" }, // Verde
+    I: { icon: "fa-circle-notch", color: "#007bff", label: "In progress" }, // Azul
+    H: { icon: "fa-pause-circle", color: "#ff0707ff", label: "Hold" }, // Amarillo
+    P: { icon: "fa-hourglass-start", color: "#17a2b8", label: "Planned" }, // Cian
+  };
+
+  const status = statusMap[statusCode] || statusMap["N"];
+  // return ``;
+  return `<span class="info-box-icon"><i class="fas ${status.icon}"  style="font-size: xx-large;" title="${status.label}"></i></span>`;
+}
