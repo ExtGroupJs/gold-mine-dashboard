@@ -33,7 +33,9 @@ class AlertSerializer(serializers.ModelSerializer):
         if task.internal_status == Task.INTERNAL_STATUS.COMPLETED:
             return
         if Alert.objects.filter(task=task, kind=Alert.KIND.CRITICAL).exists():
-            task.internal_status = Task.INTERNAL_STATUS.HOLD
+            task.internal_status = Task.INTERNAL_STATUS.HOLD        
+        elif Alert.objects.filter(task=task, kind=Alert.KIND.WARNING).exists():
+            task.internal_status = Task.INTERNAL_STATUS.WARNING
         else:
             task.internal_status = Task.INTERNAL_STATUS.IN_PROGRESS
         task.save(update_fields=["internal_status"])

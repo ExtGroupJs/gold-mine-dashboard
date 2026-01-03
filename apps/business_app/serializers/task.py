@@ -12,12 +12,15 @@ class TaskSerializer(serializers.ModelSerializer):
         source="internal_responsibles", many=True
     )
     alert_list = AlertSerializer(source="alerts", many=True, read_only=True)
+    internal_status_name = serializers.SerializerMethodField()
+
 
     class Meta:
         model = Task
         fields = [
             "id",
             "internal_status",
+            "internal_status_name",
             "internal_percent_complete",
             "internal_planned_date",
             "internal_responsibles",
@@ -35,7 +38,10 @@ class TaskSerializer(serializers.ModelSerializer):
             "alerts",
             "alert_list",
         ]
-
+    
+    def get_internal_status_name(self, obj):
+        return str(Task.INTERNAL_STATUS(obj.internal_status).label)
+    
     def validate(self, data):
         if (
             "internal_planned_date" in data
