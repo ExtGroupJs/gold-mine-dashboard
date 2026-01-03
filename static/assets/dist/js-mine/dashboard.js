@@ -137,7 +137,7 @@ function renderPieChart(canvasId, labels, data, colors = null) {
   chartInstances[canvasId] = new Chart(ctx, {
     type: "pie",
     data: {
-      labels,
+      labels, // Estos nombres son los base para la leyenda
       datasets: [
         {
           data,
@@ -147,7 +147,53 @@ function renderPieChart(canvasId, labels, data, colors = null) {
         },
       ],
     },
-    options: { responsive: true, maintainAspectRatio: false },
+    options: {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: "right", // Puedes poner 'top', 'bottom', 'left' o 'right'
+          labels: {
+            // Esta función personaliza el texto de cada item de la leyenda
+            generateLabels: function (chart) {
+              const data = chart.data;
+              if (data.labels.length && data.datasets.length) {
+                // Calculamos el total para mostrar porcentaje (opcional)
+                const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
+
+                return data.labels.map((label, i) => {
+                  const value = data.datasets[0].data[i];
+                  const percentage = ((value / total) * 100).toFixed(1) + "%";
+
+                  return {
+                    text: `${label}: ${value} (${percentage})`, // Formato: "Etiqueta: Valor (Porcentaje)"
+                    fillStyle: data.datasets[0].backgroundColor[i],
+                    hidden: false,
+                    index: i,
+                  };
+                });
+              }
+              return [];
+            },
+          },
+        },
+        tooltip: {
+          // Esto es opcional, pero ayuda a ver el dato al pasar el mouse
+          callbacks: {
+            label: function (context) {
+              let label = context.label || "";
+              if (label) {
+                label += ": ";
+              }
+              let value = context.raw;
+              let total = context.chart._metasets[context.datasetIndex].total;
+              let percentage = ((value / total) * 100).toFixed(1) + "%";
+              return label + value + " (" + percentage + ")";
+            },
+          },
+        },
+      },
+    },
   });
 }
 
@@ -235,6 +281,8 @@ document.addEventListener("DOMContentLoaded", function () {
     dashboard_channel.bind("update-task-event", function (data) {
       // If it's the combined structure with task_info/alert_info
       renderTaskCounters(data);
+      $("#tabla-de-Datos").DataTable().ajax.reload(null, false);
+      $("#tabla-de-Datos-alerts").DataTable().ajax.reload(null, false);
     });
     dashboard_channel.bind("update-alert-event", function (data) {
       // If it's the combined structure with task_info/alert_info
@@ -285,6 +333,8 @@ document.addEventListener("DOMContentLoaded", function () {
   }
 
   paintTaskTable();
+  paintTaskTableAlerts();
+
 });
 
 function paintTaskTable() {
@@ -354,7 +404,6 @@ function paintTaskTable() {
         );
         // now using actual dates returned by the API
         const estatus = d.internal_status;
-console.log('✌️d.internal_status --->', d.internal_status);
      
         if (d.internal_status=="H") {
           $(rowNode).addClass("bg-danger");
@@ -365,6 +414,79 @@ console.log('✌️d.internal_status --->', d.internal_status);
         }else if (d.internal_status=='I') {          
             $(rowNode).addClass("bg-primary");        
         }else if (d.internal_status=='P') {          
+            $(rowNode).addClass("bg-info");        
+        }
+      });
+  });
+}
+function paintTaskTableAlerts() {
+  $("#tabla-de-Datos-alerts").addClass("table table-hover");
+
+  $("#tabla-de-Datos-alerts").DataTable({
+    dom: '<"row"<"col-sm-6"l><"col-sm-6"f>> t i p',
+    serverSide: true,
+    processing: true,
+    search: { return: true },
+    ajax: function (data, callback, settings) {
+      let dir = "";
+      if (data.order && data.order[0].dir === "desc") dir = "-";
+      const orderCol = data.columns && data.columns[data.order[0].column].data;
+
+      // include date filters when present
+      const params = {
+        page_size: data.length,
+        page: data.start / data.length + 1,
+        search: data.search.value,
+        ordering: dir + orderCol,
+      };
+    
+      const API_URL = "/business-gestion/alert/";
+      axios
+        .get(API_URL, { params })
+        .then((res) => {
+          callback({
+            recordsTotal: res.data.count,
+            recordsFiltered: res.data.count,
+            data: res.data.results,
+          });
+        })
+        .catch((err) => {
+          showError("Error cargando datos", err.message || "");
+        });
+    },
+    columns: [
+      { data: "task_name", title: "Tarea" },
+      { data: "short_description", title: "Descripción Corta" },
+      { data: "description", title: "Descripción" },
+      { data: "kind", title: "típo" },
+      
+    
+    ],
+    columnDefs: [],
+  });
+
+  // Color rows based on start/end dates after table draw
+  const table = $("#tabla-de-Datos-alerts").DataTable();
+
+  table.on("draw", function () {
+    const rows = table.rows({ page: "current" }).nodes();
+    table
+      .rows({ page: "current" })
+      .data()
+      .each(function (d, i) {
+        const rowNode = rows[i];
+      
+        $(rowNode).removeClass(
+          "task-status-started task-status-completed task-status-notstarted"
+        );
+        // now using actual dates returned by the API
+        
+     
+        if (d.kind=="C") {
+          $(rowNode).addClass("bg-danger");
+        } else if (d.kind=='W') {
+          $(rowNode).addClass("bg-warning");
+        } else if (d.kind=='I') {          
             $(rowNode).addClass("bg-info");        
         }
       });
