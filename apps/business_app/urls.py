@@ -1,6 +1,6 @@
 # from rest_framework import routers
 from rest_framework_extensions.routers import ExtendedSimpleRouter
-from .views.task import TaskViewSet
+from .views.task import TaskViewSet, TaskEnumsViewSet
 from .views.alert import AlertViewSet, AlertEnumsViewSet
 from .views.excel_exporter import ExcelExporterViewSet
 
@@ -12,6 +12,11 @@ router.register(
     "task",
     TaskViewSet,
     basename="task",
+)
+router.register(
+    "task-enums",
+    TaskEnumsViewSet,
+    basename="task-enums",
 )
 router.register(
     "alert",
