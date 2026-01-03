@@ -457,6 +457,7 @@ function paintTaskTableAlerts() {
     columns: [
       { data: "task_name", title: "Nombre de tarea<br>(Task name)" },
       { data: "short_description", title: "Observación<br>(Observation)" },
+      { data: "motive_alert_status_name", title: "Motivo<br>(Motive)" },
       { data: "kind_name", title: "Tipo<br>(Kind)" },
       
     

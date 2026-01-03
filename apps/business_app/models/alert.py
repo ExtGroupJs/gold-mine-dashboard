@@ -10,13 +10,23 @@ class Alert(GenericLogMixin, SafeDeleteModel, models.Model):
         WARNING = "W", _("Warning") # Amarillo
         CRITICAL = "C", _("Critical") # Rojo    
     class MOTIVES(models.TextChoices):
-        WARNING = "W", _("Warning") # Amarillo
-        CRITICAL = "C", _("Critical") # Rojo
+        SECURITY = "S", _("Seguridad")
+        AMBIENTAL = "A", _("Medio Ambiente")
+        WEATHER = "W", _("Clima")
+        EQUIPMENT = "E", _("Equipamiento")
+        PERSONAL = "P", _("Personal")
+        REPLACEMENTS = "R", _("Repuestos")
+        OTHERS = "O", _("Otros")
 
     task = models.ForeignKey(
         to=Task, on_delete=models.CASCADE, related_name="alerts", verbose_name=_("Task")
     )
-
+    motive_alert_status = models.CharField(
+        _("Motive Alert Status"),
+        choices=MOTIVES.choices,
+        default=MOTIVES.OTHERS,
+        max_length=1,
+    )
     kind = models.CharField(
         _("Alert type"),
         choices=KIND.choices,
