@@ -403,18 +403,18 @@ function paintTaskTable() {
           "task-status-started task-status-completed task-status-notstarted"
         );
         // now using actual dates returned by the API
-        const estatus = d.internal_status;
+        const status = d.internal_status;
      
-        if (d.internal_status=="H") {
-          $(rowNode).addClass("bg-danger");
-        } else if (d.internal_status=='C') {
+        if (status=="H") {
+          $(rowNode).addClass("bg-gray");
+        } else if (status=='C') {
           $(rowNode).addClass("bg-success");
-        } else if (d.internal_status=='N') {          
-            $(rowNode).addClass("bg-gray");        
-        }else if (d.internal_status=='I') {          
+        } else if (status=='N') {          
+            $(rowNode).addClass("bg-danger");        
+        }else if (status=='I') {          
+            $(rowNode).addClass("bg-warning");        
+        }else if (status=='P') {          
             $(rowNode).addClass("bg-primary");        
-        }else if (d.internal_status=='P') {          
-            $(rowNode).addClass("bg-info");        
         }
       });
   });
@@ -487,7 +487,7 @@ function paintTaskTableAlerts() {
         } else if (d.kind=='W') {
           $(rowNode).addClass("bg-warning");
         } else if (d.kind=='I') {          
-            $(rowNode).addClass("bg-info");        
+            $(rowNode).addClass("bg-success");        
         }
       });
   });
