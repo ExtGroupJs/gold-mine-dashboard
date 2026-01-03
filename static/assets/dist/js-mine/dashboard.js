@@ -374,15 +374,15 @@ function paintTaskTable() {
     },
     columns: [
       { data: "wbs", title: "WBS" },
-      { data: "task_code", title: "Código" },
-      { data: "task_name", title: "Tarea" },
+      { data: "task_code", title: "Código (Code)" },
+      { data: "task_name", title: "Nombre de tarea (Task Name)" },
       {
         data: "internal_status",
         className: 'dt-body-center',
-        title: "Estado",
+        title: "Estado (Status)",
         render: (data) => getStatusIcon(data),
       },
-      { data: "complete_pct", title: "% Completo" },
+      { data: "complete_pct", title: "% Completado (% Completed)" },
       
     ],
     columnDefs: [],
@@ -455,9 +455,9 @@ function paintTaskTableAlerts() {
         });
     },
     columns: [
-      { data: "task_name", title: "Tarea" },
-      { data: "short_description", title: "Descripción Corta" },
-      { data: "kind_name", title: "típo" },
+      { data: "task_name", title: "Nombre de tarea (Task name)" },
+      { data: "short_description", title: "Observación (Observation)" },
+      { data: "kind_name", title: "Tipo (Kind)" },
       
     
     ],
