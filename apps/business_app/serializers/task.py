@@ -70,9 +70,12 @@ class TaskSerializer(serializers.ModelSerializer):
                 validated_data["internal_status"] = Task.INTERNAL_STATUS.COMPLETED
             elif validated_data.get("internal_percent_complete") != 0:
                 validated_data["act_start_date"] = datetime.now()
+            validated_data["complete_pct"] = validated_data.get("internal_percent_complete")
 
         if "act_end_date" in validated_data:
             validated_data["internal_status"] = Task.INTERNAL_STATUS.COMPLETED
+            validated_data["internal_percent_complete"] = 100
+            validated_data["complete_pct"] = 100
         if "act_start_date" in validated_data:
             validated_data["internal_status"] = Task.INTERNAL_STATUS.IN_PROGRESS
 
