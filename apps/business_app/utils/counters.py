@@ -7,7 +7,10 @@ def get_task_counters():
     task_queryset = Task.objects.all()
     info["total"] = task_queryset.count()
     for status in Task.INTERNAL_STATUS:  # status es un miembro del enum
-        count = task_queryset.filter(internal_status=status).count()
+        if status == Task.INTERNAL_STATUS.NOT_STARTED:
+            count = task_queryset.filter(internal_status__in=[status, Task.INTERNAL_STATUS.PLANNED]).count()
+        else:
+            count = task_queryset.filter(internal_status=status).count()
         info[str(status.label)] = count
         info[f"{status.label}_percent"] = round(count/info["total"] * 100, 2) if info["total"] > 0 else 0
     return info
