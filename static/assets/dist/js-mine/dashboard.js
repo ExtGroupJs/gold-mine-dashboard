@@ -36,10 +36,10 @@ function renderTaskCounters(taskInfo) {
   updateElement('planned-tasks', taskInfo['Planned'] || 0);
   updateElement('hold-tasks', taskInfo['Hold'] || 0);
 
-  // Task charts (pie + bar) — include all keys from taskInfo except 'total'
+  // Task charts (pie + bar) — use percentages for charts
   const rawTaskKeys = Object.keys(taskInfo || {});
-  const taskLabels = rawTaskKeys.filter(k => k.toLowerCase() !== 'total');
-  const taskData = taskLabels.map(k => taskInfo[k] || 0);
+  const taskLabels = rawTaskKeys.filter(k => k.toLowerCase() !== 'total' && !k.includes('_percent'));
+  const taskData = taskLabels.map(k => taskInfo[k + '_percent'] || 0);
 
   const taskColorMap = {
     'not started': '#dc3545',
@@ -77,8 +77,8 @@ function renderAlertCounters(alertInfo) {
   updateElement('alerts-critical', getAlertValue('Critical'));
 
   const rawAlertKeys = Object.keys(alertInfo || {});
-  const alertLabels = rawAlertKeys.filter(k => k.toLowerCase() !== 'total');
-  const alertData = alertLabels.map(k => alertInfo[k] || 0);
+  const alertLabels = rawAlertKeys.filter(k => k.toLowerCase() !== 'total' && !k.includes('_percent'));
+  const alertData = alertLabels.map(k => alertInfo[k + '_percent'] || 0);
 
   const severityColorMap = {
     'critical': '#dc3545',
