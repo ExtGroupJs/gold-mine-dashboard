@@ -5,6 +5,7 @@ from ..models.task import Task
 
 class AlertSerializer(serializers.ModelSerializer):
     task_name = serializers.StringRelatedField(source="task")
+    kind_name = serializers.SerializerMethodField()
 
     class Meta:
         model = Alert
@@ -13,10 +14,13 @@ class AlertSerializer(serializers.ModelSerializer):
             "task",
             "task_name",
             "kind",
+            "kind_name",
             "short_description",
-            "description",
         ]
         read_only_fields = ["created_at", "updated_at"]
+    
+    def get_kind_name(self, obj):
+        return str(Alert.KIND(obj.kind).label)
 
     def update_task_internal_status(self, alert):
         task = alert.task

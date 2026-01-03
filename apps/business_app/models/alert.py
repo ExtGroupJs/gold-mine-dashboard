@@ -7,8 +7,11 @@ from safedelete.models import SafeDeleteModel
 
 class Alert(GenericLogMixin, SafeDeleteModel, models.Model):
     class KIND(models.TextChoices):
-        WARNING = "W", _("Warning")
-        CRITICAL = "C", _("Critical")
+        WARNING = "W", _("Warning") # Amarillo
+        CRITICAL = "C", _("Critical") # Rojo    
+    class MOTIVES(models.TextChoices):
+        WARNING = "W", _("Warning") # Amarillo
+        CRITICAL = "C", _("Critical") # Rojo
 
     task = models.ForeignKey(
         to=Task, on_delete=models.CASCADE, related_name="alerts", verbose_name=_("Task")
@@ -24,7 +27,6 @@ class Alert(GenericLogMixin, SafeDeleteModel, models.Model):
         max_length=100, verbose_name=_("Short Description")
     )
 
-    description = models.TextField(null=True, blank=True, verbose_name=_("Description"))
 
     def __str__(self):
         return f"{self.short_description} ({self.KIND(self.kind).label})"
