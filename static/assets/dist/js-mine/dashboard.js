@@ -117,13 +117,23 @@ function renderAlertCounters(alertInfo) {
 
 // --- CORRECCIÓN AQUÍ ---
 // Usamos un objeto para guardar múltiples instancias de gráficos
+// DECLARA esto fuera de la función (global o en tu módulo)
 const chartInstances = {};
 
-function renderPieChart(canvasId, labels, data, colors = null) {
+function renderPieChart(
+  canvasId,
+  labels,
+  data,
+  colors = null,
+  legendLabels = []
+) {
+  for (let i = 0; i < labels.length; i++) {
+    legendLabels[i] = labels[i] + " " + data[i] + "%";
+  }
   const ctx = document.getElementById(canvasId);
   if (!ctx || !window.Chart) return;
 
-  // Si ya existe un gráfico con ESTE ID específico, lo destruimos
+  // Destruir gráfico existente
   if (chartInstances[canvasId]) {
     chartInstances[canvasId].destroy();
   }
@@ -133,11 +143,10 @@ function renderPieChart(canvasId, labels, data, colors = null) {
       ? colors
       : ["#dc3545", "#ffc107", "#28a745"];
 
-  // Guardamos la nueva instancia usando el ID del canvas como clave
   chartInstances[canvasId] = new Chart(ctx, {
     type: "pie",
     data: {
-      labels, // Estos nombres son los base para la leyenda
+      labels: legendLabels,
       datasets: [
         {
           data,
@@ -150,49 +159,7 @@ function renderPieChart(canvasId, labels, data, colors = null) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: "right", // Puedes poner 'top', 'bottom', 'left' o 'right'
-          labels: {
-            // Esta función personaliza el texto de cada item de la leyenda
-            generateLabels: function (chart) {
-              const data = chart.data;
-              if (data.labels.length && data.datasets.length) {
-                // Calculamos el total para mostrar porcentaje (opcional)
-                const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
-
-                return data.labels.map((label, i) => {
-                  const value = data.datasets[0].data[i];
-                  const percentage = ((value / total) * 100).toFixed(1) + "%";
-
-                  return {
-                    text: `${label}: ${value} (${percentage})`, // Formato: "Etiqueta: Valor (Porcentaje)"
-                    fillStyle: data.datasets[0].backgroundColor[i],
-                    hidden: false,
-                    index: i,
-                  };
-                });
-              }
-              return [];
-            },
-          },
-        },
-        tooltip: {
-          // Esto es opcional, pero ayuda a ver el dato al pasar el mouse
-          callbacks: {
-            label: function (context) {
-              let label = context.label || "";
-              if (label) {
-                label += ": ";
-              }
-              let value = context.raw;
-              let total = context.chart._metasets[context.datasetIndex].total;
-              let percentage = ((value / total) * 100).toFixed(1) + "%";
-              return label + value + " (" + percentage + ")";
-            },
-          },
-        },
-      },
+      
     },
   });
 }
@@ -334,7 +301,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   paintTaskTable();
   paintTaskTableAlerts();
-
 });
 
 function paintTaskTable() {
@@ -357,7 +323,7 @@ function paintTaskTable() {
         search: data.search.value,
         ordering: dir + orderCol,
       };
-    
+
       const API_URL = "/business-gestion/task/";
       axios
         .get(API_URL, { params })
@@ -378,12 +344,11 @@ function paintTaskTable() {
       { data: "task_name", title: "Nombre de tarea<br>(Task Name)" },
       {
         data: "internal_status",
-        className: 'dt-body-center',
+        className: "dt-body-center",
         title: "Estado<br>(Status)",
         render: (data) => getStatusIcon(data),
       },
       { data: "complete_pct", title: "% Completado<br>(% Completed)" },
-      
     ],
     columnDefs: [],
   });
@@ -398,23 +363,23 @@ function paintTaskTable() {
       .data()
       .each(function (d, i) {
         const rowNode = rows[i];
-      
+
         $(rowNode).removeClass(
           "task-status-started task-status-completed task-status-notstarted"
         );
         // now using actual dates returned by the API
         const status = d.internal_status;
-     
-        if (status=="H") {
+
+        if (status == "H") {
           $(rowNode).addClass("bg-gray");
-        } else if (status=='C') {
+        } else if (status == "C") {
           $(rowNode).addClass("bg-success");
-        } else if (status=='N') {          
-            $(rowNode).addClass("bg-danger");        
-        }else if (status=='I') {          
-            $(rowNode).addClass("bg-warning");        
-        }else if (status=='P') {          
-            $(rowNode).addClass("bg-primary");        
+        } else if (status == "N") {
+          $(rowNode).addClass("bg-danger");
+        } else if (status == "I") {
+          $(rowNode).addClass("bg-warning");
+        } else if (status == "P") {
+          $(rowNode).addClass("bg-primary");
         }
       });
   });
@@ -439,7 +404,7 @@ function paintTaskTableAlerts() {
         search: data.search.value,
         ordering: dir + orderCol,
       };
-    
+
       const API_URL = "/business-gestion/alert/";
       axios
         .get(API_URL, { params })
@@ -459,8 +424,6 @@ function paintTaskTableAlerts() {
       { data: "short_description", title: "Observación<br>(Observation)" },
       { data: "motive_alert_status_name", title: "Motivo<br>(Motive)" },
       { data: "kind_name", title: "Tipo<br>(Kind)" },
-      
-    
     ],
     columnDefs: [],
   });
@@ -475,19 +438,18 @@ function paintTaskTableAlerts() {
       .data()
       .each(function (d, i) {
         const rowNode = rows[i];
-      
+
         $(rowNode).removeClass(
           "task-status-started task-status-completed task-status-notstarted"
         );
         // now using actual dates returned by the API
-        
-     
-        if (d.kind=="C") {
+
+        if (d.kind == "C") {
           $(rowNode).addClass("bg-danger");
-        } else if (d.kind=='W') {
+        } else if (d.kind == "W") {
           $(rowNode).addClass("bg-warning");
-        } else if (d.kind=='I') {          
-            $(rowNode).addClass("bg-success");        
+        } else if (d.kind == "I") {
+          $(rowNode).addClass("bg-success");
         }
       });
   });
