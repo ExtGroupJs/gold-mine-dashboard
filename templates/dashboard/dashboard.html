@@ -24,7 +24,7 @@
             <li class="breadcrumb-item"><a href="#">{% trans "Home" %}</a></li>
             <li class="breadcrumb-item active">{% trans "Dashboard" %}</li>
           </ol>
-        </div>
+        </div>        
       </div>
     </div>
   </div>
@@ -38,7 +38,7 @@
           <div class="small-box bg-info">
             <div class="inner">
               <h3 id="total-tasks">0</h3>
-              <p>{% trans "Total de tareas <br>(Total tasks)" %}</p>
+              <p>{% trans "Total" %}</p>
             </div>
             <div class="icon"><i class="fas fa-tasks"></i></div>
           </div>
@@ -47,7 +47,7 @@
           <div class="small-box bg-danger">
             <div class="inner">
               <h3 id="notstarted-tasks">0</h3>
-              <p>{% trans "Tareas no iniciadas <br>(task not started)" %}</p>
+              <p>{% trans "No iniciadas <br>(Not started)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-hourglass-start"></i></div>
           </div>
@@ -56,7 +56,7 @@
           <div class="small-box">
             <div class="inner">
               <h3 id="inprogress-tasks">0</h3>
-              <p>{% trans "Tareas en progreso <br>(Task in progress)" %}</p>
+              <p>{% trans "En progreso <br>(In progress)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-play"></i></div>
           </div>
@@ -65,7 +65,7 @@
           <div class="small-box bg-warning">
             <div class="inner">
               <h3 id="warning-tasks">0</h3>
-              <p>{% trans "Tareas con alertas no criticas <br>(Tasks with non critical alerts)" %}</p>
+              <p>{% trans "Con alertas No criticas<br>(With Non critical alerts)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-calendar"></i></div>
           </div>
@@ -74,7 +74,7 @@
           <div class="small-box bg-success">
             <div class="inner">
               <h3 id="completed-tasks">0</h3>
-              <p>{% trans "Tareas completadas <br>(Task completed)" %}</p>
+              <p>{% trans "Completadas<br>(Completed)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-check"></i></div>
           </div>
@@ -83,7 +83,7 @@
           <div class="small-box bg-primary">
             <div class="inner">
               <h3 id="planned-tasks">0</h3>
-              <p>{% trans "Tareas nuevas <br>(New task)" %}</p>
+              <p>{% trans "Nuevas<br>(New)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-calendar"></i></div>
           </div>
@@ -97,11 +97,26 @@
             <div class="icon"><i class="fas fa-pause"></i></div>
           </div>
         </div>
+      </div>
+    </div>
+
+    <div class="container-fluid">
+      <!-- KPI Cards -->
+      <div class="row mb-3"> 
+        <div class="col-sm-6">
+          <h1 class="m-0">{% trans "Resumen de Alertas" %}</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="#">{% trans "Home" %}</a></li>
+            <li class="breadcrumb-item active">{% trans "Dashboard" %}</li>
+          </ol>
+        </div>
         <div class="col-lg-2 col-md-4 col-sm-6 col-12">
-          <div class="small-box bg-danger">
+          <div class="small-box bg-info">
             <div class="inner">
               <h3 id="alerts-total">0</h3>
-              <p>{% trans "Total de Alertas <br>(Total alerts)" %}</p>
+              <p>{% trans "Total" %}</p>
             </div>
             <div class="icon"><i class="fas fa-exclamation-triangle"></i></div>
           </div>
