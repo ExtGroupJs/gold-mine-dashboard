@@ -32,6 +32,7 @@ function renderTaskCounters(taskInfo) {
   updateElement("total-tasks", taskInfo.total || 0);
   updateElement("notstarted-tasks", taskInfo["Not started"] || 0);
   updateElement("inprogress-tasks", taskInfo["In progress"] || 0);
+  updateElement("warning-tasks", taskInfo["Warning"] || 0);
   updateElement("completed-tasks", taskInfo["Completed"] || 0);
   updateElement("planned-tasks", taskInfo["Planned"] || 0);
   updateElement("hold-tasks", taskInfo["Hold"] || 0);
@@ -45,13 +46,15 @@ function renderTaskCounters(taskInfo) {
 
   const taskColorMap = {
     "not started": "#dc3545",
-    "in progress": "#ffc107",
+    "in progress": "#f2f1eeff",
+    warning: "#ffc107",
     completed: "#28a745",
     planned: "#007bff",
     hold: "#6c757d",
     backlog: "#6c757d",
   };
   const taskPalette = [
+    "#f2f1eeff",
     "#007bff",
     "#28a745",
     "#ffc107",
@@ -411,7 +414,7 @@ function paintTaskTable() {
           $(rowNode).addClass("bg-success");
         } else if (status=='N') {          
             $(rowNode).addClass("bg-danger");        
-        }else if (status=='I') {          
+        }else if (status=='W') {          
             $(rowNode).addClass("bg-warning");        
         }else if (status=='P') {          
             $(rowNode).addClass("bg-primary");        
