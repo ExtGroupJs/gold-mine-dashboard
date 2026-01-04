@@ -30,76 +30,78 @@
   </div>
 
   <!-- Main content -->
-  <div class="content">
+  <section class="content">
     <div class="container-fluid">
       <!-- KPI Cards -->
       <div class="row mb-3">
-        <div class="col-lg-2 col-md-4 col-sm-6 col-12">
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
           <div class="small-box bg-info">
             <div class="inner">
               <h3 id="total-tasks">0</h3>
-              <p>{% trans "Total<br> (All)" %}</p>
+              <p>{% trans "Total de tareas<br> (All Task)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-tasks"></i></div>
           </div>
         </div>
-        <div class="col-lg-2 col-md-4 col-sm-6 col-12">
-          <div class="small-box bg-danger">
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+          <div class="small-box bg-orange">
             <div class="inner">
               <h3 id="notstarted-tasks">0</h3>
-              <p>{% trans "No iniciadas <br>(Not started)" %}</p>
+              <p>{% trans "tareas no iniciadas <br>(task not started)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-hourglass-start"></i></div>
           </div>
         </div>
-        <div class="col-lg-2 col-md-4 col-sm-6 col-12">
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
           <div class="small-box">
             <div class="inner">
               <h3 id="inprogress-tasks">0</h3>
-              <p>{% trans "En progreso <br>(In progress)" %}</p>
+              <p>{% trans "Tareas en progreso <br>(task in progress)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-play"></i></div>
           </div>
         </div>
-        <div class="col-lg-2 col-md-4 col-sm-6 col-12">
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
           <div class="small-box bg-warning">
             <div class="inner">
               <h3 id="warning-tasks">0</h3>
-              <p>{% trans "Con alertas No criticas<br>(With Non critical alerts)" %}</p>
+              <p>{% trans "Tareas con alertas No criticas<br>(Task With Non critical alerts)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-calendar"></i></div>
           </div>
         </div>
-        <div class="col-lg-2 col-md-4 col-sm-6 col-12">
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
           <div class="small-box bg-success">
             <div class="inner">
               <h3 id="completed-tasks">0</h3>
-              <p>{% trans "Completadas<br>(Completed)" %}</p>
+              <p>{% trans "Tareas completadas<br>(task Completed)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-check"></i></div>
           </div>
         </div>
-        <div class="col-lg-2 col-md-4 col-sm-6 col-12">
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
           <div class="small-box bg-primary">
             <div class="inner">
               <h3 id="planned-tasks">0</h3>
-              <p>{% trans "Nuevas<br>(New)" %}</p>
+              <p>{% trans "Tareas nuevas<br>(New task)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-calendar"></i></div>
           </div>
         </div>
-        <div class="col-lg-2 col-md-4 col-sm-6 col-12">
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
           <div class="small-box bg-secondary">
             <div class="inner">
               <h3 id="hold-tasks">0</h3>
-              <p>{% trans "Backlog" %}</p>
+              <p>{% trans "Tareas en pausa<br>task in Backlog" %}</p>
             </div>
             <div class="icon"><i class="fas fa-pause"></i></div>
           </div>
         </div>
         </div>
+   
 
 
+<!-- tareas tabla -->
        <div class="row ">
           <div class="col-md-3 col-sm-6 col-12 col-lg-12">
             <div class="card card-warning">
@@ -110,22 +112,15 @@
                 </div>
               </div>
               <div class="card-body">
-              <table id="tabla-de-Datos" class="table table-bordered table-striped " style="text-align: center;width: 100%;">
+              <table id="tabla-de-Datos" class="table table-bordered  " style="text-align: center;width: 100%;">
 
               </table>
               </div>
             </div>
           </div>
         </div>
-        </div>
-
-
-
-
-
-
-
-
+       
+      
       <!-- Charts -->
       <div class="row mb-3">
         <div class="col-lg-6">
@@ -195,10 +190,10 @@
           </div>
         </div>
       </div>
-</div>
+    
 
 
-  <div class="row ">
+         <div class="row ">
          
           <div class="col-lg-12">
             <div class="card card-secondary">
@@ -214,7 +209,9 @@
               </div>
             </div>
           </div>
-        </div>
+          </div>
+        
+        
 
 
 
@@ -247,13 +244,12 @@
             </div>
           </div>
         </div>
-        <!-- Table -->
-      
-
   
-    </div>
+      <!-- end fluid -->
+      </div>
+    </section>
   </div>
-</div>
+
 {% endblock %}
 
 {% block script %} <!-- DataTables & Plugins -->

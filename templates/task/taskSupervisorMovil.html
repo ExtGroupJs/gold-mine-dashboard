@@ -1,0 +1,905 @@
+{% extends "index.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block head-extra %}
+<link rel="stylesheet" href="{% static 'assets/dist/css/adminlte.min.css' %}">
+<!-- SweetAlert2 para alertas visuales -->
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@10"></script>
+
+<style>
+  /* --- ESTILOS ESPECÍFICOS PARA MÓVIL --- */
+  body {
+    background-color: #f4f6f9;
+    font-size: 16px;
+  }
+
+  /* Contenedor de tareas */
+  .mobile-task-list {
+    padding: 10px;
+    padding-bottom: 80px; /* Espacio extra abajo */
+  }
+
+  /* Diseño de Tarjeta */
+  .task-card {
+    background: white;
+    border-radius: 10px;
+    box-shadow: 0 2px 4px rgba(0,0,0,0.08);
+    margin-bottom: 15px;
+    border-left: 6px solid #ddd; /* Barra de color por estado */
+    overflow: hidden;
+  }
+
+  /* Estados (Color del borde izquierdo) */
+  .status-N { border-left-color: #6c757d; } /* Gris: No iniciada */
+  .status-C { border-left-color: #28a745; } /* Verde: Completada */
+  .status-I { border-left-color: #007bff; } /* Azul: En progreso */
+  .status-H { border-left-color: #dc3545; } /* Rojo: Pausa */
+  .status-P { border-left-color: #17a2b8; } /* Cian: Nueva */
+
+  /* Cabecera de la tarjeta */
+  .card-header-mobile {
+    padding: 12px 15px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    border-bottom: 1px solid #f0f0f0;
+    background: #fff;
+    cursor: pointer;
+  }
+
+  .task-title {
+    font-weight: 700;
+    font-size: 1.1em;
+    color: #333;
+    margin: 0;
+  }
+
+  .task-meta {
+    font-size: 0.85em;
+    color: #777;
+  }
+
+  /* Cuerpo de la tarjeta */
+  .card-body-mobile {
+    padding: 15px;
+  }
+
+  /* Barra de progreso */
+  .progress-wrapper {
+    margin: 10px 0;
+  }
+  .progress {
+    height: 8px;
+    background-color: #e9ecef;
+    border-radius: 4px;
+  }
+  .progress-bar {
+    background-color: #007bff;
+    transition: width 0.3s ease;
+  }
+  .progress-text {
+    font-size: 0.9em;
+    font-weight: 600;
+    float: right;
+    color: #555;
+  }
+
+  /* Botones de Acción */
+  .action-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr; /* 2 columnas */
+    gap: 10px;
+    margin-top: 15px;
+  }
+  
+  /* Si necesitamos que un botón ocupe todo el ancho */
+  .btn-full-width {
+    grid-column: span 2;
+  }
+
+  .btn-touch {
+    padding: 12px;
+    font-size: 0.95em;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    font-weight: 600;
+    box-shadow: 0 2px 2px rgba(0,0,0,0.1);
+  }
+
+  /* Indicador de alertas en la tarjeta */
+  .alert-indicator {
+    background-color: #fff3cd;
+    color: #856404;
+    padding: 8px 12px;
+    border-radius: 6px;
+    font-size: 0.9em;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    cursor: pointer;
+  }
+
+  /* Header sticky para búsqueda */
+  .mobile-header {
+    position: sticky;
+    top: 0;
+    z-index: 100;
+    background: #fff;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.1);
+    padding: 10px;
+  }
+
+  /* Loader */
+  #loader-overlay {
+    position: fixed; top:0; left:0; width:100%; height:100%;
+    background: rgba(255,255,255,0.85);
+    z-index: 9999;
+    display: flex; justify-content: center; align-items: center;
+  }
+  .hidden { display: none !important; }
+
+  /* Filtros */
+  .filter-chip {
+    display: inline-block;
+    background: #e7f3ff;
+    color: #0056b3;
+    padding: 4px 10px;
+    border-radius: 12px;
+    font-size: 0.85em;
+    margin-right: 5px;
+    margin-bottom: 5px;
+  }
+
+  /* Modales en Pantalla Completa (Móvil) */
+  @media (max-width: 768px) {
+    .modal-dialog {
+      margin: 0;
+      width: 100%;
+      height: 100%;
+      max-width: 100%;
+      display: flex;
+      align-items: flex-end;
+    }
+    .modal-content {
+      height: 100%;
+      border: none;
+      border-radius: 0;
+      display: flex;
+      flex-direction: column;
+    }
+    .modal-body {
+      flex-grow: 1;
+      overflow-y: auto;
+    }
+    .modal-footer {
+      flex-shrink: 0;
+    }
+  }
+</style>
+{% endblock %}
+
+{% block content %}
+
+<!-- Loader -->
+<div id="loader-overlay" class="hidden">
+  <div class="spinner-border text-primary" role="status">
+    <span class="sr-only">Cargando...</span>
+  </div>
+</div>
+
+<div class="content-wrapper" style="min-height: 100vh;">
+  
+  <!-- Header Sticky -->
+  <div class="mobile-header">
+    <div class="d-flex gap-2 mb-2">
+      <input type="text" id="search-input" class="form-control" placeholder="Buscar tarea..." />
+      <button class="btn btn-primary" onclick="loadTasks()">
+        <i class="fas fa-sync-alt"></i>
+      </button>
+    </div>
+    
+    <!-- Filtros -->
+    <div id="filters-area" class="hidden p-2 border rounded bg-light">
+      <!-- Filtro por Estado -->
+      <div class="form-group mb-2">
+        <label class="small mb-1"><strong>Estado</strong></label>
+        <div id="status-filter-chips">
+          <!-- Chips generados dinámicamente -->
+        </div>
+      </div>
+
+      <!-- Filtros de Fecha -->
+      <div class="form-group mb-2">
+        <label class="small mb-0">Inicio Desde</label>
+        <input type="date" id="start_from" class="form-control form-control-sm" />
+      </div>
+      <div class="form-group mb-2">
+        <label class="small mb-0">Inicio Hasta</label>
+        <input type="date" id="start_to" class="form-control form-control-sm" />
+      </div>
+      <div class="form-group mb-2">
+        <label class="small mb-0">Fin Desde</label>
+        <input type="date" id="end_from" class="form-control form-control-sm" />
+      </div>
+      <div class="form-group mb-2">
+        <label class="small mb-0">Fin Hasta</label>
+        <input type="date" id="end_to" class="form-control form-control-sm" />
+      </div>
+      <button id="btn-apply-filters" class="btn btn-sm btn-primary btn-block">Aplicar Filtros</button>
+      <button id="btn-clear-filters" class="btn btn-sm btn-secondary btn-block mt-1">Limpiar Filtros</button>
+    </div>
+    
+    <div class="text-center mt-2">
+      <button id="toggle-filters-btn" class="btn btn-link btn-sm text-decoration-none">
+        <i class="fas fa-filter"></i> Filtros
+      </button>
+    </div>
+  </div>
+
+  <!-- Lista de Tareas -->
+  <section class="content">
+    <div class="container-fluid">
+      <div id="task-list-container" class="mobile-task-list">
+        <!-- JS inyectará las tarjetas aquí -->
+      </div>
+      
+      <!-- Paginación Compacta -->
+      <div class="d-flex justify-content-center p-2 bg-white border-top sticky-bottom">
+        <div class="btn-group btn-group-sm">
+          <button class="btn btn-outline-secondary" id="prev-page" title="Página anterior">
+            <i class="fas fa-chevron-left"></i>
+          </button>
+          <span id="page-info" class="btn btn-white disabled px-3">1 / 1</span>
+          <button class="btn btn-outline-secondary" id="next-page" title="Página siguiente">
+            <i class="fas fa-chevron-right"></i>
+          </button>
+        </div>
+      </div>
+    </div>
+  </section>
+</div>
+
+<!-- ================= MODALES ================= -->
+
+<!-- Modal: Porcentaje de Cumplimiento -->
+<div class="modal fade" id="modal-completion" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="form-completion">
+        <div class="modal-header bg-warning">
+          <h5 class="modal-title">Actualizar Progreso</h5>
+          <button type="button" class="close" data-dismiss="modal"><span>&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="completion_task_id" />
+          <div class="form-group">
+            <label>Porcentaje de Cumplimiento (%)</label>
+            <input id="completion_percentage" type="number" class="form-control form-control-lg text-center" 
+                   min="0" max="100" value="0" required inputmode="numeric" />
+          </div>
+          <div class="progress" style="height: 25px;">
+            <div id="completion-progress-bar" class="progress-bar bg-warning" role="progressbar" style="width: 0%;"></div>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-warning">Guardar</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Agregar Alerta -->
+<div class="modal fade" id="modal-add-alert" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <form id="form-add-alert">
+        <div class="modal-header bg-danger text-white">
+          <h5 class="modal-title">Reportar Alerta</h5>
+          <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+        </div>
+        <div class="modal-body">
+          <input type="hidden" id="alert_task_id" />
+          <div class="form-group">
+            <label>Tipo de Alerta <span class="text-danger">*</span></label>
+            <select id="alert_kind" class="form-control" required></select>
+          </div>
+          <div class="form-group">
+            <label>Motivo <span class="text-danger">*</span></label>
+            <select id="alert_Motive" class="form-control" required></select>
+          </div>
+          <div class="form-group">
+            <label>Descripción Corta <span class="text-danger">*</span></label>
+            <input id="alert_short_description" class="form-control" maxlength="200" required 
+                   placeholder="Ej: Falta de personal..." />
+          </div>
+          <div class="form-group">
+            <label>Detalle (Opcional)</label>
+            <textarea id="alert_description" class="form-control" rows="3"></textarea>
+          </div>
+        </div>
+        <div class="modal-footer">
+          <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
+          <button type="submit" class="btn btn-danger btn-lg btn-block">Enviar Alerta</button>
+        </div>
+      </form>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Ver/Eliminar Alertas -->
+<div class="modal fade" id="modal-view-alerts" tabindex="-1" role="dialog">
+  <div class="modal-dialog">
+    <div class="modal-content">
+      <div class="modal-header bg-info text-white">
+        <h5 class="modal-title">Alertas de la Tarea</h5>
+        <button type="button" class="close text-white" data-dismiss="modal"><span>&times;</span></button>
+      </div>
+      <div class="modal-body">
+        <ul id="alerts-list-ul" class="list-group list-group-flush">
+          <!-- Alertas inyectadas por JS -->
+        </ul>
+      </div>
+      <div class="modal-footer">
+        <button type="button" class="btn btn-primary btn-block" data-dismiss="modal">Cerrar</button>
+      </div>
+    </div>
+  </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+<script src="{% static 'assets/dist/js/axios.min.js' %}"></script>
+<script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
+<script src="{% static 'assets/plugins/jquery/jquery.min.js' %}"></script>
+<script src="{% static 'assets/plugins/bootstrap/js/bootstrap.bundle.min.js' %}"></script>
+
+<script>
+// --- CONFIGURACIÓN ---
+const API_URL = "/business-gestion/task/";
+const STATUS_MAP = {
+  N: { label: "No Iniciada", color: "#6c757d", icon: "fa-circle" },
+  C: { label: "Completada", color: "#28a745", icon: "fa-check-circle" },
+  I: { label: "En Curso", color: "#007bff", icon: "fa-spinner fa-spin" },
+  H: { label: "Pausada", color: "#dc3545", icon: "fa-pause-circle" },
+  P: { label: "Nueva", color: "#17a2b8", icon: "fa-star" }
+};
+
+let currentPage = 1;
+const pageSize = 15;
+let selectedStatus = []; // Filtro de estado seleccionado
+
+function getCsrfToken() {
+  return document.cookie.split(";").find((c) => c.trim().startsWith("csrftoken="))?.split("=")[1];
+}
+
+axios.defaults.headers.common["X-CSRFToken"] = getCsrfToken();
+
+const $loader = $("#loader-overlay");
+axios.interceptors.request.use(
+  config => { $loader.removeClass("hidden"); return config; },
+  err => { $loader.addClass("hidden"); return Promise.reject(err); }
+);
+axios.interceptors.response.use(
+  resp => { $loader.addClass("hidden"); return resp; },
+  err => { $loader.addClass("hidden"); return Promise.reject(err); }
+);
+
+// --- UTILIDADES ---
+
+function formatDateTime(iso) {
+  if (!iso) return "-";
+  try {
+    return new Date(iso).toLocaleString('es-ES', {
+      day: '2-digit',
+      month: '2-digit',
+      year: '2-digit',
+      hour: '2-digit',
+      minute: '2-digit'
+    });
+  } catch(e) {
+    return "-";
+  }
+}
+
+function getStatusConfig(code) {
+  return STATUS_MAP[code] || STATUS_MAP['N'];
+}
+
+// --- ENUMS (Tipos y Motivos de Alerta) ---
+
+function loadAlertEnums() {
+  axios.get("/business-gestion/alert-enums/").then(res => {
+    const data = res.data || {};
+    const kinds = Array.isArray(data.alert_kinds) ? data.alert_kinds : [];
+    const motives = Array.isArray(data.alert_motives) ? data.alert_motives : [];
+    
+    const $kindSel = $("#alert_kind");
+    const $motiveSel = $("#alert_Motive");
+    
+    $kindSel.empty().append('<option value="">-- Selecciona Tipo --</option>');
+    $motiveSel.empty().append('<option value="">-- Selecciona Motivo --</option>');
+    
+    kinds.forEach(k => $kindSel.append(`<option value="${k.id}">${k.name}</option>`));
+    motives.forEach(m => $motiveSel.append(`<option value="${m.id}">${m.name}</option>`));
+  }).catch(err => {
+    console.warn("Error cargando alert-enums:", err);
+  });
+}
+
+// --- FILTRO POR ESTADO ---
+
+function initStatusFilter() {
+  const container = $("#status-filter-chips");
+  container.empty();
+  
+  Object.entries(STATUS_MAP).forEach(([code, config]) => {
+    const chip = $(`
+      <button type="button" class="btn btn-sm btn-outline-secondary status-chip me-1" 
+              data-status="${code}" title="${config.label}">
+        <i class="fas ${config.icon}" style="color: ${config.color}"></i> ${config.label}
+      </button>
+    `);
+    
+    chip.click(function(e) {
+      e.preventDefault();
+      $(this).toggleClass("active btn-primary btn-outline-secondary");
+      updateSelectedStatus();
+    });
+    
+    container.append(chip);
+  });
+}
+
+function updateSelectedStatus() {
+  selectedStatus = $(".status-chip.active").map((i, el) => $(el).data("status")).get();
+}
+
+// --- RENDERIZADO DE TARJETAS ---
+
+function renderTaskCard(task) {
+  const statusConfig = getStatusConfig(task.internal_status);
+  const hasStart = !!task.act_start_date;
+  const hasEnd = !!task.act_end_date;
+
+  // Alertas
+  let alertBadge = '';
+  if (task.alerts && task.alerts.length > 0) {
+    alertBadge = `
+      <div class="alert-indicator" onclick="viewTaskAlerts(${task.id}); return false;">
+        <i class="fas fa-exclamation-triangle"></i>
+        <strong>${task.alerts.length} Alerta(s)</strong>
+      </div>
+    `;
+  }
+
+  // Botones según estado
+  let buttonsHtml = '';
+  
+  if (!hasStart) {
+    buttonsHtml = `
+      <button class="btn btn-success btn-touch btn-full-width btn-start" data-id="${task.id}">
+        <i class="fas fa-play"></i> INICIAR
+      </button>
+    `;
+  } else if (!hasEnd) {
+    buttonsHtml = `
+      <button class="btn btn-danger btn-touch btn-full-width btn-end" data-id="${task.id}">
+        <i class="fas fa-stop"></i> TERMINAR
+      </button>
+      <button class="btn btn-warning btn-touch btn-completion" data-id="${task.id}" data-pct="${task.complete_pct}">
+        <i class="fas fa-percent"></i> PROGRESO
+      </button>
+      <button class="btn btn-info btn-touch btn-alert" data-id="${task.id}" data-name="${task.task_name}">
+        <i class="fas fa-bell"></i> ALERTAR
+      </button>
+    `;
+  } else {
+    buttonsHtml = `<div class="text-center text-success py-2"><i class="fas fa-check-double"></i> Finalizada</div>`;
+  }
+
+  return `
+    <div class="task-card status-${task.internal_status}">
+      <div class="card-header-mobile">
+        <div style="flex: 1;">
+          <h5 class="task-title">${task.task_name || 'Sin nombre'}</h5>
+          <div class="task-meta">${task.task_code || '-'} | WBS: ${task.wbs || '-'}</div>
+        </div>
+        <i class="fas ${statusConfig.icon}" style="color: ${statusConfig.color}; font-size: 1.5em;"></i>
+      </div>
+      
+      <div class="card-body-mobile">
+        ${alertBadge}
+        
+        <div class="progress-wrapper">
+          <span class="progress-text">${task.complete_pct || 0}%</span>
+          <div class="progress">
+            <div class="progress-bar" style="width: ${task.complete_pct || 0}%"></div>
+          </div>
+        </div>
+
+        <div class="small text-muted mb-3">
+          <div><i class="far fa-clock"></i> Inicio: ${formatDateTime(task.act_start_date)}</div>
+          <div><i class="fas fa-flag-checkered"></i> Fin: ${formatDateTime(task.act_end_date)}</div>
+        </div>
+
+        <div class="action-grid">
+          ${buttonsHtml}
+        </div>
+
+        <div class="details-box hidden mt-3 p-2 bg-light border rounded" style="display: none;">
+          <strong>Recursos:</strong> ${Array.isArray(task.resources) ? task.resources.join(', ') : 'No asignados'}
+        </div>
+      </div>
+    </div>
+  `;
+}
+
+// --- CARGAR TAREAS ---
+
+function loadTasks() {
+  const container = $("#task-list-container");
+  container.empty();
+
+  const params = {
+    page_size: pageSize,
+    page: currentPage,
+    search: $("#search-input").val().trim(),
+  };
+
+  // Filtro de estado
+  if (selectedStatus.length > 0) {
+    params.internal_status__in = selectedStatus.join(',');
+  }
+
+  // Filtros de fecha
+  const startFrom = $("#start_from").val();
+  const startTo = $("#start_to").val();
+  const endFrom = $("#end_from").val();
+  const endTo = $("#end_to").val();
+  
+  if (startFrom) params.start_date_from = startFrom;
+  if (startTo) params.start_date_to = startTo;
+  if (endFrom) params.end_date_from = endFrom;
+  if (endTo) params.end_date_to = endTo;
+
+  axios.get(API_URL, { params })
+    .then(res => {
+      const data = res.data;
+      if (data.results && data.results.length > 0) {
+        data.results.forEach(t => container.append(renderTaskCard(t)));
+        updatePagination(data.count);
+      } else {
+        container.html('<div class="text-center mt-5 text-muted"><i class="fas fa-inbox"></i><br>No hay tareas para mostrar.</div>');
+        updatePagination(0);
+      }
+    })
+    .catch(err => {
+      console.error("Error cargando tareas:", err);
+      container.html('<div class="text-center mt-5 text-danger"><i class="fas fa-exclamation-circle"></i><br>Error al cargar tareas</div>');
+      Swal.fire("Error", "No se pudieron cargar las tareas", "error");
+    });
+}
+
+function updatePagination(total) {
+  const totalPages = Math.ceil(total / pageSize) || 1;
+  $("#page-info").text(`${currentPage} / ${totalPages}`);
+  $("#prev-page").prop("disabled", currentPage <= 1);
+  $("#next-page").prop("disabled", currentPage >= totalPages);
+}
+
+// --- ACCIONES: INICIAR TAREA ---
+
+$(document).on("click", ".btn-start", function() {
+  const id = $(this).data("id");
+  Swal.fire({
+    title: "¿Iniciar Tarea?",
+    text: "Se registrará la fecha y hora actual",
+    icon: "info",
+    showCancelButton: true,
+    confirmButtonColor: "#28a745",
+    confirmButtonText: "Sí, iniciar",
+    cancelButtonText: "Cancelar"
+  }).then((result) => {
+    if (result.isConfirmed) {
+      const now = new Date().toISOString();
+      axios.patch(`${API_URL}${id}/`, { act_start_date: now })
+        .then(() => {
+          Swal.fire("Éxito", "Tarea iniciada", "success");
+          loadTasks();
+        })
+        .catch(err => {
+          const msg = err.response?.data?.detail || err.message;
+          Swal.fire("Error", msg, "error");
+        });
+    }
+  });
+});
+
+// --- ACCIONES: TERMINAR TAREA ---
+
+$(document).on("click", ".btn-end", function() {
+  const id = $(this).data("id");
+  Swal.fire({
+    title: "¿Terminar Tarea?",
+    text: "Se registrará como finalizada ahora mismo",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#dc3545",
+    confirmButtonText: "Sí, terminar",
+    cancelButtonText: "Cancelar"
+  }).then((result) => {
+    if (result.isConfirmed) {
+      const now = new Date().toISOString();
+      axios.patch(`${API_URL}${id}/`, { 
+        act_end_date: now,
+        complete_pct: 100
+      })
+        .then(() => {
+          Swal.fire("Éxito", "Tarea finalizada", "success");
+          loadTasks();
+        })
+        .catch(err => {
+          const msg = err.response?.data?.detail || err.message;
+          Swal.fire("Error", msg, "error");
+        });
+    }
+  });
+});
+
+// --- ACCIONES: ACTUALIZAR PROGRESO ---
+
+$(document).on("click", ".btn-completion", function() {
+  const id = $(this).data("id");
+  const pct = parseInt($(this).data("pct")) || 0;
+  
+  $("#completion_task_id").val(id);
+  $("#completion_percentage").val(pct);
+  $("#completion-progress-bar").css("width", pct + "%");
+  
+  $("#modal-completion").modal("show");
+});
+
+$("#completion_percentage").on("input", function() {
+  const val = Math.min(100, Math.max(0, parseInt($(this).val()) || 0));
+  $(this).val(val);
+  $("#completion-progress-bar").css("width", val + "%");
+});
+
+$("#form-completion").on("submit", function(e) {
+  e.preventDefault();
+  const id = $("#completion_task_id").val();
+  const pct = parseInt($("#completion_percentage").val());
+  
+  if (isNaN(pct) || pct < 0 || pct > 100) {
+    Swal.fire("Error", "El porcentaje debe estar entre 0 y 100", "error");
+    return;
+  }
+
+  axios.patch(`${API_URL}${id}/`, { complete_pct: pct })
+    .then(() => {
+      $("#modal-completion").modal("hide");
+      Swal.fire("Éxito", "Progreso actualizado", "success");
+      loadTasks();
+    })
+    .catch(err => {
+      const msg = err.response?.data?.detail || err.message;
+      Swal.fire("Error", msg, "error");
+    });
+});
+
+// --- ACCIONES: ALERTAS ---
+
+$(document).on("click", ".btn-alert", function() {
+  const id = $(this).data("id");
+  const name = $(this).data("name");
+  
+  $("#alert_task_id").val(id);
+  $("#alert_kind").val("");
+  $("#alert_Motive").val("");
+  $("#alert_short_description").val("");
+  $("#alert_description").val("");
+  
+  $("#modal-add-alert .modal-title").text(`Alerta: ${name}`);
+  $("#modal-add-alert").modal("show");
+});
+
+$("#form-add-alert").on("submit", function(e) {
+  e.preventDefault();
+  
+  const taskId = parseInt($("#alert_task_id").val());
+  const kind = $("#alert_kind").val().trim();
+  const motive = $("#alert_Motive").val().trim();
+  const shortDesc = $("#alert_short_description").val().trim();
+  const desc = $("#alert_description").val().trim();
+
+  // Validaciones
+  if (!taskId) {
+    Swal.fire("Error", "Tarea inválida", "error");
+    return;
+  }
+  if (!kind) {
+    Swal.fire("Error", "Selecciona un tipo de alerta", "error");
+    return;
+  }
+  if (!motive) {
+    Swal.fire("Error", "Selecciona un motivo", "error");
+    return;
+  }
+  if (!shortDesc) {
+    Swal.fire("Error", "La descripción corta es obligatoria", "error");
+    return;
+  }
+
+  const payload = {
+    task: taskId,
+    kind: kind,
+    motive_alert_status: motive,
+    short_description: shortDesc
+  };
+  
+  if (desc) {
+    payload.description = desc;
+  }
+
+  axios.post("/business-gestion/alert/", payload)
+    .then(() => {
+      $("#modal-add-alert").modal("hide");
+      Swal.fire("Éxito", "Alerta creada correctamente", "success");
+      loadTasks();
+    })
+    .catch(err => {
+      const msg = err.response?.data?.detail || err.message;
+      Swal.fire("Error", `No se pudo crear la alerta: ${msg}`, "error");
+    });
+});
+
+// Ver alertas
+window.viewTaskAlerts = function(taskId) {
+  axios.get(`${API_URL}${taskId}/`)
+    .then(res => {
+      const alerts = res.data.alerts || [];
+      const $list = $("#alerts-list-ul");
+      $list.empty();
+      
+      if(alerts.length === 0) {
+        $list.html("<li class='list-group-item text-center text-muted'>No hay alertas</li>");
+      } else {
+        alerts.forEach(a => {
+          const kindLabel = a.kind === 'C' ? 'Crítico' : a.kind === 'W' ? 'Advertencia' : 'Info';
+          const item = `
+            <li class="list-group-item">
+              <div class="d-flex justify-content-between align-items-start">
+                <div style="flex: 1;">
+                  <span class="badge badge-${a.kind === 'C' ? 'danger' : a.kind === 'W' ? 'warning' : 'info'}">${kindLabel}</span>
+                  <strong class="d-block mt-1">${a.short_description}</strong>
+                  <small class="text-muted">${formatDateTime(a.created)}</small>
+                  ${a.description ? `<div class="small mt-1">${a.description}</div>` : ''}
+                </div>
+                <button class="btn btn-sm btn-outline-danger ms-2" onclick="deleteAlert(${a.id})">
+                  <i class="fas fa-trash"></i>
+                </button>
+              </div>
+            </li>`;
+          $list.append(item);
+        });
+      }
+      $("#modal-view-alerts").modal("show");
+    })
+    .catch(err => {
+      Swal.fire("Error", "No se pudieron cargar las alertas", "error");
+    });
+};
+
+window.deleteAlert = function(alertId) {
+  Swal.fire({
+    title: "¿Eliminar Alerta?",
+    text: "Esta acción no se puede deshacer",
+    icon: "warning",
+    showCancelButton: true,
+    confirmButtonColor: "#d33",
+    confirmButtonText: "Eliminar",
+    cancelButtonText: "Cancelar"
+  }).then((result) => {
+    if (result.isConfirmed) {
+      axios.delete(`/business-gestion/alert/${alertId}/`)
+        .then(() => {
+          Swal.fire("Éxito", "Alerta eliminada", "success");
+          viewTaskAlerts(parseInt($("#alert_task_id").val()) || 
+                        $(".task-card").first().data("task-id") || 0);
+          loadTasks();
+        })
+        .catch(err => {
+          const msg = err.response?.data?.detail || err.message;
+          Swal.fire("Error", msg, "error");
+        });
+    }
+  });
+};
+
+// --- EVENTOS UI ---
+
+// Alternar filtros
+$("#toggle-filters-btn").click(function() {
+  const $filters = $("#filters-area");
+  $filters.slideToggle(200);
+  $(this).find('i').toggleClass('fa-filter fa-times');
+});
+
+// Aplicar filtros
+$("#btn-apply-filters").click(() => {
+  currentPage = 1;
+  loadTasks();
+  $("#filters-area").slideUp(200);
+});
+
+// Limpiar filtros
+$("#btn-clear-filters").click(() => {
+  $("#start_from, #start_to, #end_from, #end_to").val("");
+  $(".status-chip").removeClass("active btn-primary btn-outline-secondary").addClass("btn-outline-secondary");
+  selectedStatus = [];
+  currentPage = 1;
+  loadTasks();
+});
+
+// Buscar (Enter key)
+$("#search-input").keyup(function(e) {
+  if(e.keyCode === 13) {
+    currentPage = 1;
+    loadTasks();
+  }
+});
+
+// Paginación
+$("#prev-page").click(() => {
+  if(currentPage > 1) {
+    currentPage--;
+    loadTasks();
+    window.scrollTo({top: 0, behavior: 'smooth'});
+  }
+});
+
+$("#next-page").click(() => {
+  currentPage++;
+  loadTasks();
+  window.scrollTo({top: 0, behavior: 'smooth'});
+});
+
+// Pusher - Actualización en tiempo real
+function setupPusher() {
+  try {
+    if (typeof pusherKey === 'undefined' || typeof pusherCluster === 'undefined') {
+      console.warn("Pusher no está configurado");
+      return;
+    }
+    
+    var pusher = new Pusher(pusherKey, { cluster: pusherCluster });
+    var channel = pusher.subscribe("task-channel");
+    
+    channel.bind("update-task-event-for-supervisor", function (data) {
+      console.log("Actualización en tiempo real recibida", data);
+      loadTasks();
+    });
+  } catch(e) {
+    console.warn("Error configurando Pusher:", e);
+  }
+}
+
+// --- INICIALIZACIÓN ---
+
+$(document).ready(function() {
+  loadAlertEnums();
+  initStatusFilter();
+  setupPusher();
+  loadTasks();
+});
+
+</script>
+{% endblock %}

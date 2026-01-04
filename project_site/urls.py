@@ -63,6 +63,9 @@ urlpatterns = [
     path(
         "taskSupervisor/", login_required(pages.taskSupervisor), name="taskSupervisor"
     ),
+    path(
+        "taskSupervisorMovil/", login_required(pages.taskSupervisorMovil), name="taskSupervisorMovil"
+    ),
     path("dashboard/", login_required(pages.dashboard), name="dashboard"),
 ]
 

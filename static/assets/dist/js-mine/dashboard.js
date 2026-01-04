@@ -118,9 +118,6 @@ function renderAlertCounters(alertInfo) {
   renderBarChart("alert-bar-chart", alertLabels, alertData, alertColors);
 }
 
-// --- CORRECCIÓN AQUÍ ---
-// Usamos un objeto para guardar múltiples instancias de gráficos
-// DECLARA esto fuera de la función (global o en tu módulo)
 const chartInstances = {};
 
 function renderPieChart(
@@ -311,8 +308,14 @@ function paintTaskTable() {
 
   $("#tabla-de-Datos").DataTable({
     dom: '<"row"<"col-sm-6"l><"col-sm-6"f>> t i p',
+    
+    // 1. Configuración de paginación compacta (solo números)
+    pagingType: "numbers", 
+    
+    responsive: true,
     serverSide: true,
     processing: true,
+   
     search: { return: true },
     ajax: function (data, callback, settings) {
       let dir = "";
@@ -343,6 +346,7 @@ function paintTaskTable() {
     },
     columns: [
       { data: "wbs", title: "WBS" },
+      { data: "alerts", title: "Alertas<br>(Alerts)" , render: (data) => getAlert(data),},
       { data: "task_code", title: "Código<br>(Code)" },
       { data: "task_name", title: "Nombre de tarea<br>(Task Name)" },
       {
@@ -354,6 +358,12 @@ function paintTaskTable() {
       { data: "complete_pct", title: "% Completado<br>(% Completed)" },
     ],
     columnDefs: [],
+    
+    // 2. Añadir clase 'pagination-sm' de Bootstrap para reducir el tamaño visual
+    initComplete: function () {
+      const api = this.api();
+      $('.dataTables_paginate', api.table().container()).addClass('pagination-sm');
+    }
   });
 
   // Color rows based on start/end dates after table draw
@@ -378,7 +388,7 @@ function paintTaskTable() {
         } else if (status == "C") {
           $(rowNode).addClass("bg-success");
         } else if (status=='N') {          
-            $(rowNode).addClass("bg-danger");        
+            $(rowNode).addClass("bg-orange");        
         }else if (status=='W') {          
             $(rowNode).addClass("bg-warning");        
         }else if (status=='P') {          
@@ -387,11 +397,15 @@ function paintTaskTable() {
       });
   });
 }
+
+
 function paintTaskTableAlerts() {
   $("#tabla-de-Datos-alerts").addClass("table table-hover");
 
   $("#tabla-de-Datos-alerts").DataTable({
     dom: '<"row"<"col-sm-6"l><"col-sm-6"f>> t i p',
+    pagingType: "numbers",
+    responsive: true,
     serverSide: true,
     processing: true,
     search: { return: true },
@@ -429,6 +443,10 @@ function paintTaskTableAlerts() {
       { data: "kind_name", title: "Tipo<br>(Kind)" },
     ],
     columnDefs: [],
+     initComplete: function () {
+      const api = this.api();
+      $('.dataTables_paginate', api.table().container()).addClass('pagination-sm');
+    }
   });
 
   // Color rows based on start/end dates after table draw
@@ -460,14 +478,22 @@ function paintTaskTableAlerts() {
 
 function getStatusIcon(statusCode) {
   const statusMap = {
-    N: { icon: "fa-circle", color: "#6c757d", label: "Not started" }, // Gris
-    C: { icon: "fa-check-circle", color: "#28a745", label: "Completed" }, // Verde
-    I: { icon: "fa-circle-notch", color: "#007bff", label: "In progress" }, // Azul
-    H: { icon: "fa-pause-circle", color: "#ff0707ff", label: "Hold" }, // Amarillo
-    P: { icon: "fa-hourglass-start", color: "#17a2b8", label: "Planned" }, // Cian
+    N: { icon: "fa-circle", color: "#6c757d", label: "Not started", labelespañol: "No iniciada" }, // Gris
+    C: { icon: "fa-check-circle", color: "#28a745", label: "Completed", labelespañol: "Completada" }, // Verde
+    I: { icon: "fa-circle-notch", color: "#007bff", label: "In progress", labelespañol: "En progreso" }, // Azul
+    H: { icon: "fa-pause-circle", color: "#ff0707ff", label: "Backlog", labelespañol: "Pausa" }, // Amarillo
+    P: { icon: "fa-hourglass-start", color: "#17a2b8", label: "New", labelespañol: "Nueva" }, // Cian
   };
 
   const status = statusMap[statusCode] || statusMap["N"];
   // return ``;
-  return `<span class="info-box-icon"><i class="fas ${status.icon}"  style="font-size: xx-large;" title="${status.label}"></i></span>`;
+  return `<span class="info-box-icon"><i class="fas ${status.icon}"  style="font-size: x-large;" title="${status.label}"></i></span><span class="info-box-text" style="vertical-align: inherit; display: block; text-align: center;">
+    ${status.labelespañol} <br> ${status.label}
+</span> `;
+}
+function getAlert(alerts) {
+  if(alerts.length>0){
+ return `<span class="info-box-icon"><i class="fas fa-exclamation-triangle "  style="font-size: x-large;" ></i></span>`;
+  }else{return '';}
+
 }
