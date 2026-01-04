@@ -30,7 +30,7 @@ class AlertViewSet(viewsets.ModelViewSet, GenericAPIView):
         "task__resources__name",
     ]
     ordering_fields = "__all__"
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [permissions.AllowAny]
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
