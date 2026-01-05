@@ -97,13 +97,13 @@ MIDDLEWARE = [
     # "django_browser_reload.middleware.BrowserReloadMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
-# if not DEBUG:
-#     SESSION_EXPIRE_SECONDS = env.int("SESSION_EXPIRE_SECONDS")
-#     MIDDLEWARE.append("django_session_timeout.middleware.SessionTimeoutMiddleware")
+if not DEBUG:
+    SESSION_EXPIRE_SECONDS = env.int("SESSION_EXPIRE_SECONDS")
+    MIDDLEWARE.append("django_session_timeout.middleware.SessionTimeoutMiddleware")
 
 
 ROOT_URLCONF = "project_site.urls"
-SESSION_EXPIRE_AFTER_LAST_ACTIVITY = True
+# SESSION_EXPIRE_AFTER_LAST_ACTIVITY = True
 SESSION_TIMEOUT_REDIRECT = "first_login"
 
 TEMPLATES = [
