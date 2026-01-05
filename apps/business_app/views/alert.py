@@ -48,12 +48,16 @@ class AlertViewSet(viewsets.ModelViewSet, GenericAPIView):
     def destroy(self, request, *args, **kwargs):
         instance = self.get_object()
         task = instance.task
+        update_required = False
         self.perform_destroy(instance)
         if Alert.objects.filter(task=task, kind=Alert.KIND.CRITICAL).exists():
             task.internal_status = Task.INTERNAL_STATUS.HOLD
-        else:
+            update_required = True
+        elif task.internal_status is not Task.INTERNAL_STATUS.COMPLETED:
             task.internal_status = Task.INTERNAL_STATUS.IN_PROGRESS
-        task.save(update_fields=["internal_status"])
+            update_required = True
+        if update_required:
+            task.save(update_fields=["internal_status"])
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @extend_schema(
