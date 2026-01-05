@@ -72,7 +72,6 @@ function renderTaskCounters(taskInfo, internal_status_filter="") {
 
   renderPieChart("pie-chart", taskLabels, taskData, taskColors);
   renderBarChart("bar-chart", taskLabels, taskData, taskColors);
-  paintTaskTable(internal_status_filter);
 
 }
 
@@ -120,7 +119,6 @@ function renderAlertCounters(alertInfo, kind_filter="") {
 
   renderPieChart("alert-pie-chart", alertLabels, alertData, alertColors);
   renderBarChart("alert-bar-chart", alertLabels, alertData, alertColors);
-  paintTaskTableAlerts(kind_filter);
 }
 
 const chartInstances = {};
@@ -296,6 +294,8 @@ document.addEventListener("DOMContentLoaded", function () {
           title: `¡NUEVA Alerta para: ${data.task}!`,
           text: `(${data.level.toUpperCase()}) ${data.alert_description}`,
         });
+         $("#tabla-de-Datos-alerts").DataTable().ajax.reload(null, false);
+         $("#tabla-de-Datos").DataTable().ajax.reload(null, false);
       }
     });
   } else {
@@ -303,6 +303,9 @@ document.addEventListener("DOMContentLoaded", function () {
       "Pusher keys no definidas. Las alertas en tiempo real no funcionarán."
     );
   }
+    paintTaskTable();
+    paintTaskTableAlerts();
+
 });
 
 function paintTaskTable(internal_status="") {
