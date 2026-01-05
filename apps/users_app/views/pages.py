@@ -65,6 +65,15 @@ def taskSupervisor(request):
             "pusher_cluster": settings.PUSHER_CLUSTER,
         },
     )
+def taskSupervisorMovil(request):
+    return render(
+        request,
+        "task/taskSupervisorMovil.html",
+        {
+            "pusher_key": settings.PUSHER_KEY,
+            "pusher_cluster": settings.PUSHER_CLUSTER,
+        },
+    )
 
 
 def dashboard(request):

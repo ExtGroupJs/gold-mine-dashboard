@@ -31,15 +31,18 @@ function formatDateTime(iso) {
 
 function getStatusIcon(statusCode) {
   const statusMap = {
-    N: { icon: "fa-circle", color: "#6c757d", label: "Not started" }, // Gris
-    C: { icon: "fa-check-circle", color: "#28a745", label: "Completed" }, // Verde
-    I: { icon: "fa-circle-notch", color: "#007bff", label: "In progress" }, // Azul
-    H: { icon: "fa-pause-circle", color: "#ffc107", label: "Hold" }, // Amarillo
-    P: { icon: "fa-hourglass-start", color: "#17a2b8", label: "Planned" }, // Cian
+    N: { icon: "fa-circle", color: "#6c757d", label: "Not started", labelespañol: "No iniciada" }, // Gris
+    C: { icon: "fa-check-circle", color: "#28a745", label: "Completed", labelespañol: "Completada" }, // Verde
+    I: { icon: "fa-circle-notch", color: "#007bff", label: "In progress", labelespañol: "En progreso" }, // Azul
+    H: { icon: "fa-pause-circle", color: "#ff0707ff", label: "Backlog", labelespañol: "Pausa" }, // Amarillo
+    P: { icon: "fa-hourglass-start", color: "#17a2b8", label: "New", labelespañol: "Nueva" }, // Cian
   };
 
   const status = statusMap[statusCode] || statusMap["N"];
-  return `<i class="fas ${status.icon}" style="color: ${status.color};" title="${status.label}"></i>`;
+  // return ``;
+  return `<span class="info-box-icon"><i class="fas ${status.icon}"  style="font-size: x-large;" title="${status.label}"></i></span><span class="info-box-text" style="vertical-align: inherit; display: block; text-align: center;">
+    ${status.labelespañol} <br> ${status.label}
+</span> `;
 }
 
 // Initialize helpers on DOM ready
@@ -84,6 +87,7 @@ $(function () {
 
 // DataTable
 $(document).ready(function () {
+  loadAlertEnums();
   $("table").addClass("table table-hover");
 
   $("table").DataTable({
@@ -114,6 +118,7 @@ $(document).ready(function () {
         // ignore
       }
     },
+    pagingType: "numbers",
     serverSide: true,
     processing: true,
     search: { return: true },
@@ -163,34 +168,25 @@ $(document).ready(function () {
             : "";
         },
       },
-      // { data: "id", title: "ID" , visible: false},
-      // { data: "internal_percent_complete", title: "% Interno" },
-       //{ data: "internal_planned_date", title: "Fecha planificada", render: (d) => formatDateTime(d) },
-      // { data: "delete_record_flag", title: "Eliminado", render: (d) => (d ? 'Sí' : 'No') },
-
-      { data: "wbs", title: "WBS" },
-      { data: "task_code", title: "Código" },
-      { data: "task_name", title: "Tarea" },
-      {
+       { data: "alerts",className: "column-text-center", title: "Alertas<br>(Alerts)" , render: (data) => getAlert(data),},
+  {
         data: "internal_status",
         title: "Estado",
         className: "column-text-center",
         render: (data) => getStatusIcon(data),
       },
+      { data: "wbs", title: "WBS" },
+      { data: "task_code", title: "Código" },
+      { data: "task_name", title: "Tarea" },
+      
       { data: "complete_pct", title: "% Completo" },
       {
         data: "resources",
         title: "Recursos",
         render: (data) => (Array.isArray(data) ? data.join(", ") : data || ""),
       },
-      {
-        data: "internal_responsibles_names",
-        title: "Responsables",
-        render: (data) => (Array.isArray(data) ? data.join(", ") : data || ""),
-      },
-      // { data: "alert_names", title: "Alertas", render: (data) => (Array.isArray(data) ? data.join(", ") : (data || "")), orderable: false },
-      { data: "start_date", title: "Inicio", render: (d) => formatDateTime(d) },
-      { data: "end_date", title: "Fin", render: (d) => formatDateTime(d) },
+      // { data: "start_date", title: "Inicio", render: (d) => formatDateTime(d) },
+      // { data: "end_date", title: "Fin", render: (d) => formatDateTime(d) },
       {
         data: "act_start_date",
         title: "Inicio real",
@@ -226,6 +222,10 @@ $(document).ready(function () {
       },
     ],
     columnDefs: [],
+    initComplete: function () {
+      const api = this.api();
+      $('.dataTables_paginate', api.table().container()).addClass('pagination-sm');
+    }
   });
 
   // Color rows based on start/end dates after table draw
@@ -241,33 +241,36 @@ $(document).ready(function () {
       // ignore
     }
   });
-  table.on("draw", function () {
+
+
+    table.on("draw", function () {
     const rows = table.rows({ page: "current" }).nodes();
     table
       .rows({ page: "current" })
       .data()
       .each(function (d, i) {
         const rowNode = rows[i];
+
         $(rowNode).removeClass(
           "task-status-started task-status-completed task-status-notstarted"
         );
         // now using actual dates returned by the API
-        const hasStart = !!d.act_start_date;
-        const hasEnd = !!d.act_end_date;
-        if (hasStart && !hasEnd) {
-          $(rowNode).addClass("task-status-started");
-        } else if (!hasStart && !hasEnd) {
-          $(rowNode).addClass("task-status-notstarted");
-        } else if (hasStart && hasEnd) {
-          // if actual end date already passed -> green
-          const endDt = new Date(d.act_end_date || d.end_date);
-          const now = new Date();
-          if (endDt <= now) {
-            $(rowNode).addClass("task-status-completed");
-          }
+        const status = d.internal_status;
+
+        if (status == "H") {
+          $(rowNode).addClass("bg-gray");
+        } else if (status == "C") {
+          $(rowNode).addClass("bg-success");
+        } else if (status=='N') {          
+            $(rowNode).addClass("bg-orange");        
+        }else if (status=='W') {          
+            $(rowNode).addClass("bg-warning");        
+        }else if (status=='P') {          
+            $(rowNode).addClass("bg-primary");        
         }
       });
   });
+
 
   // Assign button -> open assign modal
   $("table").on("click", ".btn-assign", function () {
@@ -429,7 +432,8 @@ function openAssignModal(id, name) {
 function openAlertModal(taskId, taskName) {
   // usa el modal ya definido en templates/task/task.html
   $("#alert_task_id").val(taskId);
-  $("#alert_kind").val("I");
+  $("#alert_kind").val("");
+  $("#alert_Motive").val("");
   $("#alert_short_description").val("");
   $("#alert_description").val("");
   $("#modal-add-alert .modal-title").text(
@@ -455,13 +459,14 @@ $(document).on("submit", "#form-add-alert", function (e) {
   e.preventDefault();
   const taskId = Number($("#alert_task_id").val());
   const kind = $("#alert_kind").val();
+  const motive_alert_status = $("#alert_Motive").val();
   const shortDesc = ($("#alert_short_description").val() || "").trim();
-  const desc = ($("#alert_description").val() || "").trim();
+
   if (!taskId) return showError("Tarea inválida");
   if (!shortDesc) return showError("La descripción corta es obligatoria");
 
-  const payload = { task: taskId, kind: kind, short_description: shortDesc };
-  if (desc) payload.description = desc;
+  const payload = { task: taskId, kind: kind, motive_alert_status: motive_alert_status, short_description: shortDesc };
+  
 
   console.log("posting alert", payload);
 
@@ -543,7 +548,6 @@ function formatAlertsHtml(alerts) {
     return '<div class="p-2">Sin alertas</div>';
 
   const kindMap = {
-    I: { icon: "fa-info-circle", cls: "text-info", label: "Info" },
     W: {
       icon: "fa-exclamation-triangle",
       cls: "text-warning",
@@ -562,9 +566,11 @@ function formatAlertsHtml(alerts) {
     const frag = tmpl.content.cloneNode(true);
     const li = frag.querySelector("li");
     const k = kindMap[a.kind] || {
+
       icon: "fa-info-circle",
       cls: "",
       label: a.kind,
+      labelMotive: a.kind,
     };
 
     // --- NUEVA LÓGICA DE POSICIONAMIENTO (FLEX) ---
@@ -592,6 +598,7 @@ function formatAlertsHtml(alerts) {
     iconEl.className = `fas ${k.icon} ${k.cls}`;
     li.querySelector("[data-kind]").textContent = k.label;
     li.querySelector("[data-short]").textContent = a.short_description || "";
+    li.querySelector("[data-motive]").textContent = a.motive_alert_status_name;
     li.querySelector("[data-created]").textContent = a.created
       ? new Date(a.created).toLocaleString()
       : "";
@@ -640,3 +647,56 @@ $(document).on("click", "tbody td.details-control", function () {
     $(this).find("i").removeClass("fa-plus-square").addClass("fa-minus-square");
   }
 });
+
+// Cargar enums de alertas y rellenar selects alert_kind y alert_Motive
+function loadAlertEnums() {
+  axios
+    .get("/business-gestion/alert-enums/")
+    .then(function (res) {
+      const data = res.data || {};
+      const kinds = Array.isArray(data.alert_kinds) ? data.alert_kinds : [];
+      const motives = Array.isArray(data.alert_motives) ? data.alert_motives : [];
+
+      const kindSel = document.getElementById("alert_kind");
+      const motiveSel = document.getElementById("alert_Motive"); // mantener nombre exacto del HTML
+
+      if (kindSel) {
+        kindSel.innerHTML = "";
+        // Añadir opción vacía por si se quiere selección nula
+        const emptyK = document.createElement("option");
+        emptyK.value = "";
+        emptyK.textContent = "-- Selecciona --";
+        kindSel.appendChild(emptyK);
+        kinds.forEach(function (k) {
+          const opt = document.createElement("option");
+          opt.value = k.id;
+          opt.textContent = k.name;
+          kindSel.appendChild(opt);
+        });
+      }
+
+      if (motiveSel) {
+        motiveSel.innerHTML = "";
+        const emptyM = document.createElement("option");
+        emptyM.value = "";
+        emptyM.textContent = "-- Selecciona --";
+        motiveSel.appendChild(emptyM);
+        motives.forEach(function (m) {
+          const opt = document.createElement("option");
+          opt.value = m.id;
+          opt.textContent = m.name;
+          motiveSel.appendChild(opt);
+        });
+      }
+    })
+    .catch(function (err) {
+      console.warn("No se pudo cargar alert-enums:", err);
+    });
+}
+
+function getAlert(alerts) {
+  if(alerts.length>0){
+ return `<span class="info-box-icon"><i class="fas fa-exclamation-triangle "  style="font-size: x-large;" ></i></span>`;
+  }else{return '';}
+
+}

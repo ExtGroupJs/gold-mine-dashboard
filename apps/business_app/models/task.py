@@ -15,16 +15,30 @@ class Task(GenericLogMixin, models.Model):
     ### INTERNAL FIELDS
 
     class INTERNAL_STATUS(models.TextChoices):
-        PLANNED = "P", _("Planned")  # ESTE ES ADICIONAL INTERNO
-        HOLD = "H", _("Hold")  # ESTE ES ADICIONAL INTERNO
-        BACKLOG = "B", _("Backlog")  # ESTE ES ADICIONAL INTERNO
+        PLANNED = "P", _("Planned")
+        """ESTE ES ADICIONAL INTERNO. Tiene valor en 'internal_planned_date' , no tiene datos en 'act_start_date'"""
 
-        IN_PROGRESS = (  # ESTE ESTÁ TAMBIÉN EN EL PRIMAVERA
+        HOLD = "H", _("Hold")
+        """ESTE ES ADICIONAL INTERNO. Tiene alerta tipo critical"""
+
+        WARNING = "W", _("Warning")  
+        """ESTE ES ADICIONAL INTERNO. Tiene alerta tipo warning"""
+
+        BACKLOG = "B", _("Backlog")
+        """ESTE ES ADICIONAL INTERNO. Es cuando estaba planificada y no comenzó en tiempo"""
+
+        IN_PROGRESS = (
             "I",
             _("In progress"),
         )
-        COMPLETED = "C", _("Completed")  # ESTE ESTÁ TAMBIÉN EN EL PRIMAVERA
-        NOT_STARTED = "N", _("Not started")  # ESTE ESTÁ TAMBIÉN EN EL PRIMAVERA
+        """ESTE ESTÁ TAMBIÉN EN EL PRIMAVERA"""
+
+        COMPLETED = "C", _("Completed")
+        """ESTE ESTÁ TAMBIÉN EN EL PRIMAVERA"""
+
+        NOT_STARTED = "N", _("Not started")
+        """ESTE ESTÁ TAMBIÉN EN EL PRIMAVERA"""
+
 
     PRIMAVERA_IMPORTED_STATUS = (
         INTERNAL_STATUS.COMPLETED.value,

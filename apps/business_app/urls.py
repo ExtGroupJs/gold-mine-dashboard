@@ -1,7 +1,7 @@
 # from rest_framework import routers
 from rest_framework_extensions.routers import ExtendedSimpleRouter
-from .views.task import TaskViewSet
-from .views.alert import AlertViewSet
+from .views.task import TaskViewSet, TaskEnumsViewSet
+from .views.alert import AlertViewSet, AlertEnumsViewSet
 from .views.excel_exporter import ExcelExporterViewSet
 
 # from django.urls import path
@@ -14,9 +14,19 @@ router.register(
     basename="task",
 )
 router.register(
+    "task-enums",
+    TaskEnumsViewSet,
+    basename="task-enums",
+)
+router.register(
     "alert",
     AlertViewSet,
     basename="alert",
+)
+router.register(
+    "alert-enums",
+    AlertEnumsViewSet,
+    basename="alert-enums",
 )
 
 router.register(

@@ -14,6 +14,7 @@ from ..serializers.task import TaskSerializer
 from apps.common.mixins.common_view_mixin import CommonOrderingFilter
 from apps.users_app.models.groups import Groups
 from ..utils.counters import get_task_counters
+from apps.common.mixins.enums_mixin import EnumsMixin
 
 
 # Create your views here.
@@ -37,7 +38,7 @@ class TaskViewSet(viewsets.ModelViewSet, GenericAPIView):
     ]
     ordering_fields = "__all__"
     # permission_classes = [ShopProductsViewSetPermission]
-    permission_classes = [permissions.IsAuthenticatedOrReadOnly]
+    permission_classes = [permissions.AllowAny]
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -74,3 +75,9 @@ class TaskViewSet(viewsets.ModelViewSet, GenericAPIView):
     @action(detail=False, methods=["GET"])
     def counters(self, pk=None):
         return Response(get_task_counters())
+
+
+class TaskEnumsViewSet(EnumsMixin):
+    items = (
+        ("internal_status", Task.INTERNAL_STATUS),
+    )

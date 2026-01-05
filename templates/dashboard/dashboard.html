@@ -24,108 +24,103 @@
             <li class="breadcrumb-item"><a href="#">{% trans "Home" %}</a></li>
             <li class="breadcrumb-item active">{% trans "Dashboard" %}</li>
           </ol>
-        </div>
+        </div>        
       </div>
     </div>
   </div>
 
   <!-- Main content -->
-  <div class="content">
+  <section class="content">
     <div class="container-fluid">
       <!-- KPI Cards -->
       <div class="row mb-3">
-        <div class="col-lg-2 col-md-4 col-sm-6 col-12">
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
           <div class="small-box bg-info">
             <div class="inner">
               <h3 id="total-tasks">0</h3>
-              <p>{% trans "Total de tareas <br>(Total tasks)" %}</p>
+              <p>{% trans "Total de tareas<br> (All Task)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-tasks"></i></div>
           </div>
         </div>
-        <div class="col-lg-2 col-md-4 col-sm-6 col-12">
-          <div class="small-box bg-danger">
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+          <div class="small-box bg-orange">
             <div class="inner">
               <h3 id="notstarted-tasks">0</h3>
-              <p>{% trans "Tareas no iniciadas <br>(task not started)" %}</p>
+              <p>{% trans "tareas no iniciadas <br>(task not started)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-hourglass-start"></i></div>
           </div>
         </div>
-        <div class="col-lg-2 col-md-4 col-sm-6 col-12">
-          <div class="small-box bg-warning">
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+          <div class="small-box">
             <div class="inner">
               <h3 id="inprogress-tasks">0</h3>
-              <p>{% trans "Tareas en progreso <br>(Task in progress)" %}</p>
+              <p>{% trans "Tareas en progreso <br>(task in progress)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-play"></i></div>
           </div>
         </div>
-        <div class="col-lg-2 col-md-4 col-sm-6 col-12">
-          <div class="small-box bg-success">
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+          <div class="small-box bg-warning">
             <div class="inner">
-              <h3 id="completed-tasks">0</h3>
-              <p>{% trans "Tareas completadas <br>(Task completed)" %}</p>
-            </div>
-            <div class="icon"><i class="fas fa-check"></i></div>
-          </div>
-        </div>
-        <div class="col-lg-2 col-md-4 col-sm-6 col-12">
-          <div class="small-box bg-primary">
-            <div class="inner">
-              <h3 id="planned-tasks">0</h3>
-              <p>{% trans "Tareas nuevas <br>(New task)" %}</p>
+              <h3 id="warning-tasks">0</h3>
+              <p>{% trans "Tareas con alertas No criticas<br>(Task With Non critical alerts)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-calendar"></i></div>
           </div>
         </div>
-        <div class="col-lg-2 col-md-4 col-sm-6 col-12">
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+          <div class="small-box bg-success">
+            <div class="inner">
+              <h3 id="completed-tasks">0</h3>
+              <p>{% trans "Tareas completadas<br>(task Completed)" %}</p>
+            </div>
+            <div class="icon"><i class="fas fa-check"></i></div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+          <div class="small-box bg-primary">
+            <div class="inner">
+              <h3 id="planned-tasks">0</h3>
+              <p>{% trans "Tareas nuevas<br>(New task)" %}</p>
+            </div>
+            <div class="icon"><i class="fas fa-calendar"></i></div>
+          </div>
+        </div>
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
           <div class="small-box bg-secondary">
             <div class="inner">
               <h3 id="hold-tasks">0</h3>
-              <p>{% trans "Backlog" %}</p>
+              <p>{% trans "Tareas en pausa<br>task in Backlog" %}</p>
             </div>
             <div class="icon"><i class="fas fa-pause"></i></div>
           </div>
         </div>
-        <div class="col-lg-2 col-md-4 col-sm-6 col-12">
-          <div class="small-box bg-danger">
-            <div class="inner">
-              <h3 id="alerts-total">0</h3>
-              <p>{% trans "Total de Alertas <br>(Total alerts)" %}</p>
-            </div>
-            <div class="icon"><i class="fas fa-exclamation-triangle"></i></div>
-          </div>
         </div>
-        <div class="col-lg-2 col-md-4 col-sm-6 col-12">
-          <div class="small-box bg-success">
-            <div class="inner">
-              <h3 id="alerts-information">0</h3>
-              <p>{% trans "Información <br>(information kind)" %}</p>
-            </div>
-            <div class="icon"><i class="fas fa-info-circle"></i></div>
-          </div>
-        </div>
-        <div class="col-lg-2 col-md-4 col-sm-6 col-12">
-          <div class="small-box bg-warning">
-            <div class="inner">
-              <h3 id="alerts-warning">0</h3>
-              <p>{% trans "Advertencias <br>(warning kind)" %}</p>
-            </div>
-            <div class="icon"><i class="fas fa-exclamation-circle"></i></div>
-          </div>
-        </div>
-        <div class="col-lg-2 col-md-4 col-sm-6 col-12">
-          <div class="small-box bg-danger">
-            <div class="inner">
-              <h3 id="alerts-critical">0</h3>
-              <p>{% trans "Críticas <br>(critical kind)" %}</p>
-            </div>
-            <div class="icon"><i class="fas fa-fire"></i></div>
-          </div>
-        </div>
-      </div>
+   
 
+
+<!-- tareas tabla -->
+       <div class="row ">
+          <div class="col-md-3 col-sm-6 col-12 col-lg-12">
+            <div class="card card-warning">
+              <div class="card-header">
+                <h3 class="card-title">{% trans "Tareas <br>(Task)" %}</h3>
+                <div class="card-tools">
+               
+                </div>
+              </div>
+              <div class="card-body">
+              <table id="tabla-de-Datos" class="table table-bordered  " style="text-align: center;width: 100%;">
+
+              </table>
+              </div>
+            </div>
+          </div>
+        </div>
+       
+      
       <!-- Charts -->
       <div class="row mb-3">
         <div class="col-lg-6">
@@ -138,7 +133,8 @@
             </div>
             <div class="card-body">
               <canvas id="pie-chart" height="280"></canvas>
-            </div>
+            </div> 
+            
           </div>
         </div>
         <div class="col-lg-6">
@@ -155,6 +151,69 @@
           </div>
         </div>
       </div>
+
+       <div class="row">
+        <div class="col-md-3 col-sm-6 col-12">
+          <div class="small-box bg-danger">
+            <div class="inner">
+              <h3 id="alerts-total">0</h3>
+              <p>{% trans "Total de Alertas <br>(Total alerts)" %}</p>
+            </div>
+            <div class="icon"><i class="fas fa-exclamation-triangle"></i></div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 col-12">
+          <div class="small-box bg-success">
+            <div class="inner">
+              <h3 id="alerts-information">0</h3>
+              <p>{% trans "Información <br>(information kind)" %}</p>
+            </div>
+            <div class="icon"><i class="fas fa-info-circle"></i></div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 col-12">
+          <div class="small-box bg-warning">
+            <div class="inner">
+              <h3 id="alerts-warning">0</h3>
+              <p>{% trans "Advertencias <br>(warning kind)" %}</p>
+            </div>
+            <div class="icon"><i class="fas fa-exclamation-circle"></i></div>
+          </div>
+        </div>
+        <div class="col-md-3 col-sm-6 col-12">
+          <div class="small-box bg-danger">
+            <div class="inner">
+              <h3 id="alerts-critical">0</h3>
+              <p>{% trans "Críticas <br>(critical kind)" %}</p>
+            </div>
+            <div class="icon"><i class="fas fa-fire"></i></div>
+          </div>
+        </div>
+      </div>
+    
+
+
+         <div class="row ">
+         
+          <div class="col-lg-12">
+            <div class="card card-secondary">
+              <div class="card-header">
+                <h3 class="card-title">{% trans "Alertas <br>(Alerts)" %}</h3>
+                <div class="card-tools">
+                 
+                </div>
+              </div>
+              <div class="card-body">
+               <table id="tabla-de-Datos-alerts" class="table table-bordered table-striped " style="text-align: center;width: 100%;">
+              </table>
+              </div>
+            </div>
+          </div>
+          </div>
+        
+        
+
+
 
         <!-- Alert Charts -->
         <div class="row mb-3">
@@ -185,43 +244,12 @@
             </div>
           </div>
         </div>
-        <!-- Table -->
-        <div class="row mb-3">
-          <div class="col-lg-6">
-            <div class="card card-warning">
-              <div class="card-header">
-                <h3 class="card-title">{% trans "Tareas <br>(Task)" %}</h3>
-                <div class="card-tools">
-               
-                </div>
-              </div>
-              <div class="card-body">
-              <table id="tabla-de-Datos" class="table table-bordered table-striped " style="text-align: center;width: 100%;">
-
-              </table>
-              </div>
-            </div>
-          </div>
-          <div class="col-lg-6">
-            <div class="card card-secondary">
-              <div class="card-header">
-                <h3 class="card-title">{% trans "Alertas <br>(Alerts)" %}</h3>
-                <div class="card-tools">
-                 
-                </div>
-              </div>
-              <div class="card-body">
-               <table id="tabla-de-Datos-alerts" class="table table-bordered table-striped " style="text-align: center;width: 100%;">
- </table>
-              </div>
-            </div>
-          </div>
-        </div>
-
   
-    </div>
+      <!-- end fluid -->
+      </div>
+    </section>
   </div>
-</div>
+
 {% endblock %}
 
 {% block script %} <!-- DataTables & Plugins -->
@@ -231,16 +259,7 @@
 <script src="{% static 'assets/plugins/datatables-responsive/js/responsive.bootstrap4.min.js' %}"></script>
 <script src="{% static 'assets/plugins/datatables-buttons/js/dataTables.buttons.min.js' %}"></script>
 <script src="{% static 'assets/plugins/datatables-buttons/js/buttons.bootstrap4.min.js' %}"></script>
-<script src="{% static 'assets/plugins/jszip/jszip.min.js' %}"></script>
-<script src="{% static 'assets/plugins/pdfmake/pdfmake.min.js' %}"></script>
-<script src="{% static 'assets/plugins/pdfmake/vfs_fonts.js' %}"></script>
-<script src="{% static 'assets/plugins/datatables-buttons/js/buttons.html5.min.js' %}"></script>
-<script src="{% static 'assets/plugins/datatables-buttons/js/buttons.print.min.js' %}"></script>
-<script src="{% static 'assets/plugins/datatables-buttons/js/buttons.colVis.min.js' %}"></script>
-<script src="{% static 'assets/plugins/bs-custom-file-input/bs-custom-file-input.min.js' %}"></script>
-<script src="{% static 'assets/plugins/jquery-validation/jquery.validate.min.js' %}"></script>
-<script src="{% static 'assets/plugins/jquery-validation/additional-methods.min.js' %}"></script>
-<script src="{% static 'assets/plugins/jquery-validation/localization/messages_es.js' %}"></script>
+
 <script src="{% static 'assets/dist/js/axios.min.js' %}"></script>
 
 
@@ -251,7 +270,7 @@
 
 
 <script src="{% static 'assets/dist/js/axios.min.js' %}"></script>
-<script src="{% static 'assets/plugins/chart.js/Chart.bundle.js' %}"></script>
+<script src="{% static 'assets/plugins/chart.js/Chart.js' %}"></script>
 <script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
 <script>
     // Accede a las variables directamente desde el template

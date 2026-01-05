@@ -97,9 +97,9 @@ MIDDLEWARE = [
     # "django_browser_reload.middleware.BrowserReloadMiddleware",
     "debug_toolbar.middleware.DebugToolbarMiddleware",
 ]
-if not DEBUG:
-    SESSION_EXPIRE_SECONDS = env.int("SESSION_EXPIRE_SECONDS")
-    MIDDLEWARE.append("django_session_timeout.middleware.SessionTimeoutMiddleware")
+# if not DEBUG:
+#     SESSION_EXPIRE_SECONDS = env.int("SESSION_EXPIRE_SECONDS")
+#     MIDDLEWARE.append("django_session_timeout.middleware.SessionTimeoutMiddleware")
 
 
 ROOT_URLCONF = "project_site.urls"

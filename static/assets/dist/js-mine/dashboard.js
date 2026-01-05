@@ -32,6 +32,7 @@ function renderTaskCounters(taskInfo) {
   updateElement("total-tasks", taskInfo.total || 0);
   updateElement("notstarted-tasks", taskInfo["Not started"] || 0);
   updateElement("inprogress-tasks", taskInfo["In progress"] || 0);
+  updateElement("warning-tasks", taskInfo["Warning"] || 0);
   updateElement("completed-tasks", taskInfo["Completed"] || 0);
   updateElement("planned-tasks", taskInfo["Planned"] || 0);
   updateElement("hold-tasks", taskInfo["Hold"] || 0);
@@ -45,13 +46,15 @@ function renderTaskCounters(taskInfo) {
 
   const taskColorMap = {
     "not started": "#dc3545",
-    "in progress": "#ffc107",
+    "in progress": "#f2f1eeff",
+    warning: "#ffc107",
     completed: "#28a745",
     planned: "#007bff",
     hold: "#6c757d",
     backlog: "#6c757d",
   };
   const taskPalette = [
+    "#f2f1eeff",
     "#007bff",
     "#28a745",
     "#ffc107",
@@ -115,15 +118,22 @@ function renderAlertCounters(alertInfo) {
   renderBarChart("alert-bar-chart", alertLabels, alertData, alertColors);
 }
 
-// --- CORRECCIÓN AQUÍ ---
-// Usamos un objeto para guardar múltiples instancias de gráficos
 const chartInstances = {};
 
-function renderPieChart(canvasId, labels, data, colors = null) {
+function renderPieChart(
+  canvasId,
+  labels,
+  data,
+  colors = null,
+  legendLabels = []
+) {
+  for (let i = 0; i < labels.length; i++) {
+    legendLabels[i] = labels[i] + " " + data[i] + "%";
+  }
   const ctx = document.getElementById(canvasId);
   if (!ctx || !window.Chart) return;
 
-  // Si ya existe un gráfico con ESTE ID específico, lo destruimos
+  // Destruir gráfico existente
   if (chartInstances[canvasId]) {
     chartInstances[canvasId].destroy();
   }
@@ -133,11 +143,10 @@ function renderPieChart(canvasId, labels, data, colors = null) {
       ? colors
       : ["#dc3545", "#ffc107", "#28a745"];
 
-  // Guardamos la nueva instancia usando el ID del canvas como clave
   chartInstances[canvasId] = new Chart(ctx, {
     type: "pie",
     data: {
-      labels, // Estos nombres son los base para la leyenda
+      labels: legendLabels,
       datasets: [
         {
           data,
@@ -150,49 +159,7 @@ function renderPieChart(canvasId, labels, data, colors = null) {
     options: {
       responsive: true,
       maintainAspectRatio: false,
-      plugins: {
-        legend: {
-          position: "right", // Puedes poner 'top', 'bottom', 'left' o 'right'
-          labels: {
-            // Esta función personaliza el texto de cada item de la leyenda
-            generateLabels: function (chart) {
-              const data = chart.data;
-              if (data.labels.length && data.datasets.length) {
-                // Calculamos el total para mostrar porcentaje (opcional)
-                const total = data.datasets[0].data.reduce((a, b) => a + b, 0);
-
-                return data.labels.map((label, i) => {
-                  const value = data.datasets[0].data[i];
-                  const percentage = ((value / total) * 100).toFixed(1) + "%";
-
-                  return {
-                    text: `${label}: ${value} (${percentage})`, // Formato: "Etiqueta: Valor (Porcentaje)"
-                    fillStyle: data.datasets[0].backgroundColor[i],
-                    hidden: false,
-                    index: i,
-                  };
-                });
-              }
-              return [];
-            },
-          },
-        },
-        tooltip: {
-          // Esto es opcional, pero ayuda a ver el dato al pasar el mouse
-          callbacks: {
-            label: function (context) {
-              let label = context.label || "";
-              if (label) {
-                label += ": ";
-              }
-              let value = context.raw;
-              let total = context.chart._metasets[context.datasetIndex].total;
-              let percentage = ((value / total) * 100).toFixed(1) + "%";
-              return label + value + " (" + percentage + ")";
-            },
-          },
-        },
-      },
+      
     },
   });
 }
@@ -334,7 +301,6 @@ document.addEventListener("DOMContentLoaded", function () {
 
   paintTaskTable();
   paintTaskTableAlerts();
-
 });
 
 function paintTaskTable() {
@@ -342,8 +308,14 @@ function paintTaskTable() {
 
   $("#tabla-de-Datos").DataTable({
     dom: '<"row"<"col-sm-6"l><"col-sm-6"f>> t i p',
+    
+    // 1. Configuración de paginación compacta (solo números)
+    pagingType: "numbers", 
+    
+    responsive: true,
     serverSide: true,
     processing: true,
+   
     search: { return: true },
     ajax: function (data, callback, settings) {
       let dir = "";
@@ -357,7 +329,7 @@ function paintTaskTable() {
         search: data.search.value,
         ordering: dir + orderCol,
       };
-    
+
       const API_URL = "/business-gestion/task/";
       axios
         .get(API_URL, { params })
@@ -374,18 +346,24 @@ function paintTaskTable() {
     },
     columns: [
       { data: "wbs", title: "WBS" },
-      { data: "task_code", title: "Código" },
-      { data: "task_name", title: "Tarea" },
+      { data: "alerts", title: "Alertas<br>(Alerts)" , render: (data) => getAlert(data),},
+      { data: "task_code", title: "Código<br>(Code)" },
+      { data: "task_name", title: "Nombre de tarea<br>(Task Name)" },
       {
         data: "internal_status",
-        className: 'dt-body-center',
-        title: "Estado",
+        className: "dt-body-center",
+        title: "Estado<br>(Status)",
         render: (data) => getStatusIcon(data),
       },
-      { data: "complete_pct", title: "% Completo" },
-      
+      { data: "complete_pct", title: "% Completado<br>(% Completed)" },
     ],
     columnDefs: [],
+    
+    // 2. Añadir clase 'pagination-sm' de Bootstrap para reducir el tamaño visual
+    initComplete: function () {
+      const api = this.api();
+      $('.dataTables_paginate', api.table().container()).addClass('pagination-sm');
+    }
   });
 
   // Color rows based on start/end dates after table draw
@@ -398,20 +376,20 @@ function paintTaskTable() {
       .data()
       .each(function (d, i) {
         const rowNode = rows[i];
-      
+
         $(rowNode).removeClass(
           "task-status-started task-status-completed task-status-notstarted"
         );
         // now using actual dates returned by the API
         const status = d.internal_status;
-     
-        if (status=="H") {
+
+        if (status == "H") {
           $(rowNode).addClass("bg-gray");
-        } else if (status=='C') {
+        } else if (status == "C") {
           $(rowNode).addClass("bg-success");
         } else if (status=='N') {          
-            $(rowNode).addClass("bg-danger");        
-        }else if (status=='I') {          
+            $(rowNode).addClass("bg-orange");        
+        }else if (status=='W') {          
             $(rowNode).addClass("bg-warning");        
         }else if (status=='P') {          
             $(rowNode).addClass("bg-primary");        
@@ -419,11 +397,15 @@ function paintTaskTable() {
       });
   });
 }
+
+
 function paintTaskTableAlerts() {
   $("#tabla-de-Datos-alerts").addClass("table table-hover");
 
   $("#tabla-de-Datos-alerts").DataTable({
     dom: '<"row"<"col-sm-6"l><"col-sm-6"f>> t i p',
+    pagingType: "numbers",
+    responsive: true,
     serverSide: true,
     processing: true,
     search: { return: true },
@@ -439,7 +421,7 @@ function paintTaskTableAlerts() {
         search: data.search.value,
         ordering: dir + orderCol,
       };
-    
+
       const API_URL = "/business-gestion/alert/";
       axios
         .get(API_URL, { params })
@@ -455,14 +437,16 @@ function paintTaskTableAlerts() {
         });
     },
     columns: [
-      { data: "task_name", title: "Tarea" },
-      { data: "short_description", title: "Descripción Corta" },
-      { data: "description", title: "Descripción" },
-      { data: "kind", title: "típo" },
-      
-    
+      { data: "task_name", title: "Nombre de tarea<br>(Task name)" },
+      { data: "short_description", title: "Observación<br>(Observation)" },
+      { data: "motive_alert_status_name", title: "Motivo<br>(Motive)" },
+      { data: "kind_name", title: "Tipo<br>(Kind)" },
     ],
     columnDefs: [],
+     initComplete: function () {
+      const api = this.api();
+      $('.dataTables_paginate', api.table().container()).addClass('pagination-sm');
+    }
   });
 
   // Color rows based on start/end dates after table draw
@@ -475,19 +459,18 @@ function paintTaskTableAlerts() {
       .data()
       .each(function (d, i) {
         const rowNode = rows[i];
-      
+
         $(rowNode).removeClass(
           "task-status-started task-status-completed task-status-notstarted"
         );
         // now using actual dates returned by the API
-        
-     
-        if (d.kind=="C") {
+
+        if (d.kind == "C") {
           $(rowNode).addClass("bg-danger");
-        } else if (d.kind=='W') {
+        } else if (d.kind == "W") {
           $(rowNode).addClass("bg-warning");
-        } else if (d.kind=='I') {          
-            $(rowNode).addClass("bg-success");        
+        } else if (d.kind == "I") {
+          $(rowNode).addClass("bg-success");
         }
       });
   });
@@ -495,14 +478,22 @@ function paintTaskTableAlerts() {
 
 function getStatusIcon(statusCode) {
   const statusMap = {
-    N: { icon: "fa-circle", color: "#6c757d", label: "Not started" }, // Gris
-    C: { icon: "fa-check-circle", color: "#28a745", label: "Completed" }, // Verde
-    I: { icon: "fa-circle-notch", color: "#007bff", label: "In progress" }, // Azul
-    H: { icon: "fa-pause-circle", color: "#ff0707ff", label: "Hold" }, // Amarillo
-    P: { icon: "fa-hourglass-start", color: "#17a2b8", label: "Planned" }, // Cian
+    N: { icon: "fa-circle", color: "#6c757d", label: "Not started", labelespañol: "No iniciada" }, // Gris
+    C: { icon: "fa-check-circle", color: "#28a745", label: "Completed", labelespañol: "Completada" }, // Verde
+    I: { icon: "fa-circle-notch", color: "#007bff", label: "In progress", labelespañol: "En progreso" }, // Azul
+    H: { icon: "fa-pause-circle", color: "#ff0707ff", label: "Backlog", labelespañol: "Pausa" }, // Amarillo
+    P: { icon: "fa-hourglass-start", color: "#17a2b8", label: "New", labelespañol: "Nueva" }, // Cian
   };
 
   const status = statusMap[statusCode] || statusMap["N"];
   // return ``;
-  return `<span class="info-box-icon"><i class="fas ${status.icon}"  style="font-size: xx-large;" title="${status.label}"></i></span>`;
+  return `<span class="info-box-icon"><i class="fas ${status.icon}"  style="font-size: x-large;" title="${status.label}"></i></span><span class="info-box-text" style="vertical-align: inherit; display: block; text-align: center;">
+    ${status.labelespañol} <br> ${status.label}
+</span> `;
+}
+function getAlert(alerts) {
+  if(alerts.length>0){
+ return `<span class="info-box-icon"><i class="fas fa-exclamation-triangle "  style="font-size: x-large;" ></i></span>`;
+  }else{return '';}
+
 }
