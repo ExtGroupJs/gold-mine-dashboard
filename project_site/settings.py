@@ -104,7 +104,7 @@ if not DEBUG:
 
 ROOT_URLCONF = "project_site.urls"
 # SESSION_EXPIRE_AFTER_LAST_ACTIVITY = True
-SESSION_TIMEOUT_REDIRECT = "first_login"
+# SESSION_TIMEOUT_REDIRECT = "first_login"
 
 TEMPLATES = [
     {
