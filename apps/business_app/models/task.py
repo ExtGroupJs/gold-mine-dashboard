@@ -95,4 +95,4 @@ class Task(GenericLogMixin, models.Model):
         verbose_name_plural = _("Tasks")
 
     def __str__(self):
-        return f"{self.task_name} ({Task.INTERNAL_STATUS(self.internal_status).label})"
+        return f"{self.task_name}"

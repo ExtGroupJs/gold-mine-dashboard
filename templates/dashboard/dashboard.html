@@ -17,7 +17,7 @@
     <div class="container-fluid">
       <div class="row mb-2">
         <div class="col-sm-6">
-          <h1 class="m-0">{% trans "Resumen de Tareas" %}</h1>
+          <h1 class="m-0">{% trans "Resumen de Tareas (Tasks summary)" %}</h1>
         </div>
         <div class="col-sm-6">
           <ol class="breadcrumb float-sm-right">
@@ -38,7 +38,7 @@
           <div class="small-box bg-info">
             <div class="inner">
               <h3 id="total-tasks">0</h3>
-              <p>{% trans "Total de tareas<br> (All Task)" %}</p>
+              <p>{% trans "Total de tareas<br> (All tasks)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-tasks"></i></div>
           </div>
@@ -47,7 +47,7 @@
           <div class="small-box bg-orange">
             <div class="inner">
               <h3 id="notstarted-tasks">0</h3>
-              <p>{% trans "tareas no iniciadas <br>(task not started)" %}</p>
+              <p>{% trans "Tareas no iniciadas <br>(Non started tasks)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-hourglass-start"></i></div>
           </div>
@@ -56,7 +56,7 @@
           <div class="small-box">
             <div class="inner">
               <h3 id="inprogress-tasks">0</h3>
-              <p>{% trans "Tareas en progreso <br>(task in progress)" %}</p>
+              <p>{% trans "Tareas en progreso <br>(In progress Tasks)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-play"></i></div>
           </div>
@@ -65,7 +65,7 @@
           <div class="small-box bg-warning">
             <div class="inner">
               <h3 id="warning-tasks">0</h3>
-              <p>{% trans "Tareas con alertas No criticas<br>(Task With Non critical alerts)" %}</p>
+              <p>{% trans "Tareas con alertas No Críticas<br>(Tasks with Non Critical alerts)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-calendar"></i></div>
           </div>
@@ -74,7 +74,7 @@
           <div class="small-box bg-success">
             <div class="inner">
               <h3 id="completed-tasks">0</h3>
-              <p>{% trans "Tareas completadas<br>(task Completed)" %}</p>
+              <p>{% trans "Tareas completadas<br>(Completed tasks)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-check"></i></div>
           </div>
@@ -83,7 +83,7 @@
           <div class="small-box bg-primary">
             <div class="inner">
               <h3 id="planned-tasks">0</h3>
-              <p>{% trans "Tareas nuevas<br>(New task)" %}</p>
+              <p>{% trans "Tareas nuevas<br>(New tasks)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-calendar"></i></div>
           </div>
@@ -92,7 +92,7 @@
           <div class="small-box bg-secondary">
             <div class="inner">
               <h3 id="hold-tasks">0</h3>
-              <p>{% trans "Tareas en pausa<br>task in Backlog" %}</p>
+              <p>{% trans "Tareas en pausa<br>(Tasks in Backlog)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-pause"></i></div>
           </div>
@@ -106,7 +106,7 @@
           <div class="col-md-3 col-sm-6 col-12 col-lg-12">
             <div class="card card-warning">
               <div class="card-header">
-                <h3 class="card-title">{% trans "Tareas <br>(Task)" %}</h3>
+                <h3 class="card-title">{% trans "Listado de Tareas (Tasks list)" %}</h3>
                 <div class="card-tools">
                
                 </div>
@@ -151,31 +151,37 @@
           </div>
         </div>
       </div>
-
-       <div class="row">
-        <div class="col-md-3 col-sm-6 col-12">
-          <div class="small-box bg-danger">
-            <div class="inner">
-              <h3 id="alerts-total">0</h3>
-              <p>{% trans "Total de Alertas <br>(Total alerts)" %}</p>
+      <br>
+      <div class="content-header">
+        <div class="container-fluid">
+          <div class="row mb-2">
+            <div class="col-sm-6">
+              <h1 class="m-0">{% trans "Resumen de Alertas (Alerts summary)" %}</h1>
             </div>
-            <div class="icon"><i class="fas fa-exclamation-triangle"></i></div>
+            <div class="col-sm-6">
+              <ol class="breadcrumb float-sm-right">
+                <li class="breadcrumb-item"><a href="#">{% trans "Home" %}</a></li>
+                <li class="breadcrumb-item active">{% trans "Dashboard" %}</li>
+              </ol>
+            </div>        
           </div>
         </div>
+      </div>
+       <div class="row">
         <div class="col-md-3 col-sm-6 col-12">
-          <div class="small-box bg-success">
+          <div class="small-box bg-info">
             <div class="inner">
-              <h3 id="alerts-information">0</h3>
-              <p>{% trans "Información <br>(information kind)" %}</p>
+              <h3 id="alerts-total">0</h3>
+              <p>{% trans "Total de Alertas<br>(Total Alerts)" %}</p>
             </div>
-            <div class="icon"><i class="fas fa-info-circle"></i></div>
+            <div class="icon"><i class="fas fa-exclamation-triangle"></i></div>
           </div>
         </div>
         <div class="col-md-3 col-sm-6 col-12">
           <div class="small-box bg-warning">
             <div class="inner">
               <h3 id="alerts-warning">0</h3>
-              <p>{% trans "Advertencias <br>(warning kind)" %}</p>
+              <p>{% trans "Alertas de Advertencia<br>(Warning Alerts)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-exclamation-circle"></i></div>
           </div>
@@ -184,21 +190,17 @@
           <div class="small-box bg-danger">
             <div class="inner">
               <h3 id="alerts-critical">0</h3>
-              <p>{% trans "Críticas <br>(critical kind)" %}</p>
+              <p>{% trans "Alertas Críticas <br>(Critical Alerts)" %}</p>
             </div>
             <div class="icon"><i class="fas fa-fire"></i></div>
           </div>
         </div>
       </div>
-    
-
-
          <div class="row ">
-         
           <div class="col-lg-12">
             <div class="card card-secondary">
               <div class="card-header">
-                <h3 class="card-title">{% trans "Alertas <br>(Alerts)" %}</h3>
+                <h3 class="card-title">{% trans "Listado de Alertas (Alerts list)" %}</h3>
                 <div class="card-tools">
                  
                 </div>
@@ -210,10 +212,6 @@
             </div>
           </div>
           </div>
-        
-        
-
-
 
         <!-- Alert Charts -->
         <div class="row mb-3">
