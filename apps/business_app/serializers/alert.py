@@ -22,6 +22,13 @@ class AlertSerializer(serializers.ModelSerializer):
         ]
         read_only_fields = ["created_at", "updated_at"]
     
+    def validate_task(self, value):
+        if value.internal_status == Task.INTERNAL_STATUS.COMPLETED:
+            raise serializers.ValidationError("Task is already completed")        
+        if Alert.objects.filter(task=value).exists():
+            raise serializers.ValidationError("Task already has an alert")
+        return value
+
     def get_kind_name(self, obj):
         return str(Alert.KIND(obj.kind).label)
     
