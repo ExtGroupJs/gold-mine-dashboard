@@ -22,12 +22,14 @@ function fetchAlertCounters() {
 
 // Render counters on dashboard
 // Render task counters and charts (separated so updates can be independent)
-function renderTaskCounters(taskInfo) {
+function renderTaskCounters(taskInfo, internal_status_filter="") {
   taskInfo = taskInfo || {};
-  const updateElement = (id, value) => {
+  const updateElement = (id, value, internal_value="") => {
     const node = document.getElementById(id);
     if (node) node.textContent = value || 0;
+    node.addEventListener("mouseclick", Swal.stopTimer);
   };
+  // toast.addEventListener("mouseenter", Swal.stopTimer);
 
   updateElement("total-tasks", taskInfo.total || 0);
   updateElement("notstarted-tasks", taskInfo["Not started"] || 0);
@@ -70,10 +72,12 @@ function renderTaskCounters(taskInfo) {
 
   renderPieChart("pie-chart", taskLabels, taskData, taskColors);
   renderBarChart("bar-chart", taskLabels, taskData, taskColors);
+  paintTaskTable(internal_status_filter);
+
 }
 
 // Render alert counters and charts (separated so updates can be independent)
-function renderAlertCounters(alertInfo) {
+function renderAlertCounters(alertInfo, kind_filter="") {
   alertInfo = alertInfo || {};
   const updateElement = (id, value) => {
     const node = document.getElementById(id);
@@ -116,6 +120,7 @@ function renderAlertCounters(alertInfo) {
 
   renderPieChart("alert-pie-chart", alertLabels, alertData, alertColors);
   renderBarChart("alert-bar-chart", alertLabels, alertData, alertColors);
+  paintTaskTableAlerts(kind_filter);
 }
 
 const chartInstances = {};
@@ -298,12 +303,9 @@ document.addEventListener("DOMContentLoaded", function () {
       "Pusher keys no definidas. Las alertas en tiempo real no funcionarán."
     );
   }
-
-  paintTaskTable();
-  paintTaskTableAlerts();
 });
 
-function paintTaskTable() {
+function paintTaskTable(internal_status="") {
   $("#tabla-de-Datos").addClass("table table-hover");
 
   $("#tabla-de-Datos").DataTable({
@@ -328,6 +330,7 @@ function paintTaskTable() {
         page: data.start / data.length + 1,
         search: data.search.value,
         ordering: dir + orderCol,
+        internal_status:internal_status
       };
 
       const API_URL = "/business-gestion/task/";
@@ -399,7 +402,7 @@ function paintTaskTable() {
 }
 
 
-function paintTaskTableAlerts() {
+function paintTaskTableAlerts(kind="") {
   $("#tabla-de-Datos-alerts").addClass("table table-hover");
 
   $("#tabla-de-Datos-alerts").DataTable({
@@ -408,6 +411,7 @@ function paintTaskTableAlerts() {
     responsive: true,
     serverSide: true,
     processing: true,
+    kind:kind,
     search: { return: true },
     ajax: function (data, callback, settings) {
       let dir = "";
