@@ -45,6 +45,7 @@ function renderTaskCounters(taskInfo, internal_status_filter="") {
     (k) => k.toLowerCase() !== "total" && !k.includes("_percent")
   );
   const taskData = taskLabels.map((k) => taskInfo[k + "_percent"] || 0);
+  const taskDataForBar = taskLabels.map((k) => taskInfo[k] || 0);
 
   const taskColorMap = {
     "not started": "#dc3545",
@@ -71,7 +72,7 @@ function renderTaskCounters(taskInfo, internal_status_filter="") {
   );
 
   renderPieChart("pie-chart", taskLabels, taskData, taskColors);
-  renderBarChart("bar-chart", taskLabels, taskData, taskColors);
+  renderBarChart("bar-chart", taskLabels, taskDataForBar, taskColors);
 
 }
 
@@ -105,6 +106,7 @@ function renderAlertCounters(alertInfo, kind_filter="") {
     (k) => k.toLowerCase() !== "total" && !k.includes("_percent")
   );
   const alertData = alertLabels.map((k) => alertInfo[k + "_percent"] || 0);
+  const alertDataForBar = alertLabels.map((k) => alertInfo[k] || 0);
 
   const severityColorMap = {
     critical: "#dc3545",
@@ -118,7 +120,7 @@ function renderAlertCounters(alertInfo, kind_filter="") {
   );
 
   renderPieChart("alert-pie-chart", alertLabels, alertData, alertColors);
-  renderBarChart("alert-bar-chart", alertLabels, alertData, alertColors);
+  renderBarChart("alert-bar-chart", alertLabels, alertDataForBar, alertColors);
 }
 
 const chartInstances = {};
