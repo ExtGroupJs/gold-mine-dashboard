@@ -185,14 +185,8 @@ $(document).ready(function () {
         title: "Recursos",
         render: (data) => (Array.isArray(data) ? data.join(", ") : data || ""),
       },
-      {
-        data: "internal_responsibles_names",
-        title: "Responsables",
-        render: (data) => (Array.isArray(data) ? data.join(", ") : data || ""),
-      },
-      // { data: "alert_names", title: "Alertas", render: (data) => (Array.isArray(data) ? data.join(", ") : (data || "")), orderable: false },
-      { data: "start_date", title: "Inicio", render: (d) => formatDateTime(d) },
-      { data: "end_date", title: "Fin", render: (d) => formatDateTime(d) },
+      // { data: "start_date", title: "Inicio", render: (d) => formatDateTime(d) },
+      // { data: "end_date", title: "Fin", render: (d) => formatDateTime(d) },
       {
         data: "act_start_date",
         title: "Inicio real",

@@ -170,10 +170,7 @@ $(document).ready(function () {
         },
       },
        { data: "alerts", title: "Alertas" , render: (data) => getAlert(data),},
-      // { data: "id", title: "ID" , visible: false},
-      // { data: "internal_percent_complete", title: "% Interno" },
-      //{ data: "internal_planned_date", title: "Fecha planificada", render: (d) => formatDateTime(d) },
-      // { data: "delete_record_flag", title: "Eliminado", render: (d) => (d ? 'Sí' : 'No') },
+      
       {
         data: "internal_status",
         title: "Estado",
@@ -190,7 +187,7 @@ $(document).ready(function () {
         render: (data) => (Array.isArray(data) ? data.join(", ") : data || ""),
       },
       
-      { data: "alert_names", title: "Alertas", render: (data) => (Array.isArray(data) ? data.join(", ") : (data || "")), orderable: false },
+      // { data: "alert_names", title: "Alertas", render: (data) => (Array.isArray(data) ? data.join(", ") : (data || "")), orderable: false },
       
       {
         data: "act_start_date",
