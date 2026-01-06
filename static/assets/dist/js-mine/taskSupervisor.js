@@ -210,6 +210,7 @@ $(document).ready(function () {
         render: (data, type, row) => {
           const hasStart = !!row.act_start_date;
           const hasEnd = !!row.act_end_date;
+          const hasAlert = !!row.alerts && row.alerts.length > 0;
           const isCompleted = row.complete_pct === 100;
           let actionButtons = `<div class="btn-group" role="group">`;
 
@@ -231,9 +232,13 @@ $(document).ready(function () {
               row.complete_pct || 0
             }"><i class="fas fa-percent"></i></button>`;
           }
-
+if (!hasAlert) {
+  actionButtons += `<button type="button" title="alerta" class="btn btn-danger btn-alert" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-bell"></i></button>`;
+}else{
+  actionButtons += `<button type="button" title="alerta" onclick="window.eliminarAlerta('${row.alerts[0]}')" class="btn btn-secondary" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-bell-slash"></i></button>`;
+}
           // Alert button
-          actionButtons += `<button type="button" title="alerta" class="btn btn-danger btn-alert" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-bell"></i></button>`;
+          // actionButtons += `<button type="button" title="alerta" class="btn btn-danger btn-alert" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-bell"></i></button>`;
 
           actionButtons += `</div>`;
           return actionButtons;
@@ -274,7 +279,7 @@ $(document).ready(function () {
         const status = d.internal_status;
 
         if (status == "H") {
-          $(rowNode).addClass("bg-gray");
+          $(rowNode).addClass("bg-danger");
         } else if (status == "C") {
           $(rowNode).addClass("bg-success");
         } else if (status=='N') {          
@@ -814,7 +819,7 @@ function loadAlertEnums() {
 }
 function getAlert(alerts) {
   if(alerts.length>0){
- return `<span class="info-box-icon"><i class="fas fa-exclamation-triangle "  style="font-size: x-large;" ></i></span>`;
+ return `<span class="info-box-icon-alert"><i class="fas fa-exclamation-triangle "  style="font-size: x-large;" ></i></span>`;
   }else{return '';}
 
 }

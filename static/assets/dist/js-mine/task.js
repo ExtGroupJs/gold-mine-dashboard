@@ -31,11 +31,42 @@ function formatDateTime(iso) {
 
 function getStatusIcon(statusCode) {
   const statusMap = {
-    N: { icon: "fa-circle", color: "#6c757d", label: "(Not started)", labelespañol: "No iniciada" }, // Gris
-    C: { icon: "fa-check-circle", color: "#28a745", label: "(Completed)", labelespañol: "Completada" }, // Verde
-    I: { icon: "fa-circle-notch", color: "#007bff", label: "(In progress)", labelespañol: "En progreso" }, // Azul
-    H: { icon: "fa-pause-circle", color: "#ff0707ff", label: "(Backlog)", labelespañol: "Pausa" }, // Amarillo
-    P: { icon: "fa-hourglass-start", color: "#17a2b8", label: "(New)", labelespañol: "Nueva" }, // Cian
+    N: {
+      icon: "fa-circle",
+      color: "#5faff6ff",
+      label: "(Not started)",
+      labelespañol: "No iniciada",
+    }, // Gris
+    B: {
+      icon: "fa-stopwatch",
+      color: "#6c757d",
+      label: "(Backlog)",
+      labelespañol: "Backlog ",
+    }, // Gris
+    C: {
+      icon: "fa-check-circle",
+      color: "#28a745",
+      label: "(Completed)",
+      labelespañol: "Completada",
+    }, // Verde
+    I: {
+      icon: "fa-circle-notch",
+      color: "#007bff",
+      label: "(In progress)",
+      labelespañol: "En progreso",
+    }, // Azul
+    H: {
+      icon: "fa-pause-circle",
+      color: "#ff0707ff",
+      label: "(Pause)",
+      labelespañol: "Pausa",
+    }, // Amarillo
+    P: {
+      icon: "fa-hourglass-start",
+      color: "#17a2b8",
+      label: "(New)",
+      labelespañol: "Nueva",
+    }, // Cian
   };
 
   const status = statusMap[statusCode] || statusMap["N"];
@@ -168,8 +199,13 @@ $(document).ready(function () {
             : "";
         },
       },
-       { data: "alerts",className: "column-text-center", title: "Alertas<br>(Alerts)" , render: (data) => getAlert(data),},
-  {
+      {
+        data: "alerts",
+        className: "column-text-center",
+        title: "Alertas<br>(Alerts)",
+        render: (data) => getAlert(data),
+      },
+      {
         data: "internal_status",
         title: "Estado",
         className: "column-text-center",
@@ -178,7 +214,7 @@ $(document).ready(function () {
       { data: "wbs", title: "WBS" },
       { data: "task_code", title: "Código" },
       { data: "task_name", title: "Tarea" },
-      
+
       { data: "complete_pct", title: "% Completo" },
       {
         data: "resources",
@@ -192,13 +228,12 @@ $(document).ready(function () {
         title: "Inicio real",
         render: (d) => formatDateTime(d),
       },
-      
+
       {
         data: "act_end_date",
         title: "Fin real",
         render: (d) => formatDateTime(d),
       },
-     
 
       {
         data: "",
@@ -210,12 +245,21 @@ $(document).ready(function () {
           const hasStart = !!row.internal_planned_date;
           const hasEnd = !!row.act_end_date;
           const hasInternal_status = row.internal_status;
+          const hasAlert = !!row.alerts && row.alerts.length > 0;
           let actionButtons = `<div class="btn-group" role="group">`;
           // Alert button (abrir modal para crear alerta)
-          actionButtons += `<button type="button" title="alerta" class="btn btn-danger btn-alert" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-bell"></i></button>`;
-          if (hasInternal_status == "N") {
+          if (!hasAlert) {
+            actionButtons += `<button type="button" title="alerta" class="btn btn-danger btn-alert" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-bell"></i></button>`;
+          } else {
+            actionButtons += `<button type="button" title="alerta" onclick="window.eliminarAlerta('${row.alerts[0]}')" class="btn btn-secondary" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-bell-slash"></i></button>`;
+          }
+          if (hasInternal_status == "N" || hasInternal_status == "B") {
             actionButtons += `<button type="button" title="asignar" class="btn btn-info btn-assign" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-user-plus"></i></button>`;
           }
+          if (hasInternal_status != "B") {
+          actionButtons += `<button type="button" title="Pasar a Backlog" class="btn btn-info btn-assign-backlog" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-stopwatch"></i></button>`;
+           }
+           
           actionButtons += `</div>`;
           return actionButtons;
         },
@@ -224,8 +268,10 @@ $(document).ready(function () {
     columnDefs: [],
     initComplete: function () {
       const api = this.api();
-      $('.dataTables_paginate', api.table().container()).addClass('pagination-sm');
-    }
+      $(".dataTables_paginate", api.table().container()).addClass(
+        "pagination-sm"
+      );
+    },
   });
 
   // Color rows based on start/end dates after table draw
@@ -242,8 +288,7 @@ $(document).ready(function () {
     }
   });
 
-
-    table.on("draw", function () {
+  table.on("draw", function () {
     const rows = table.rows({ page: "current" }).nodes();
     table
       .rows({ page: "current" })
@@ -258,25 +303,28 @@ $(document).ready(function () {
         const status = d.internal_status;
 
         if (status == "H") {
-          $(rowNode).addClass("bg-gray");
+          $(rowNode).addClass("bg-danger");
         } else if (status == "C") {
           $(rowNode).addClass("bg-success");
-        } else if (status=='N') {          
-            $(rowNode).addClass("bg-orange");        
-        }else if (status=='W') {          
-            $(rowNode).addClass("bg-warning");        
-        }else if (status=='P') {          
-            $(rowNode).addClass("bg-primary");        
+        } else if (status == "N") {
+          $(rowNode).addClass("bg-orange");
+        } else if (status == "W") {
+          $(rowNode).addClass("bg-warning");
+        } else if (status == "P") {
+          $(rowNode).addClass("bg-primary");
         }
       });
   });
-
 
   // Assign button -> open assign modal
   $("table").on("click", ".btn-assign", function () {
     const id = $(this).data("id");
     const name = $(this).data("name");
     openAssignModal(id, name);
+  });
+  $("table").on("click", ".btn-assign-backlog", function () {
+    const id = $(this).data("id");
+    asignarBacklog(id);
   });
 
   // Filters buttons
@@ -375,10 +423,11 @@ function openAssignModal(id, name) {
 
   $("#modal-assign-task .modal-title").text("Asignar: " + (name || ""));
   $("#modal-assign-task").modal("show");
+
 }
 
 // Handle assign form submit
- $("#form-assign-task").on("submit", function (e) {
+$("#form-assign-task").on("submit", function (e) {
   // load.hidden = false;  <-- ELIMINADO: El interceptor ahora maneja esto
   e.preventDefault();
   if (!selected_assign_id) return showError("Selecciona una tarea");
@@ -401,7 +450,7 @@ function openAssignModal(id, name) {
       /* ignore */
     }
   }
-  
+
   // internal_responsibles expects an array of ids; use single selected role
   if (selectedRole) {
     const n = Number(selectedRole);
@@ -465,8 +514,12 @@ $(document).on("submit", "#form-add-alert", function (e) {
   if (!taskId) return showError("Tarea inválida");
   if (!shortDesc) return showError("La descripción corta es obligatoria");
 
-  const payload = { task: taskId, kind: kind, motive_alert_status: motive_alert_status, short_description: shortDesc };
-  
+  const payload = {
+    task: taskId,
+    kind: kind,
+    motive_alert_status: motive_alert_status,
+    short_description: shortDesc,
+  };
 
   console.log("posting alert", payload);
 
@@ -542,6 +595,30 @@ window.eliminarAlerta = function (id) {
     }
   });
 };
+/**
+ * Función global para manejar la eliminación de alertas usando Axios.
+ */
+function asignarBacklog(selected_assign_id) {
+
+const payload = {};
+  payload.internal_status = "B";
+
+axios
+    .patch(API_URL + selected_assign_id + "/", payload)
+    .then((res) => {
+      showSuccess("Asignado a backlog");
+      
+      try {
+        $("#tabla-de-Datos").DataTable().ajax.reload(null, false);
+      } catch (err) {}
+    })
+    .catch((err) => {
+      showError(
+        "Error asignando",
+        err.response?.data?.detail || err.message || ""
+      );
+    });
+};
 
 function formatAlertsHtml(alerts) {
   if (!Array.isArray(alerts) || alerts.length === 0)
@@ -566,7 +643,6 @@ function formatAlertsHtml(alerts) {
     const frag = tmpl.content.cloneNode(true);
     const li = frag.querySelector("li");
     const k = kindMap[a.kind] || {
-
       icon: "fa-info-circle",
       cls: "",
       label: a.kind,
@@ -574,20 +650,20 @@ function formatAlertsHtml(alerts) {
     };
 
     // --- NUEVA LÓGICA DE POSICIONAMIENTO (FLEX) ---
-    
+
     // 1. Convertimos el <li> en un contenedor flexible horizontal
-    li.classList.add('d-flex', 'justify-content-between', 'align-items-center');
+    li.classList.add("d-flex", "justify-content-between", "align-items-center");
 
     // 2. Creamos un contenedor auxiliar para meter todo el contenido de texto actual
-    const contentWrapper = document.createElement('div');
-    contentWrapper.className = 'flex-grow-1'; // Hace que ocupe todo el ancho disponible empujando el botón a la derecha
+    const contentWrapper = document.createElement("div");
+    contentWrapper.className = "flex-grow-1"; // Hace que ocupe todo el ancho disponible empujando el botón a la derecha
 
     // 3. Movemos todos los hijos actuales del <li> dentro de este contenedor
     // Esto hace que querySelector siga funcionando porque los elementos siguen dentro de li
     while (li.firstChild) {
       contentWrapper.appendChild(li.firstChild);
     }
-    
+
     // 4. Reinsertamos el contenedor dentro del li
     li.appendChild(contentWrapper);
     // ------------------------------------------------
@@ -607,7 +683,7 @@ function formatAlertsHtml(alerts) {
     // --- Lógica del Botón Eliminar ---
     const deleteBtn = document.createElement("button");
     // Eliminamos ml-auto porque justify-content-between ya lo coloca a la derecha
-    deleteBtn.className = "btn btn-sm btn-outline-danger"; 
+    deleteBtn.className = "btn btn-sm btn-outline-danger";
     deleteBtn.innerHTML = '<i class="fas fa-trash"></i>';
     deleteBtn.title = "Eliminar alerta";
 
@@ -655,7 +731,9 @@ function loadAlertEnums() {
     .then(function (res) {
       const data = res.data || {};
       const kinds = Array.isArray(data.alert_kinds) ? data.alert_kinds : [];
-      const motives = Array.isArray(data.alert_motives) ? data.alert_motives : [];
+      const motives = Array.isArray(data.alert_motives)
+        ? data.alert_motives
+        : [];
 
       const kindSel = document.getElementById("alert_kind");
       const motiveSel = document.getElementById("alert_Motive"); // mantener nombre exacto del HTML
@@ -695,8 +773,9 @@ function loadAlertEnums() {
 }
 
 function getAlert(alerts) {
-  if(alerts.length>0){
- return `<span class="info-box-icon"><i class="fas fa-exclamation-triangle "  style="font-size: x-large;" ></i></span>`;
-  }else{return '';}
-
+  if (alerts.length > 0) {
+    return `<span class="info-box-icon-alert"><i class="fas fa-exclamation-triangle "  style="font-size: x-large;" ></i></span>`;
+  } else {
+    return "";
+  }
 }

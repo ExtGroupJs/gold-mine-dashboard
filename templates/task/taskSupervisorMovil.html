@@ -204,7 +204,7 @@
     </div>
     
     <!-- Filtros -->
-    <div id="filters-area" class="hidden p-2 border rounded bg-light">
+    <div id="filters-area" class="p-2 border rounded bg-light" style="display: none;">
       <!-- Filtro por Estado -->
       <div class="form-group mb-2">
         <label class="small mb-1"><strong>Estado</strong></label>
@@ -214,7 +214,7 @@
       </div>
 
       <!-- Filtros de Fecha -->
-      <div class="form-group mb-2">
+      <!-- <div class="form-group mb-2">
         <label class="small mb-0">Inicio Desde</label>
         <input type="date" id="start_from" class="form-control form-control-sm" />
       </div>
@@ -229,7 +229,7 @@
       <div class="form-group mb-2">
         <label class="small mb-0">Fin Hasta</label>
         <input type="date" id="end_to" class="form-control form-control-sm" />
-      </div>
+      </div> -->
       <button id="btn-apply-filters" class="btn btn-sm btn-primary btn-block">Aplicar Filtros</button>
       <button id="btn-clear-filters" class="btn btn-sm btn-secondary btn-block mt-1">Limpiar Filtros</button>
     </div>
@@ -319,10 +319,6 @@
             <input id="alert_short_description" class="form-control" maxlength="200" required 
                    placeholder="Ej: Falta de personal..." />
           </div>
-          <div class="form-group">
-            <label>Detalle (Opcional)</label>
-            <textarea id="alert_description" class="form-control" rows="3"></textarea>
-          </div>
         </div>
         <div class="modal-footer">
           <button type="button" class="btn btn-secondary" data-dismiss="modal">Cancelar</button>
@@ -367,7 +363,7 @@ const API_URL = "/business-gestion/task/";
 const STATUS_MAP = {
   N: { label: "No Iniciada", color: "#6c757d", icon: "fa-circle" },
   C: { label: "Completada", color: "#28a745", icon: "fa-check-circle" },
-  I: { label: "En Curso", color: "#007bff", icon: "fa-spinner fa-spin" },
+  I: { label: "En Progreso", color: "#007bff", icon: "fa-spinner fa-spin" },
   H: { label: "Pausada", color: "#dc3545", icon: "fa-pause-circle" },
   P: { label: "Nueva", color: "#17a2b8", icon: "fa-star" }
 };
@@ -473,7 +469,7 @@ function renderTaskCard(task) {
   let alertBadge = '';
   if (task.alerts && task.alerts.length > 0) {
     alertBadge = `
-      <div class="alert-indicator" onclick="viewTaskAlerts(${task.id}); return false;">
+      <div class="alert-indicator" onclick="viewTaskAlerts(${task.alerts[0]}); return false;">
         <i class="fas fa-exclamation-triangle"></i>
         <strong>${task.alerts.length} Alerta(s)</strong>
       </div>
@@ -718,8 +714,6 @@ $("#form-add-alert").on("submit", function(e) {
   const kind = $("#alert_kind").val().trim();
   const motive = $("#alert_Motive").val().trim();
   const shortDesc = $("#alert_short_description").val().trim();
-  const desc = $("#alert_description").val().trim();
-
   // Validaciones
   if (!taskId) {
     Swal.fire("Error", "Tarea inválida", "error");
@@ -745,9 +739,7 @@ $("#form-add-alert").on("submit", function(e) {
     short_description: shortDesc
   };
   
-  if (desc) {
-    payload.description = desc;
-  }
+
 
   axios.post("/business-gestion/alert/", payload)
     .then(() => {
@@ -763,34 +755,54 @@ $("#form-add-alert").on("submit", function(e) {
 
 // Ver alertas
 window.viewTaskAlerts = function(taskId) {
+  const API_URL = "/business-gestion/alert/";
   axios.get(`${API_URL}${taskId}/`)
     .then(res => {
-      const alerts = res.data.alerts || [];
+      const alerts = res.data;
       const $list = $("#alerts-list-ul");
       $list.empty();
-      
+     
       if(alerts.length === 0) {
+
         $list.html("<li class='list-group-item text-center text-muted'>No hay alertas</li>");
       } else {
-        alerts.forEach(a => {
-          const kindLabel = a.kind === 'C' ? 'Crítico' : a.kind === 'W' ? 'Advertencia' : 'Info';
+      //   alerts.forEach(a => {
+      //     const kindLabel = a.kind === 'C' ? 'Crítico' : a.kind === 'W' ? 'Advertencia' : 'Info';
+      //     const item = `
+      //       <li class="list-group-item">
+      //         <div class="d-flex justify-content-between align-items-start">
+      //           <div style="flex: 1;">
+      //             <span class="badge badge-${a.kind === 'C' ? 'danger' : a.kind === 'W' ? 'warning' : 'info'}">${kindLabel}</span>
+      //             <strong class="d-block mt-1">${a.short_description}</strong>
+      //             </div>
+      //           <button class="btn btn-sm btn-outline-danger ms-2" onclick="deleteAlert(${a.id})">
+      //             <i class="fas fa-trash"></i>
+      //           </button>
+      //         </div>
+      //       </li>`;
+      //     $list.append(item);
+      //   });
+      // }
+
+          const kindLabel = alerts.kind === 'C' ? 'Crítico' : alerts.kind === 'W' ? 'Alerta' : 'Info';
           const item = `
             <li class="list-group-item">
               <div class="d-flex justify-content-between align-items-start">
                 <div style="flex: 1;">
-                  <span class="badge badge-${a.kind === 'C' ? 'danger' : a.kind === 'W' ? 'warning' : 'info'}">${kindLabel}</span>
-                  <strong class="d-block mt-1">${a.short_description}</strong>
-                  <small class="text-muted">${formatDateTime(a.created)}</small>
-                  ${a.description ? `<div class="small mt-1">${a.description}</div>` : ''}
-                </div>
-                <button class="btn btn-sm btn-outline-danger ms-2" onclick="deleteAlert(${a.id})">
+                  <span class="badge badge-${alerts.kind === 'C' ? 'danger' : alerts.kind === 'W' ? 'warning' : 'info'}">${kindLabel}</span>
+                  <span class="badge badge-warning">${alerts.motive_alert_status_name}</span>
+                  <strong class="d-block mt-1">${alerts.short_description}</strong>
+                  </div>
+                <button class="btn btn-sm btn-outline-danger ms-2" onclick="deleteAlert(${alerts.id})">
                   <i class="fas fa-trash"></i>
                 </button>
               </div>
             </li>`;
           $list.append(item);
-        });
+        
       }
+
+
       $("#modal-view-alerts").modal("show");
     })
     .catch(err => {
@@ -812,8 +824,10 @@ window.deleteAlert = function(alertId) {
       axios.delete(`/business-gestion/alert/${alertId}/`)
         .then(() => {
           Swal.fire("Éxito", "Alerta eliminada", "success");
-          viewTaskAlerts(parseInt($("#alert_task_id").val()) || 
-                        $(".task-card").first().data("task-id") || 0);
+          if (Swal.isVisible()) {
+    Swal.close();
+     $('#modal-view-alerts').modal('hide');
+}
           loadTasks();
         })
         .catch(err => {
