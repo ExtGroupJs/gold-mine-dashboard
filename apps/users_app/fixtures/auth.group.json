@@ -59,5 +59,13 @@
       "name": "Supervisor Área B",
       "permissions": []
     }
+  },
+  {
+    "model": "auth.group",
+    "pk": 13,
+    "fields": {
+      "name": "Supervisor Área C",
+      "permissions": []
+    }
   }
 ]
