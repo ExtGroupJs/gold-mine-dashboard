@@ -9,6 +9,8 @@ def get_task_counters():
     for status in Task.INTERNAL_STATUS:  # status es un miembro del enum
         if status == Task.INTERNAL_STATUS.NOT_STARTED:
             count = task_queryset.filter(internal_status__in=[status, Task.INTERNAL_STATUS.PLANNED]).count()
+        elif status == Task.INTERNAL_STATUS.IN_PROGRESS:
+            count = task_queryset.filter(internal_status__in=[status, Task.INTERNAL_STATUS.WARNING]).count()
         else:
             count = task_queryset.filter(internal_status=status).count()
         info[str(status.label)] = count
