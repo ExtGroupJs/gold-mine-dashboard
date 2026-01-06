@@ -392,7 +392,7 @@ function paintTaskTable(internal_status="") {
         const status = d.internal_status;
 
         if (status == "H") {
-          $(rowNode).addClass("bg-gray");
+          $(rowNode).addClass("bg-danger");
         } else if (status == "C") {
           $(rowNode).addClass("bg-success");
         } else if (status=='N') {          
@@ -490,7 +490,7 @@ function getStatusIcon(statusCode) {
     N: { icon: "fa-circle", color: "#6c757d", label: "(Not started)", labelespañol: "No iniciada" }, // Gris
     C: { icon: "fa-check-circle", color: "#28a745", label: "(Completed)", labelespañol: "Completada" }, // Verde
     I: { icon: "fa-circle-notch", color: "#007bff", label: "(In progress)", labelespañol: "En progreso" }, // Azul
-    H: { icon: "fa-pause-circle", color: "#ff0707ff", label: "(Backlog)", labelespañol: "Pausa" }, // Amarillo
+    H: { icon: "fa-pause-circle", color: "#ff0707ff", label: "(Pause)", labelespañol: "Pausa" }, // Amarillo
     P: { icon: "fa-hourglass-start", color: "#17a2b8", label: "(New)", labelespañol: "Nueva" }, // Cian
   };
 
@@ -502,7 +502,7 @@ function getStatusIcon(statusCode) {
 }
 function getAlert(alerts) {
   if(alerts.length>0){
- return `<span class="info-box-icon"><i class="fas fa-exclamation-triangle "  style="font-size: x-large;" ></i></span>`;
+ return `<span class="info-box-icon-alert"><i class="fas fa-exclamation-triangle "  style="font-size: x-large;" ></i></span>`;
   }else{return '';}
 
 }

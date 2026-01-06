@@ -34,7 +34,7 @@ function getStatusIcon(statusCode) {
     N: { icon: "fa-circle", color: "#6c757d", label: "(Not started)", labelespañol: "No iniciada" }, // Gris
     C: { icon: "fa-check-circle", color: "#28a745", label: "(Completed)", labelespañol: "Completada" }, // Verde
     I: { icon: "fa-circle-notch", color: "#007bff", label: "(In progress)", labelespañol: "En progreso" }, // Azul
-    H: { icon: "fa-pause-circle", color: "#ff0707ff", label: "(Backlog)", labelespañol: "Pausa" }, // Amarillo
+    H: { icon: "fa-pause-circle", color: "#ff0707ff", label: "(Pause)", labelespañol: "Pausa" }, // Amarillo
     P: { icon: "fa-hourglass-start", color: "#17a2b8", label: "(New)", labelespañol: "Nueva" }, // Cian
   };
 
@@ -210,9 +210,14 @@ $(document).ready(function () {
           const hasStart = !!row.internal_planned_date;
           const hasEnd = !!row.act_end_date;
           const hasInternal_status = row.internal_status;
+           const hasAlert = !!row.alerts && row.alerts.length > 0;
           let actionButtons = `<div class="btn-group" role="group">`;
           // Alert button (abrir modal para crear alerta)
-          actionButtons += `<button type="button" title="alerta" class="btn btn-danger btn-alert" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-bell"></i></button>`;
+         if (!hasAlert) {
+  actionButtons += `<button type="button" title="alerta" class="btn btn-danger btn-alert" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-bell"></i></button>`;
+}else{
+  actionButtons += `<button type="button" title="alerta" onclick="window.eliminarAlerta('${row.alerts[0]}')" class="btn btn-secondary" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-bell-slash"></i></button>`;
+}
           if (hasInternal_status == "N") {
             actionButtons += `<button type="button" title="asignar" class="btn btn-info btn-assign" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-user-plus"></i></button>`;
           }
@@ -258,7 +263,7 @@ $(document).ready(function () {
         const status = d.internal_status;
 
         if (status == "H") {
-          $(rowNode).addClass("bg-gray");
+          $(rowNode).addClass("bg-danger");
         } else if (status == "C") {
           $(rowNode).addClass("bg-success");
         } else if (status=='N') {          
@@ -696,7 +701,7 @@ function loadAlertEnums() {
 
 function getAlert(alerts) {
   if(alerts.length>0){
- return `<span class="info-box-icon"><i class="fas fa-exclamation-triangle "  style="font-size: x-large;" ></i></span>`;
+ return `<span class="info-box-icon-alert"><i class="fas fa-exclamation-triangle "  style="font-size: x-large;" ></i></span>`;
   }else{return '';}
 
 }
