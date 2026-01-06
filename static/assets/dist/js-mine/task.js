@@ -33,9 +33,15 @@ function getStatusIcon(statusCode) {
   const statusMap = {
     N: {
       icon: "fa-circle",
-      color: "#6c757d",
+      color: "#5faff6ff",
       label: "(Not started)",
       labelespañol: "No iniciada",
+    }, // Gris
+    B: {
+      icon: "fa-stopwatch",
+      color: "#6c757d",
+      label: "(Backlog)",
+      labelespañol: "Backlog ",
     }, // Gris
     C: {
       icon: "fa-check-circle",
@@ -247,11 +253,13 @@ $(document).ready(function () {
           } else {
             actionButtons += `<button type="button" title="alerta" onclick="window.eliminarAlerta('${row.alerts[0]}')" class="btn btn-secondary" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-bell-slash"></i></button>`;
           }
-          if (hasInternal_status == "N") {
+          if (hasInternal_status == "N" || hasInternal_status == "B") {
             actionButtons += `<button type="button" title="asignar" class="btn btn-info btn-assign" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-user-plus"></i></button>`;
           }
-           actionButtons += `<button type="button" title="Pasar a Backlog" class="btn btn-info btn-assign-backlog" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-stopwatch"></i></button>`;
-          
+          if (hasInternal_status != "B") {
+          actionButtons += `<button type="button" title="Pasar a Backlog" class="btn btn-info btn-assign-backlog" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-stopwatch"></i></button>`;
+           }
+           
           actionButtons += `</div>`;
           return actionButtons;
         },
@@ -315,7 +323,6 @@ $(document).ready(function () {
     openAssignModal(id, name);
   });
   $("table").on("click", ".btn-assign-backlog", function () {
-    alert("Asignar a Backlog");
     const id = $(this).data("id");
     asignarBacklog(id);
   });
@@ -416,6 +423,7 @@ function openAssignModal(id, name) {
 
   $("#modal-assign-task .modal-title").text("Asignar: " + (name || ""));
   $("#modal-assign-task").modal("show");
+
 }
 
 // Handle assign form submit
