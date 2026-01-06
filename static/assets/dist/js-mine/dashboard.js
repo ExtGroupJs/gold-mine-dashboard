@@ -354,7 +354,7 @@ function paintTaskTable(internal_status="") {
     },
     columns: [
       { data: "wbs", title: "WBS" },
-      { data: "alerts", title: "Alertas<br>(Alerts)" , render: (data) => getAlert(data),},
+      { data: "alert_list", title: "Alertas<br>(Alerts)" , render: (data) => getAlert(data),},
       { data: "task_code", title: "Código<br>(Code)" },
       { data: "task_name", title: "Nombre de tarea<br>(Task Name)" },
       {
@@ -501,8 +501,14 @@ function getStatusIcon(statusCode) {
 </span> `;
 }
 function getAlert(alerts) {
-  if(alerts.length>0){
- return `<span class="info-box-icon-alert"><i class="fas fa-exclamation-triangle "  style="font-size: x-large;" ></i></span>`;
-  }else{return '';}
+  if(alerts.length>0){   
 
+    if (alerts[0].kind=='C'){
+     return `<span class="info-box-icon-alert"><i class="fas fa-exclamation-triangle "  style="font-size: x-large;" ></i></span>`;
+    } else {
+      return `<span class="info-box-icon"><i class="fas fa-bell "  style="font-size: x-large;" ></i></span>`;
+    }
+  } else {
+    return '';
+  }
 }
