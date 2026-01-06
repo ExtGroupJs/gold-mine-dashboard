@@ -91,6 +91,24 @@ class Command(BaseCommand):
                 attrs=["blink"],
             )
         )
+        supervisor_c, _ = SystemUser.objects.get_or_create(
+            username="supervisor_c",
+            defaults={
+                "email": "",
+                "first_name": "Supervisor C",
+                "last_name": "User",
+            },
+        )
+        supervisor_c.groups.add(Groups.SUPERVISOR_AREA_B)
+        supervisor_c.set_password("1234")
+        supervisor_c.save()
+        print(
+            colored(
+                "Created supervisor_c with SUPERVISOR_AREA_B role",
+                "blue",
+                attrs=["blink"],
+            )
+        )
 
         board_client, _ = SystemUser.objects.get_or_create(
             username="board_client",
