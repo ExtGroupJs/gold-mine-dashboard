@@ -1,5 +1,6 @@
 from rest_framework import serializers
 from ..models.task import Task
+from ..models.alert import Alert
 from datetime import datetime
 from .alert import AlertSerializer
 from ..utils.pusher_client import PusherClient
@@ -76,7 +77,7 @@ class TaskSerializer(serializers.ModelSerializer):
             validated_data["internal_status"] = Task.INTERNAL_STATUS.COMPLETED
             validated_data["internal_percent_complete"] = 100
             validated_data["complete_pct"] = 100
-            Alert.objects.filter(task=instance, kind=Alert.KIND.WARNING).delete()
+            Alert.objects.filter(task=instance).delete()
         if "act_start_date" in validated_data:
             validated_data["internal_status"] = Task.INTERNAL_STATUS.IN_PROGRESS
 
