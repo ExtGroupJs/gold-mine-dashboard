@@ -1,0 +1,102 @@
+[
+  {
+    "model": "business_app.resource",
+    "pk": 1,
+    "fields": {
+      "name": "Bulldozer LIEBHERR PR734",
+      "resource_type": null,
+      "fuel_spent_by_hour": 25.0,
+      "rent_cost_by_hour_in_euros": 57.56
+    }
+  },
+  {
+    "model": "business_app.resource",
+    "pk": 2,
+    "fields": {
+      "name": "Topogr�fia",
+      "resource_type": "",
+      "fuel_spent_by_hour": 0.0,
+      "rent_cost_by_hour_in_euros": 0.0
+    }
+  },
+  {
+    "model": "business_app.resource",
+    "pk": 3,
+    "fields": {
+      "name": "Cami�n volquete articulado VOLVO A45G (25.5 m3)",
+      "resource_type": null,
+      "fuel_spent_by_hour": 12.5,
+      "rent_cost_by_hour_in_euros": 49.59
+    }
+  },
+  {
+    "model": "business_app.resource",
+    "pk": 4,
+    "fields": {
+      "name": "Excavadora VOLVO EC480D",
+      "resource_type": null,
+      "fuel_spent_by_hour": 25.0,
+      "rent_cost_by_hour_in_euros": 46.65
+    }
+  },
+  {
+    "model": "business_app.resource",
+    "pk": 5,
+    "fields": {
+      "name": "Motoniveladora SDLG G9220",
+      "resource_type": null,
+      "fuel_spent_by_hour": 12.5,
+      "rent_cost_by_hour_in_euros": 45.48
+    }
+  },
+  {
+    "model": "business_app.resource",
+    "pk": 6,
+    "fields": {
+      "name": "Cami�n cisterna con barras roceadoras (15 m3)",
+      "resource_type": null,
+      "fuel_spent_by_hour": 12.5,
+      "rent_cost_by_hour_in_euros": 46.65
+    }
+  },
+  {
+    "model": "business_app.resource",
+    "pk": 8,
+    "fields": {
+      "name": "Compactador de rodillo liso VOLVO SD13O",
+      "resource_type": null,
+      "fuel_spent_by_hour": 12.5,
+      "rent_cost_by_hour_in_euros": 44.9
+    }
+  },
+  {
+    "model": "business_app.resource",
+    "pk": 9,
+    "fields": {
+      "name": "GPS",
+      "resource_type": "",
+      "fuel_spent_by_hour": 0.0,
+      "rent_cost_by_hour_in_euros": 0.0
+    }
+  },
+  {
+    "model": "business_app.resource",
+    "pk": 10,
+    "fields": {
+      "name": "Carro Ligero",
+      "resource_type": "",
+      "fuel_spent_by_hour": 0.0,
+      "rent_cost_by_hour_in_euros": 0.0
+    }
+  },
+  {
+    "model": "business_app.resource",
+    "pk": 12,
+    "fields": {
+      "name": "Deflect�metro LWD",
+      "resource_type": "",
+      "fuel_spent_by_hour": 0.0,
+      "rent_cost_by_hour_in_euros": 0.0
+    }
+  }
+]
