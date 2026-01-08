@@ -4,15 +4,28 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('business_app', '0005_alter_alert_kind'),
+        ("business_app", "0005_alter_alert_kind"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='task',
-            name='internal_status',
-            field=models.CharField(blank=True, choices=[('P', 'Planned'), ('H', 'Hold'), ('W', 'Warning'), ('B', 'Backlog'), ('I', 'In progress'), ('C', 'Completed'), ('N', 'Not started')], max_length=1, null=True, verbose_name='internal status'),
+            model_name="task",
+            name="internal_status",
+            field=models.CharField(
+                blank=True,
+                choices=[
+                    ("P", "Planned"),
+                    ("H", "Hold"),
+                    ("W", "Warning"),
+                    ("B", "Backlog"),
+                    ("I", "In progress"),
+                    ("C", "Completed"),
+                    ("N", "Not started"),
+                ],
+                max_length=1,
+                null=True,
+                verbose_name="internal status",
+            ),
         ),
     ]

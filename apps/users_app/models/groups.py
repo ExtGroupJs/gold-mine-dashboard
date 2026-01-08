@@ -13,4 +13,3 @@ class Groups(models.IntegerChoices):
     SUPERVISOR_AREA_A = 11, _("Supervisor Área A")
     SUPERVISOR_AREA_B = 12, _("Supervisor Área B")
     SUPERVISOR_AREA_C = 13, _("Supervisor Área C")
-

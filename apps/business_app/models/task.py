@@ -12,8 +12,11 @@ from django.contrib.auth.models import Group
 
 
 class Task(GenericLogMixin, models.Model):
-    ### INTERNAL FIELDS
+    TO_REMOVE_FUEL_SPENT_BY_RESOURCE = 0
+    TO_REMOVE_VOLUME_MOVED_BY_RESOURCE = 0
+    TO_REMOVE_COST_BY_OPERATION = 0
 
+    ### INTERNAL FIELDS
     class INTERNAL_STATUS(models.TextChoices):
         PLANNED = "P", _("Planned")
         """ESTE ES ADICIONAL INTERNO. Tiene valor en 'internal_planned_date' , no tiene datos en 'act_start_date'"""
@@ -21,7 +24,7 @@ class Task(GenericLogMixin, models.Model):
         HOLD = "H", _("Hold")
         """ESTE ES ADICIONAL INTERNO. Tiene alerta tipo critical"""
 
-        WARNING = "W", _("Warning")  
+        WARNING = "W", _("Warning")
         """ESTE ES ADICIONAL INTERNO. Tiene alerta tipo warning"""
 
         BACKLOG = "B", _("Backlog")
@@ -38,7 +41,6 @@ class Task(GenericLogMixin, models.Model):
 
         NOT_STARTED = "N", _("Not started")
         """ESTE ESTÁ TAMBIÉN EN EL PRIMAVERA"""
-
 
     PRIMAVERA_IMPORTED_STATUS = (
         INTERNAL_STATUS.COMPLETED.value,

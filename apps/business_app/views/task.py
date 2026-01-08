@@ -58,7 +58,9 @@ class TaskViewSet(viewsets.ModelViewSet, GenericAPIView):
         queryset = super().get_queryset()
         request_user = self.request.user if not self.request.user.is_anonymous else None
         if request_user and (
-            request_user.groups.filter(id__in=(Groups.PLANNER.value, Groups.DASHBOARD_CLIENT.value)).exists()
+            request_user.groups.filter(
+                id__in=(Groups.PLANNER.value, Groups.DASHBOARD_CLIENT.value)
+            ).exists()
             or request_user.is_superuser
         ):
             return queryset
@@ -78,6 +80,4 @@ class TaskViewSet(viewsets.ModelViewSet, GenericAPIView):
 
 
 class TaskEnumsViewSet(EnumsMixin):
-    items = (
-        ("internal_status", Task.INTERNAL_STATUS),
-    )
+    items = (("internal_status", Task.INTERNAL_STATUS),)

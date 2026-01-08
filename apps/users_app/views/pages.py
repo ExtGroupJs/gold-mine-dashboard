@@ -65,6 +65,8 @@ def taskSupervisor(request):
             "pusher_cluster": settings.PUSHER_CLUSTER,
         },
     )
+
+
 def taskSupervisorMovil(request):
     return render(
         request,

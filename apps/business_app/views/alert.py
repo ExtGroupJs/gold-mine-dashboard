@@ -14,6 +14,7 @@ from drf_spectacular.utils import extend_schema
 from django.utils.translation import gettext_lazy as _
 from rest_framework.decorators import action
 from ..utils.counters import get_alert_counters
+
 # Create your views here.
 from apps.common.mixins.enums_mixin import EnumsMixin
 
@@ -68,7 +69,6 @@ class AlertViewSet(viewsets.ModelViewSet, GenericAPIView):
     @action(detail=False, methods=["GET"])
     def counters(self, pk=None):
         return Response(get_alert_counters())
-
 
 
 class AlertEnumsViewSet(EnumsMixin):

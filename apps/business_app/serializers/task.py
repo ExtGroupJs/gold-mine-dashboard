@@ -15,7 +15,6 @@ class TaskSerializer(serializers.ModelSerializer):
     alert_list = AlertSerializer(source="alerts", many=True, read_only=True)
     internal_status_name = serializers.SerializerMethodField()
 
-
     class Meta:
         model = Task
         fields = [
@@ -39,10 +38,10 @@ class TaskSerializer(serializers.ModelSerializer):
             "alerts",
             "alert_list",
         ]
-    
+
     def get_internal_status_name(self, obj):
         return str(Task.INTERNAL_STATUS(obj.internal_status).label)
-    
+
     def validate(self, data):
         if (
             "internal_planned_date" in data
@@ -63,20 +62,22 @@ class TaskSerializer(serializers.ModelSerializer):
     def update(self, instance, validated_data):
         if "internal_planned_date" in validated_data:
             validated_data["internal_status"] = Task.INTERNAL_STATUS.PLANNED
-        
+
         elif "internal_percent_complete" in validated_data:
             if validated_data.get("internal_percent_complete") == 100:
                 validated_data["internal_status"] = Task.INTERNAL_STATUS.COMPLETED
             elif validated_data.get("internal_percent_complete") != 0:
                 validated_data["act_start_date"] = datetime.now()
-            validated_data["complete_pct"] = validated_data.get("internal_percent_complete")
+            validated_data["complete_pct"] = validated_data.get(
+                "internal_percent_complete"
+            )
 
         elif "act_end_date" in validated_data:
             validated_data["internal_status"] = Task.INTERNAL_STATUS.COMPLETED
             validated_data["internal_percent_complete"] = 100
             validated_data["complete_pct"] = 100
             Alert.objects.filter(task=instance).delete()
-        
+
         if "act_start_date" in validated_data:
             validated_data["internal_status"] = Task.INTERNAL_STATUS.IN_PROGRESS
 

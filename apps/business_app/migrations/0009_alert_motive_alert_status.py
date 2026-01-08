@@ -4,15 +4,27 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('business_app', '0008_remove_alert_description'),
+        ("business_app", "0008_remove_alert_description"),
     ]
 
     operations = [
         migrations.AddField(
-            model_name='alert',
-            name='motive_alert_status',
-            field=models.CharField(choices=[('S', 'Seguridad'), ('A', 'Medio Ambiente'), ('W', 'Clima'), ('E', 'Equipamiento'), ('P', 'Personal'), ('R', 'Repuestos'), ('O', 'Otros')], default='O', max_length=1, verbose_name='Motive Alert Status'),
+            model_name="alert",
+            name="motive_alert_status",
+            field=models.CharField(
+                choices=[
+                    ("S", "Seguridad"),
+                    ("A", "Medio Ambiente"),
+                    ("W", "Clima"),
+                    ("E", "Equipamiento"),
+                    ("P", "Personal"),
+                    ("R", "Repuestos"),
+                    ("O", "Otros"),
+                ],
+                default="O",
+                max_length=1,
+                verbose_name="Motive Alert Status",
+            ),
         ),
     ]
