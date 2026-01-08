@@ -55,7 +55,7 @@ class Task(GenericLogMixin, models.Model):
         max_length=1,
     )
     internal_percent_complete = models.IntegerField(
-        _("percent complete"),
+        _("internal percent complete"),
         default=0,
         validators=[MinValueValidator(0), MaxValueValidator(100)],
     )
