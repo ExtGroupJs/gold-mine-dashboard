@@ -28,6 +28,15 @@ class Command(BaseCommand):
             )
         )
 
+        call_command("loaddata", "resources.json")
+        print(
+            colored(
+                "Successfully added Resources to system",
+                "green",
+                attrs=["blink"],
+            )
+        )
+
         admin_user = User.objects.get(username="admin")
         admin_user.groups.add(Groups.SUPER_ADMIN)
         print(
