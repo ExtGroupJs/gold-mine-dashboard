@@ -25,7 +25,8 @@ class ResourceAdmin(GenericModelAdmin):
 
 @admin.register(Task)
 class TaskAdmin(GenericModelAdmin):
-    EXCLUDED_FIELDS_FOR_EDITING = {"taskresource", "alerts"}
+    # EXCLUDED_FIELDS_FOR_EDITING = {"taskresource",}
+    pass
 
 
 @admin.register(Alert)
@@ -40,7 +41,8 @@ class TaskResourceAdmin(GenericModelAdmin):
 
 @admin.register(WBS)
 class WBSAdmin(GenericModelAdmin):
-    EXCLUDED_FIELDS_FOR_EDITING = {"task"}
+    # EXCLUDED_FIELDS_FOR_EDITING = {"task", "taskresource"}
+    pass
 
 
 @admin.register(PrimaveraImportFile)

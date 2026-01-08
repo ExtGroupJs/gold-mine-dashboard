@@ -66,16 +66,44 @@ class GenericModelAdmin(admin.ModelAdmin):
             field
             for field in self.all_fields
             if field not in self.EXCLUDED_FIELDS
-            and not self._is_problematic_field_for_edit(field)
+            and not (
+                self._is_problematic_field_for_edit(field)
+                or self._is_reverse_relationship(field)
+            )
         ]
         self.list_display_fields = [
             field
             for field in self.all_fields
-            if not self._is_problematic_field_in_list(field)
+            if not (
+                self._is_problematic_field_in_list(field)
+                or self._is_reverse_relationship(field)
+            )
         ]
+
         self.empty_value_display = "-empty-"
         self.list_display = self.list_display_fields
         self.fields = self.editable_fields
+        self.raw_id_fields = [
+            field
+            for field in self.all_fields
+            if self.model._meta.get_field(field).many_to_many
+            and not self._is_reverse_relationship(field)
+        ]
+        print(self.raw_id_fields, "*************", self.model)
+
+    def _is_reverse_relationship(self, field_name):
+        try:
+            field = self.model._meta.get_field(field_name)
+
+            # Reverse relationships are auto-created and have these properties
+            return field.auto_created and (
+                field.many_to_many
+                or field.one_to_many
+                or (field.one_to_one and field.auto_created)
+            )
+
+        except models.FieldDoesNotExist:
+            return False
 
     def _is_problematic_field_in_list(self, field_name):
         """Verifica si un campo es ManyToMany o reverse ForeignKey"""
