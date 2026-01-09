@@ -95,7 +95,8 @@ class Task(GenericLogMixin, models.Model):
 
     def __str__(self):
         return f"{self.task_name}"
-
+    
+    @property
     def calculate_working_hours(self):
         """
         Calculate working hours between act_start_date and act_end_date,
