@@ -13,7 +13,7 @@ from ..models.task import Task
 from ..serializers.task import TaskSerializer
 from apps.common.mixins.common_view_mixin import CommonOrderingFilter
 from apps.users_app.models.groups import Groups
-from ..utils.counters import get_task_counters
+from ..utils.counters import get_task_counters, get_daily_work_summary
 from apps.common.mixins.enums_mixin import EnumsMixin
 
 
@@ -68,6 +68,15 @@ class TaskViewSet(viewsets.ModelViewSet, GenericAPIView):
             return queryset.filter(
                 internal_responsibles__in=request_user.groups.all()
             ).all()
+
+    @extend_schema(
+        request=None,
+        methods=["GET"],
+        description=_("Get summary for management"),
+    )
+    @action(detail=False, methods=["GET"])
+    def management_counters(self, pk=None):
+        return Response(get_daily_work_summary())
 
     @extend_schema(
         request=None,
