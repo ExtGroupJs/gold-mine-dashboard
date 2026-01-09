@@ -52,7 +52,7 @@ class TaskSerializer(serializers.ModelSerializer):
             )
         if (
             data.get("internal_responsibles", []) != []
-            and not "internal_planned_date" in data
+            and "internal_planned_date" not in data
         ):
             raise serializers.ValidationError(
                 "Planned Date must be set when Responsible Roles are set."

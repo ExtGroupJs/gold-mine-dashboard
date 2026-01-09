@@ -5,20 +5,26 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('business_app', '0011_alter_resource_name'),
+        ("business_app", "0011_alter_resource_name"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='resource',
-            name='resource_type',
+            model_name="resource",
+            name="resource_type",
             field=models.CharField(blank=True, max_length=50, null=True),
         ),
         migrations.AlterField(
-            model_name='task',
-            name='internal_percent_complete',
-            field=models.IntegerField(default=0, validators=[django.core.validators.MinValueValidator(0), django.core.validators.MaxValueValidator(100)], verbose_name='internal percent complete'),
+            model_name="task",
+            name="internal_percent_complete",
+            field=models.IntegerField(
+                default=0,
+                validators=[
+                    django.core.validators.MinValueValidator(0),
+                    django.core.validators.MaxValueValidator(100),
+                ],
+                verbose_name="internal percent complete",
+            ),
         ),
     ]

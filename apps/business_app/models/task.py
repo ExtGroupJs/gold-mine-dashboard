@@ -4,6 +4,7 @@ from .resource import Resource
 from .task_resource import TaskResource
 from django.utils.translation import gettext_lazy as _
 from apps.common.mixins.generic_log import GenericLogMixin
+from datetime import datetime, time, timedelta
 from django.core.validators import (
     MaxValueValidator,
     MinValueValidator,
@@ -12,10 +13,6 @@ from django.contrib.auth.models import Group
 
 
 class Task(GenericLogMixin, models.Model):
-    TO_REMOVE_FUEL_SPENT_BY_RESOURCE = 0
-    TO_REMOVE_VOLUME_MOVED_BY_RESOURCE = 0
-    TO_REMOVE_COST_BY_OPERATION = 0
-
     ### INTERNAL FIELDS
     class INTERNAL_STATUS(models.TextChoices):
         PLANNED = "P", _("Planned")
@@ -98,3 +95,45 @@ class Task(GenericLogMixin, models.Model):
 
     def __str__(self):
         return f"{self.task_name}"
+
+    def calculate_working_hours(self):
+        """
+        Calculate working hours between act_start_date and act_end_date,
+        considering an 8am-4pm workday schedule across all days of the week.
+
+        Returns:
+            float: Total working hours, or None if dates are invalid
+        """
+        if not self.act_start_date or not self.act_end_date:
+            return None
+
+        if self.act_start_date >= self.act_end_date:
+            return 0.0
+
+        total_hours = 0.0
+
+        # Workday hours (8am to 4pm)
+        work_start_time = time(8, 0)
+        work_end_time = time(16, 0)
+
+        current_datetime = self.act_start_date
+        end_datetime = self.act_end_date
+
+        while current_datetime.date() <= end_datetime.date():
+            # Get the start of the current workday
+            day_start = datetime.combine(current_datetime.date(), work_start_time)
+            day_end = datetime.combine(current_datetime.date(), work_end_time)
+
+            # Calculate overlap between work hours and the time period
+            period_start = max(current_datetime, day_start)
+            period_end = min(end_datetime, day_end)
+
+            if period_start < period_end:
+                # Calculate hours for this day
+                day_hours = (period_end - period_start).total_seconds() / 3600
+                total_hours += day_hours
+
+            # Move to the next day
+            current_datetime = day_start + timedelta(days=1)
+
+        return round(total_hours, 2)
