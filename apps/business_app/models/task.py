@@ -13,7 +13,6 @@ from django.contrib.auth.models import Group
 from django.utils import timezone
 
 
-
 class Task(GenericLogMixin, models.Model):
     ### INTERNAL FIELDS
     class INTERNAL_STATUS(models.TextChoices):
@@ -97,33 +96,37 @@ class Task(GenericLogMixin, models.Model):
 
     def __str__(self):
         return f"{self.task_name}"
-    
+
     @property
     def working_hours(self):
         if not self.act_start_date or not self.act_end_date:
             return None
-            
+
         if self.act_start_date >= self.act_end_date:
             return 0.0
-            
+
         total_hours = 0.0
         work_start_time = time(8, 0)
         work_end_time = time(16, 0)
-        
+
         # Convert to aware datetimes if needed
         current = timezone.localtime(self.act_start_date)
         end = timezone.localtime(self.act_end_date)
-        
+
         while current.date() <= end.date():
-            day_start = timezone.make_aware(datetime.combine(current.date(), work_start_time))
-            day_end = timezone.make_aware(datetime.combine(current.date(), work_end_time))
-            
+            day_start = timezone.make_aware(
+                datetime.combine(current.date(), work_start_time)
+            )
+            day_end = timezone.make_aware(
+                datetime.combine(current.date(), work_end_time)
+            )
+
             period_start = max(current, day_start)
             period_end = min(end, day_end)
-            
+
             if period_start < period_end:
                 total_hours += (period_end - period_start).total_seconds() / 3600
-                
+
             current = day_start + timedelta(days=1)
-        
+
         return round(total_hours, 2)

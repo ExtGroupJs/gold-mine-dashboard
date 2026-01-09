@@ -12,7 +12,7 @@ def get_daily_work_summary():
     - Total working hours per day
     - Total fuel spent per day
     - Total equipment rental cost per day
-    
+
     Returns:
         dict: Dictionary with dates as keys and daily summary as values
         Example: {
@@ -24,30 +24,31 @@ def get_daily_work_summary():
             ...
         }
     """
-    daily_summary = defaultdict(lambda: {'hours': 0.0, 'fuel_spent': 0.0, 'rental_cost': 0.0})
-    
+    daily_summary = defaultdict(
+        lambda: {"hours": 0.0, "fuel_spent": 0.0, "rental_cost": 0.0}
+    )
+
     # Get all tasks with actual dates
     tasks = Task.objects.filter(
-        act_start_date__isnull=False,
-        act_end_date__isnull=False
-    ).prefetch_related('resources')
-    
+        act_start_date__isnull=False, act_end_date__isnull=False
+    ).prefetch_related("resources")
+
     work_start_time = time(8, 0)
     work_end_time = time(16, 0)
-    
+
     for task in tasks:
         # Use the working_hours property from Task model
         task_hours = task.working_hours
         if not task_hours or task_hours == 0:
             continue
-        
+
         # Get all resources for this task
         resources = task.resources.all()
-        
+
         # Calculate hours per day for this task
         current_datetime = timezone.localtime(task.act_start_date)
         end_datetime = timezone.localtime(task.act_end_date)
-        
+
         while current_datetime.date() <= end_datetime.date():
             day_start = timezone.make_aware(
                 datetime.combine(current_datetime.date(), work_start_time)
@@ -55,32 +56,36 @@ def get_daily_work_summary():
             day_end = timezone.make_aware(
                 datetime.combine(current_datetime.date(), work_end_time)
             )
-            
+
             period_start = max(current_datetime, day_start)
             period_end = min(end_datetime, day_end)
-            
+
             if period_start < period_end:
                 day_hours = (period_end - period_start).total_seconds() / 3600
                 day_key = current_datetime.date().isoformat()
-                
-                daily_summary[day_key]['hours'] += day_hours
-                
+
+                daily_summary[day_key]["hours"] += day_hours
+
                 # Calculate fuel and rental costs for this day
                 for resource in resources:
-                    daily_summary[day_key]['fuel_spent'] += day_hours * resource.fuel_spent_by_hour
-                    daily_summary[day_key]['rental_cost'] += day_hours * resource.rent_cost_by_hour_in_euros
-            
+                    daily_summary[day_key]["fuel_spent"] += (
+                        day_hours * resource.fuel_spent_by_hour
+                    )
+                    daily_summary[day_key]["rental_cost"] += (
+                        day_hours * resource.rent_cost_by_hour_in_euros
+                    )
+
             current_datetime = day_start + timedelta(days=1)
-    
+
     # Convert to regular dict and round values
     result = {}
     for date_key, values in sorted(daily_summary.items()):
         result[date_key] = {
-            'hours': round(values['hours'], 2),
-            'fuel_spent': round(values['fuel_spent'], 2),
-            'rental_cost': round(values['rental_cost'], 2)
+            "hours": round(values["hours"], 2),
+            "fuel_spent": round(values["fuel_spent"], 2),
+            "rental_cost": round(values["rental_cost"], 2),
         }
-    
+
     return result
 
 
