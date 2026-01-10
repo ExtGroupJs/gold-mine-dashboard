@@ -4,14 +4,13 @@ from django.db import migrations
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('business_app', '0012_alter_resource_resource_type_and_more'),
+        ("business_app", "0012_alter_resource_resource_type_and_more"),
     ]
 
     operations = [
         migrations.RemoveField(
-            model_name='task',
-            name='internal_percent_complete',
+            model_name="task",
+            name="internal_percent_complete",
         ),
     ]

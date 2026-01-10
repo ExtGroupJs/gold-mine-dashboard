@@ -113,11 +113,13 @@ def get_daily_work_summary_for_test():
     )
 
     # Get all tasks with actual dates
-    tasks = Task.objects.filter(complete_pct__gt=0).prefetch_related(
-        "resources"
-    ).order_by("act_start_date")
+    tasks = (
+        Task.objects.filter(complete_pct__gt=0)
+        .prefetch_related("resources")
+        .order_by("act_start_date")
+    )
 
-    for task in tasks:        
+    for task in tasks:
         current_datetime = timezone.localtime(task.act_start_date)
         day_key = current_datetime.date().isoformat()
 
@@ -134,9 +136,7 @@ def get_daily_work_summary_for_test():
 
             # Calculate fuel and rental costs for this day
             for resource in resources:
-                task_info["fuel_spent"] += (
-                    task_hours * resource.fuel_spent_by_hour
-                )
+                task_info["fuel_spent"] += task_hours * resource.fuel_spent_by_hour
                 task_info["rental_cost"] += (
                     task_hours * resource.rent_cost_by_hour_in_euros
                 )

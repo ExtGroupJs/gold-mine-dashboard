@@ -3,7 +3,11 @@ from django.dispatch import receiver
 from .models.task import Task
 from .models.alert import Alert
 from .utils.pusher_client import PusherClient
-from .utils.counters import get_task_counters, get_alert_counters, get_daily_work_summary_for_test
+from .utils.counters import (
+    get_task_counters,
+    get_alert_counters,
+    get_daily_work_summary_for_test,
+)
 import logging
 
 logger = logging.getLogger(__name__)
