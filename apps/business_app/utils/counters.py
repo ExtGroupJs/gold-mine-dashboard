@@ -87,6 +87,8 @@ def get_daily_work_summary():
         }
 
     return result
+
+
 def get_daily_work_summary_for_test():
     """
     Calculate daily work summary including:
@@ -110,9 +112,9 @@ def get_daily_work_summary_for_test():
     )
 
     # Get all tasks with actual dates
-    tasks = Task.objects.filter(
-        internal_percent_complete__gt=0
-    ).prefetch_related("resources")
+    tasks = Task.objects.filter(internal_percent_complete__gt=0).prefetch_related(
+        "resources"
+    )
 
     for task in tasks:
         # Use the working_hours property from Task model
@@ -122,7 +124,7 @@ def get_daily_work_summary_for_test():
 
         # Calculate hours per day for this task
         current_datetime = timezone.localtime(task.act_start_date)
-           
+
         day_key = current_datetime.date().isoformat()
 
         daily_summary[day_key]["hours"] += day_hours
@@ -135,7 +137,6 @@ def get_daily_work_summary_for_test():
             daily_summary[day_key]["rental_cost"] += (
                 task_hours * resource.rent_cost_by_hour_in_euros
             )
-
 
     # Convert to regular dict and round values
     result = {}

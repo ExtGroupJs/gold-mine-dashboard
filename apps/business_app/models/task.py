@@ -14,7 +14,8 @@ from django.utils import timezone
 
 
 class Task(GenericLogMixin, models.Model):
-    DEFAULT_TASK_DURATION = 8 # HOURS
+    DEFAULT_TASK_DURATION = 8  # HOURS
+
     ### INTERNAL FIELDS
     class INTERNAL_STATUS(models.TextChoices):
         PLANNED = "P", _("Planned")

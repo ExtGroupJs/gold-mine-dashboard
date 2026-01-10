@@ -58,6 +58,7 @@ class TaskSerializer(serializers.ModelSerializer):
                 "Planned Date must be set when Responsible Roles are set."
             )
         return data
+
     def _complete_task(self, validated_data):
         validated_data["internal_status"] = Task.INTERNAL_STATUS.COMPLETED
         validated_data["internal_percent_complete"] = 100
@@ -72,7 +73,9 @@ class TaskSerializer(serializers.ModelSerializer):
             self._complete_task(validated_data=validated_data)
 
         elif "internal_percent_complete" in validated_data:
-            internal_percent_complete_value = validated_data.get("internal_percent_complete")
+            internal_percent_complete_value = validated_data.get(
+                "internal_percent_complete"
+            )
             if internal_percent_complete_value == 100:
                 self._complete_task(validated_data=validated_data)
             elif internal_percent_complete_value != 0:
