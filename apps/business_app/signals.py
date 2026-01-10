@@ -3,10 +3,18 @@ from django.dispatch import receiver
 from .models.task import Task
 from .models.alert import Alert
 from .utils.pusher_client import PusherClient
-from .utils.counters import get_task_counters, get_alert_counters
+from .utils.counters import get_task_counters, get_alert_counters, get_daily_work_summary_for_test
 import logging
 
 logger = logging.getLogger(__name__)
+
+
+def send_update_management_dashboard():
+    pusher_client = PusherClient()
+    data = get_daily_work_summary_for_test()
+    pusher_client.trigger(
+        PusherClient.MANAGEMENT_DASHBOARD_CHANNEL, PusherClient.UPDATE_TASK_EVENT, data
+    )
 
 
 def send_update_task_dashboard():

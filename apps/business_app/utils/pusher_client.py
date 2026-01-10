@@ -9,6 +9,7 @@ class PusherClient:
     """Wrapper around pusher.Pusher that logs triggers for debugging."""
 
     # CHANNELS
+    MANAGEMENT_DASHBOARD_CHANNEL = "management-dashboard-channel"
     DASHBOARD_CHANNEL = "dashboard-channel"
     TASK_CHANNEL = "task-channel"
     ALERT_CHANNEL = "alert-channel"
