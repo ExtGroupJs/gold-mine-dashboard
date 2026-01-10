@@ -113,6 +113,8 @@ def get_daily_work_summary_for_test():
     daily_summary = defaultdict(
         lambda: {
             "hours": 0.0,
+            "tasks": 0,
+            "completed_tasks": 0,
             "fuel_spent": 0.0,
             "rental_cost": 0.0,
             "processed_volume": 0.0,
@@ -171,6 +173,9 @@ def get_daily_work_summary_for_test():
         daily_summary[day_key]["processed_area"] += task_info[
             "processed_area"
         ]
+        daily_summary[day_key]["tasks"] += 1
+        if task.complete_pct == 100:
+            daily_summary[day_key]["completed_tasks"] += 1
 
     return daily_summary
 
