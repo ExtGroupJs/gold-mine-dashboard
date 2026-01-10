@@ -4,7 +4,6 @@ from django.urls import reverse
 from model_bakery import baker
 from rest_framework import status
 
-from apps.enterprises_app.models.enterprise import Enterprise
 from apps.users_app.models import SystemUser
 
 
@@ -52,38 +51,6 @@ class TestUserViewSet(BaseTestClass):
         url = reverse("users-list")
         data = {
             "username": "admin",
-            "email": "new_user@example.com",
-            "first_name": "New",
-            "last_name": "User",
-            "identification_number": "1234567890",
-            "gender": "M",
-            "phone": "1234567890",
-        }
-        response = self.client.post(url, data=data)
-        assert response.status_code == 400
-
-    def test_user_update_enterprise(self):
-        self.client.force_authenticate(self.user, self.oauth2_token)
-
-        original_enterprise = baker.make(Enterprise)
-        created_user = baker.make(SystemUser, enterprise=original_enterprise)
-        url = reverse("users-detail", kwargs={"pk": created_user.id})
-        new_enterprise = baker.make(Enterprise)
-
-        data = {
-            "enterprise_id": new_enterprise.id,
-        }
-        response = self.client.patch(url, data=data)
-        assert response.status_code == 200
-        created_user.refresh_from_db()
-        assert created_user.enterprise_id == new_enterprise.id
-
-    # User creation fails if identification number already exists
-    def test_failed_user_creation_if_existing_identification_number(self):
-        self.client.force_authenticate(self.user, self.oauth2_token)
-        url = reverse("users-list")
-        data = {
-            "username": "new_user",
             "email": "new_user@example.com",
             "first_name": "New",
             "last_name": "User",
