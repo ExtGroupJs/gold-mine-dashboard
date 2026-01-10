@@ -14,6 +14,7 @@ from django.utils import timezone
 
 
 class Task(GenericLogMixin, models.Model):
+    DEFAULT_TASK_DURATION = 8 # HOURS
     ### INTERNAL FIELDS
     class INTERNAL_STATUS(models.TextChoices):
         PLANNED = "P", _("Planned")
@@ -98,7 +99,11 @@ class Task(GenericLogMixin, models.Model):
         return f"{self.task_name}"
 
     @property
-    def working_hours(self):
+    def working_hours_for_test(self):
+        return self.internal_percent_complete / 100 * DEFAULT_TASK_DURATION
+
+    @property
+    def working_hours_real(self):
         if not self.act_start_date or not self.act_end_date:
             return None
 

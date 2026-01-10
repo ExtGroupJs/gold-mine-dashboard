@@ -13,7 +13,7 @@ from ..models.task import Task
 from ..serializers.task import TaskSerializer
 from apps.common.mixins.common_view_mixin import CommonOrderingFilter
 from apps.users_app.models.groups import Groups
-from ..utils.counters import get_task_counters, get_daily_work_summary
+from ..utils.counters import get_task_counters, get_daily_work_summary_for_test
 from apps.common.mixins.enums_mixin import EnumsMixin
 
 
@@ -76,7 +76,7 @@ class TaskViewSet(viewsets.ModelViewSet, GenericAPIView):
     )
     @action(detail=False, methods=["GET"])
     def management_counters(self, pk=None):
-        return Response(get_daily_work_summary())
+        return Response(get_daily_work_summary_for_test())
 
     @extend_schema(
         request=None,

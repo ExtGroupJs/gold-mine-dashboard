@@ -58,25 +58,26 @@ class TaskSerializer(serializers.ModelSerializer):
                 "Planned Date must be set when Responsible Roles are set."
             )
         return data
+    def _complete_task(self, validated_data):
+        validated_data["internal_status"] = Task.INTERNAL_STATUS.COMPLETED
+        validated_data["internal_percent_complete"] = 100
+        validated_data["complete_pct"] = 100
+        validated_data["act_end_date"] = datetime.now()
+        Alert.objects.filter(task=instance).delete()
 
     def update(self, instance, validated_data):
         if "internal_planned_date" in validated_data:
             validated_data["internal_status"] = Task.INTERNAL_STATUS.PLANNED
+        elif "act_end_date" in validated_data:
+            self._complete_task(validated_data=validated_data)
 
         elif "internal_percent_complete" in validated_data:
-            if validated_data.get("internal_percent_complete") == 100:
-                validated_data["internal_status"] = Task.INTERNAL_STATUS.COMPLETED
-            elif validated_data.get("internal_percent_complete") != 0:
+            internal_percent_complete_value = validated_data.get("internal_percent_complete")
+            if internal_percent_complete_value == 100:
+                self._complete_task(validated_data=validated_data)
+            elif internal_percent_complete_value != 0:
                 validated_data["act_start_date"] = datetime.now()
-            validated_data["complete_pct"] = validated_data.get(
-                "internal_percent_complete"
-            )
-
-        elif "act_end_date" in validated_data:
-            validated_data["internal_status"] = Task.INTERNAL_STATUS.COMPLETED
-            validated_data["internal_percent_complete"] = 100
-            validated_data["complete_pct"] = 100
-            Alert.objects.filter(task=instance).delete()
+            validated_data["complete_pct"] = internal_percent_complete_value
 
         if "act_start_date" in validated_data:
             validated_data["internal_status"] = Task.INTERNAL_STATUS.IN_PROGRESS
