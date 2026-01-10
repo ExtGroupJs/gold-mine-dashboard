@@ -15,6 +15,7 @@ from django.utils import timezone
 
 class Task(GenericLogMixin, models.Model):
     DEFAULT_TASK_DURATION = 8  # HOURS
+    CACHE_KEY_FOR_MANAGEMENT_INFO = "task_info_{task_id}_percent_{percent}"
 
     ### INTERNAL FIELDS
     class INTERNAL_STATUS(models.TextChoices):

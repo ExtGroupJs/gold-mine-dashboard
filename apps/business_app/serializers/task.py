@@ -4,6 +4,7 @@ from ..models.alert import Alert
 from datetime import datetime
 from .alert import AlertSerializer
 from ..utils.pusher_client import PusherClient
+from django.core.cache import cache
 
 
 class TaskSerializer(serializers.ModelSerializer):
@@ -63,11 +64,18 @@ class TaskSerializer(serializers.ModelSerializer):
         
         return data
 
-    def _complete_task(self, validated_data):
+    def _remove_from_cache(self, instance):
+        cache_key = Task.CACHE_KEY_FOR_MANAGEMENT_INFO.format(
+            task_id=instance.id, percent=instance.complete_pct
+        )
+        if cache.has_key(cache_key):
+            cache.delete(cache_key)
+
+    def _complete_task(self, instance, validated_data):
         validated_data["internal_status"] = Task.INTERNAL_STATUS.COMPLETED
         validated_data["complete_pct"] = 100
         validated_data["act_end_date"] = datetime.now()
-        Alert.objects.filter(task=self.instance).delete()
+        self._remove_from_cache(instance)
 
     def update(self, instance, validated_data):
         if "internal_planned_date" in validated_data:
@@ -86,6 +94,7 @@ class TaskSerializer(serializers.ModelSerializer):
                     validated_data["act_start_date"] = datetime.now()
                 validated_data["internal_status"] = Task.INTERNAL_STATUS.IN_PROGRESS
                 Alert.objects.filter(task=instance, kind=Alert.KIND.CRITICAL).delete()
+                self._remove_from_cache(instance)
                 validated_data["act_end_date"] = None
 
         if "act_start_date" in validated_data:

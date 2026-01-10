@@ -2,6 +2,7 @@ from ..models.task import Task
 from ..models.alert import Alert
 from datetime import datetime, time, timedelta
 from django.utils import timezone
+from django.core.cache import cache
 
 from collections import defaultdict
 
@@ -116,24 +117,35 @@ def get_daily_work_summary_for_test():
         "resources"
     ).order_by("act_start_date")
 
-    for task in tasks:
-        # Use the working_hours property from Task model
-        task_hours = task.working_hours_for_test
-        # Get all resources for this task
-        resources = task.resources.all()
-
+    for task in tasks:        
         current_datetime = timezone.localtime(task.act_start_date)
         day_key = current_datetime.date().isoformat()
-        daily_summary[day_key]["hours"] += task_hours
 
-        # Calculate fuel and rental costs for this day
-        for resource in resources:
-            daily_summary[day_key]["fuel_spent"] += (
-                task_hours * resource.fuel_spent_by_hour
-            )
-            daily_summary[day_key]["rental_cost"] += (
-                task_hours * resource.rent_cost_by_hour_in_euros
-            )
+        cache_key = Task.CACHE_KEY_FOR_MANAGEMENT_INFO.format(
+            task_id=task.id, percent=task.complete_pct
+        )
+        if not cache.has_key(cache_key):
+            task_info = {"hours": 0.0, "fuel_spent": 0.0, "rental_cost": 0.0}
+            # Use the working_hours property from Task model
+            task_hours = task.working_hours_for_test
+            # Get all resources for this task
+            task_info["hours"] = task_hours
+            resources = task.resources.all()
+
+            # Calculate fuel and rental costs for this day
+            for resource in resources:
+                task_info["fuel_spent"] += (
+                    task_hours * resource.fuel_spent_by_hour
+                )
+                task_info["rental_cost"] += (
+                    task_hours * resource.rent_cost_by_hour_in_euros
+                )
+            cache.set(cache_key, task_info, timeout=None)
+        task_info = cache.get(cache_key)
+        daily_summary[day_key]["hours"] += task_info["hours"]
+        daily_summary[day_key]["fuel_spent"] += task_info["fuel_spent"]
+        daily_summary[day_key]["rental_cost"] += task_info["rental_cost"]
+
     return daily_summary
 
 
