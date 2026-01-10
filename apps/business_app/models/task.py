@@ -54,11 +54,7 @@ class Task(GenericLogMixin, models.Model):
         blank=True,
         max_length=1,
     )
-    internal_percent_complete = models.IntegerField(
-        _("internal percent complete"),
-        default=0,
-        validators=[MinValueValidator(0), MaxValueValidator(100)],
-    )
+
     internal_planned_date = models.DateTimeField(
         null=True, blank=True, verbose_name="Planned Date"
     )
@@ -101,7 +97,7 @@ class Task(GenericLogMixin, models.Model):
 
     @property
     def working_hours_for_test(self):
-        return self.internal_percent_complete / 100 * DEFAULT_TASK_DURATION
+        return self.complete_pct / 100 * Task.DEFAULT_TASK_DURATION
 
     @property
     def working_hours_real(self):

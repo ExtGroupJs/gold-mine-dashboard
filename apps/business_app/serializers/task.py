@@ -21,7 +21,6 @@ class TaskSerializer(serializers.ModelSerializer):
             "id",
             "internal_status",
             "internal_status_name",
-            "internal_percent_complete",
             "internal_planned_date",
             "internal_responsibles",
             "internal_responsibles_names",
@@ -43,6 +42,10 @@ class TaskSerializer(serializers.ModelSerializer):
         return str(Task.INTERNAL_STATUS(obj.internal_status).label)
 
     def validate(self, data):
+        if self.instance and self.instance.internal_status == Task.INTERNAL_STATUS.COMPLETED:
+            raise serializers.ValidationError(
+                "The task has already been COMPLETED. No further changes can be made on it."
+            ) 
         if (
             "internal_planned_date" in data
             and data.get("internal_responsibles", []) == []
@@ -57,14 +60,14 @@ class TaskSerializer(serializers.ModelSerializer):
             raise serializers.ValidationError(
                 "Planned Date must be set when Responsible Roles are set."
             )
+        
         return data
 
     def _complete_task(self, validated_data):
         validated_data["internal_status"] = Task.INTERNAL_STATUS.COMPLETED
-        validated_data["internal_percent_complete"] = 100
         validated_data["complete_pct"] = 100
         validated_data["act_end_date"] = datetime.now()
-        Alert.objects.filter(task=instance).delete()
+        Alert.objects.filter(task=self.instance).delete()
 
     def update(self, instance, validated_data):
         if "internal_planned_date" in validated_data:
@@ -72,21 +75,25 @@ class TaskSerializer(serializers.ModelSerializer):
         elif "act_end_date" in validated_data:
             self._complete_task(validated_data=validated_data)
 
-        elif "internal_percent_complete" in validated_data:
-            internal_percent_complete_value = validated_data.get(
-                "internal_percent_complete"
+        elif "complete_pct" in validated_data:
+            complete_pct_value = validated_data.get(
+                "complete_pct"
             )
-            if internal_percent_complete_value == 100:
+            if complete_pct_value == 100:
                 self._complete_task(validated_data=validated_data)
-            elif internal_percent_complete_value != 0:
-                validated_data["act_start_date"] = datetime.now()
-            validated_data["complete_pct"] = internal_percent_complete_value
+            elif complete_pct_value != 0:
+                if not instance.act_start_date:
+                    validated_data["act_start_date"] = datetime.now()
+                validated_data["internal_status"] = Task.INTERNAL_STATUS.IN_PROGRESS
+                Alert.objects.filter(task=instance, kind=Alert.KIND.CRITICAL).delete()
+                validated_data["act_end_date"] = None
 
         if "act_start_date" in validated_data:
             validated_data["internal_status"] = Task.INTERNAL_STATUS.IN_PROGRESS
+            Alert.objects.filter(task=instance, kind=Alert.KIND.CRITICAL).delete()
 
         if validated_data.get("internal_responsibles", []) != []:
-            pusher_client = PusherClient()
+            pusher_client = PusherClient() # update supervisors list
             payload = validated_data.get("internal_responsibles")
 
             pusher_client.trigger(

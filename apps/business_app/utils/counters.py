@@ -112,9 +112,9 @@ def get_daily_work_summary_for_test():
     )
 
     # Get all tasks with actual dates
-    tasks = Task.objects.filter(internal_percent_complete__gt=0).prefetch_related(
+    tasks = Task.objects.filter(complete_pct__gt=0).prefetch_related(
         "resources"
-    )
+    ).order_by("act_start_date")
 
     for task in tasks:
         # Use the working_hours property from Task model
@@ -122,12 +122,9 @@ def get_daily_work_summary_for_test():
         # Get all resources for this task
         resources = task.resources.all()
 
-        # Calculate hours per day for this task
         current_datetime = timezone.localtime(task.act_start_date)
-
         day_key = current_datetime.date().isoformat()
-
-        daily_summary[day_key]["hours"] += day_hours
+        daily_summary[day_key]["hours"] += task_hours
 
         # Calculate fuel and rental costs for this day
         for resource in resources:
@@ -137,17 +134,7 @@ def get_daily_work_summary_for_test():
             daily_summary[day_key]["rental_cost"] += (
                 task_hours * resource.rent_cost_by_hour_in_euros
             )
-
-    # Convert to regular dict and round values
-    result = {}
-    for date_key, values in sorted(daily_summary.items()):
-        result[date_key] = {
-            "hours": round(values["hours"], 2),
-            "fuel_spent": round(values["fuel_spent"], 2),
-            "rental_cost": round(values["rental_cost"], 2),
-        }
-
-    return result
+    return daily_summary
 
 
 def get_task_counters():
