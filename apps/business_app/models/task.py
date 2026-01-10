@@ -51,8 +51,7 @@ class Task(GenericLogMixin, models.Model):
     internal_status = models.CharField(
         _("internal status"),
         choices=INTERNAL_STATUS.choices,
-        null=True,
-        blank=True,
+        default=INTERNAL_STATUS.NOT_STARTED,
         max_length=1,
     )
 

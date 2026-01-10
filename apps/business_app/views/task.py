@@ -38,7 +38,7 @@ class TaskViewSet(viewsets.ModelViewSet, GenericAPIView):
     ]
     ordering_fields = "__all__"
     # permission_classes = [ShopProductsViewSetPermission]
-    permission_classes = [permissions.AllowAny]
+    permission_classes = [permissions.IsAuthenticated]
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
