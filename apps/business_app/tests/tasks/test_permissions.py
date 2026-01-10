@@ -18,6 +18,7 @@ class TestTaskViewSet(BaseTestClass):
 
     def setUp(self):
         super().setUp()
+
     @patch("apps.business_app.signals.PusherClient.trigger")
     def test_get_protocol(self, trigger_mock):
         """
@@ -33,7 +34,9 @@ class TestTaskViewSet(BaseTestClass):
         print(random_quantity)
 
         baker.make(Task, _quantity=random_quantity)
-        assert trigger_mock.call_count == random_quantity *2 # both dashboards are updated
+        assert (
+            trigger_mock.call_count == random_quantity * 2
+        )  # both dashboards are updated
 
         self.user.is_superuser = False
         self.user.is_staff = False
@@ -45,7 +48,6 @@ class TestTaskViewSet(BaseTestClass):
             self.user.groups.add(role)
             request = self.client.get(url)
             self.assertEqual(request.status_code, status.HTTP_200_OK)
-
 
     # def test_get_post_put_patch_protocols(self):
     #     """

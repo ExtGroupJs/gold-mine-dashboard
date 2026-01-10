@@ -103,13 +103,21 @@ def get_daily_work_summary_for_test():
             '2025-01-09': {
                 'hours': 16.0,
                 'fuel_spent': 48.5,
-                'rental_cost': 320.0
+                'rental_cost': 320.0,
+                "processed_volume": 0.0,
+                "processed_area": 0.0
             },
             ...
         }
     """
     daily_summary = defaultdict(
-        lambda: {"hours": 0.0, "fuel_spent": 0.0, "rental_cost": 0.0}
+        lambda: {
+            "hours": 0.0,
+            "fuel_spent": 0.0,
+            "rental_cost": 0.0,
+            "processed_volume": 0.0,
+            "processed_area": 0.0,
+        }
     )
 
     # Get all tasks with actual dates
@@ -127,7 +135,13 @@ def get_daily_work_summary_for_test():
             task_id=task.id, percent=task.complete_pct
         )
         if not cache.has_key(cache_key):
-            task_info = {"hours": 0.0, "fuel_spent": 0.0, "rental_cost": 0.0}
+            task_info = {
+                "hours": 0.0,
+                "fuel_spent": 0.0,
+                "rental_cost": 0.0,
+                "processed_volume": 0.0,
+                "processed_area": 0.0,
+            }
             # Use the working_hours property from Task model
             task_hours = task.working_hours_for_test
             # Get all resources for this task
@@ -140,11 +154,23 @@ def get_daily_work_summary_for_test():
                 task_info["rental_cost"] += (
                     task_hours * resource.rent_cost_by_hour_in_euros
                 )
+                task_info["processed_volume"] += (
+                    task_hours * resource.processed_volume_by_hour
+                )
+                task_info["processed_area"] += (
+                    task_hours * resource.processed_area_by_hour
+                )
             cache.set(cache_key, task_info, timeout=None)
         task_info = cache.get(cache_key)
         daily_summary[day_key]["hours"] += task_info["hours"]
         daily_summary[day_key]["fuel_spent"] += task_info["fuel_spent"]
         daily_summary[day_key]["rental_cost"] += task_info["rental_cost"]
+        daily_summary[day_key]["processed_volume"] += task_info[
+            "processed_volume"
+        ]
+        daily_summary[day_key]["processed_area"] += task_info[
+            "processed_area"
+        ]
 
     return daily_summary
 

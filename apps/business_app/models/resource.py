@@ -7,6 +7,8 @@ class Resource(models.Model):
     resource_type = models.CharField(max_length=50, null=True, blank=True)
     fuel_spent_by_hour = models.FloatField(default=0)
     rent_cost_by_hour_in_euros = models.FloatField(default=0)
+    processed_volume_by_hour = models.FloatField(default=0)
+    processed_area_by_hour = models.FloatField(default=0)
 
     # cost_per_hour = models.DecimalField(max_digits=10, decimal_places=2)
     class Meta:

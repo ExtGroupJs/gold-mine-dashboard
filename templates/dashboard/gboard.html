@@ -1,0 +1,425 @@
+{% extends "index.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block head-extra %}
+<!-- AdminLTE CSS -->
+<link rel="stylesheet" href="{% static 'assets/dist/css/adminlte.min.css' %}">
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="{% static 'assets/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css' %}">
+<link rel="stylesheet" href="{% static 'assets/plugins/datatables-responsive/css/responsive.bootstrap4.min.css' %}">
+<link rel="stylesheet" href="{% static 'assets/plugins/datatables-buttons/css/buttons.bootstrap4.min.css' %}">
+
+<style>
+    /* Animaciones y estilos específicos */
+    .info-box-icon-alert i {
+        animation: parpadeo 1s infinite;
+    }
+
+    @keyframes parpadeo {
+      0% { opacity: 1; }
+      50% { opacity: 0.2; }
+      100% { opacity: 1; }
+    }
+
+    /* Ajuste de altura para contenedores de gráficos */
+    .chart-container {
+        position: relative; 
+        height: 350px;
+        width: 100%;
+    }
+</style>
+
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+  <!-- Content Header -->
+  <div class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1 class="m-0">{% trans "Resumen Gerencial (Management Overview)" %}</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="#">{% trans "Home" %}</a></li>
+            <li class="breadcrumb-item active">{% trans "Management" %}</li>
+          </ol>
+        </div>        
+      </div>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      
+      <!-- Management KPIs (Enfoque en Costos y Volúmenes) -->
+      <div class="row mb-3">
+        <!-- Costo Total -->
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+          <div class="small-box bg-danger">
+            <div class="inner">
+              <h3 id="mgmt-total-cost">$0</h3>
+              <p>{% trans "Costo Total Alquiler<br>(Total Rental Cost)" %}</p>
+            </div>
+            <div class="icon"><i class="fas fa-money-bill-wave"></i></div>
+          </div>
+        </div>
+
+        <!-- Horas Totales -->
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+          <div class="small-box bg-info">
+            <div class="inner">
+              <h3 id="mgmt-total-hours">0</h3>
+              <p>{% trans "Horas Totales<br>(Total Hours)" %}</p>
+            </div>
+            <div class="icon"><i class="fas fa-clock"></i></div>
+          </div>
+        </div>
+
+        <!-- Combustible -->
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+          <div class="small-box bg-warning">
+            <div class="inner">
+              <h3 id="mgmt-total-fuel">0</h3>
+              <p>{% trans "Combustible Total<br>(Total Fuel Spent)" %}</p>
+            </div>
+            <div class="icon"><i class="fas fa-gas-pump"></i></div>
+          </div>
+        </div>
+
+        <!-- Alertas (Contexto General) -->
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+          <div class="small-box bg-secondary">
+            <div class="inner">
+              <h3 id="alerts-total-mgmt">0</h3>
+              <p>{% trans "Alertas Activas<br>(Active Alerts)" %}</p>
+            </div>
+            <div class="icon"><i class="fas fa-bell"></i></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Management Charts -->
+      <div class="row mb-3">
+        <!-- Gráfico Mixto: Horas vs Costo -->
+        <div class="col-lg-8">
+          <div class="card card-primary">
+            <div class="card-header">
+              <h3 class="card-title">{% trans "Tendencia: Productividad vs Costo<br>(Productivity vs Cost Trends)" %}</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="chart-container">
+                <canvas id="mgmt-mixed-chart" height="350"></canvas>
+              </div>
+            </div> 
+          </div>
+        </div>
+        
+        <!-- Gráfico Barras: Combustible Diario -->
+        <div class="col-lg-4">
+          <div class="card card-success">
+            <div class="card-header">
+              <h3 class="card-title">{% trans "Consumo Combustible<br>(Daily Fuel)" %}</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="chart-container">
+                <canvas id="mgmt-fuel-chart" height="350"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Management Table -->
+      <div class="row">
+        <div class="col-lg-12">
+          <div class="card card-info">
+            <div class="card-header">
+              <h3 class="card-title">{% trans "Desglose Diario de Operaciones (Daily Breakdown)" %}</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+              </div>
+            </div>
+            <div class="card-body">
+              <table id="tabla-gestion" class="table table-bordered table-striped table-hover" style="text-align: center; width: 100%;">
+                <thead>
+                  <tr>
+                    <th>{% trans "Fecha<br>(Date)" %}</th>
+                    <th>{% trans "Horas<br>(Hours)" %}</th>
+                    <th>{% trans "Combustible<br>(Fuel)" %}</th>
+                    <th>{% trans "Costo Alquiler<br>(Rental Cost)" %}</th>
+                    <th>{% trans "Estado<br>(Status)" %}</th>
+                  </tr>
+                </thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+    </div>
+  </section>
+</div>
+
+{% endblock %}
+
+{% block script %}
+<!-- DataTables & Plugins -->
+<script src="{% static 'assets/plugins/datatables/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'assets/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
+<script src="{% static 'assets/plugins/datatables-responsive/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'assets/plugins/datatables-responsive/js/responsive.bootstrap4.min.js' %}"></script>
+<script src="{% static 'assets/plugins/datatables-buttons/js/dataTables.buttons.min.js' %}"></script>
+<script src="{% static 'assets/plugins/datatables-buttons/js/buttons.bootstrap4.min.js' %}"></script>
+
+<!-- Axios -->
+<script src="{% static 'assets/dist/js/axios.min.js' %}"></script>
+
+<!-- Chart.js -->
+<script src="{% static 'assets/plugins/chart.js/Chart.js' %}"></script>
+
+<!-- Page specific script -->
+<script>
+    // --- Variables Globales ---
+    const MANAGEMENT_COUNTERS_URL = "/business-gestion/task/management_counters/";
+    // Reutilizamos la URL de alertas del ejemplo original para mantener contexto
+    const ALERT_COUNTERS_URL = "/business-gestion/alert/counters/"; 
+    
+    let chartInstances = {};
+    let mgmtTableInstance = null;
+
+    // --- Utilidades ---
+    function formatCurrency(value) {
+        return new Intl.NumberFormat('en-US', {
+            style: 'currency',
+            currency: 'USD',
+            minimumFractionDigits: 0
+        }).format(value);
+    }
+
+    function showError(title, text = "", timer = 3000) {
+        if (window.Swal) {
+            Swal.fire({ icon: "error", title, text, showConfirmButton: false, timer });
+        } else {
+            console.error(title, text);
+        }
+    }
+
+    // --- Inicialización ---
+    document.addEventListener("DOMContentLoaded", function () {
+        initCharts();
+        initMgmtTable();
+        loadManagementData();
+        
+        // Cargar también contadores de alertas generales para el contexto
+        fetchAlertCounters();
+    });
+
+    // --- Carga de Datos ---
+    function fetchAlertCounters() {
+        axios.get(ALERT_COUNTERS_URL)
+            .then((res) => {
+                const alertInfo = (res.data && res.data.alert_info) ? res.data.alert_info : res.data;
+                const total = alertInfo.total || 0;
+                document.getElementById("alerts-total-mgmt").textContent = total;
+            })
+            .catch((err) => console.warn("No se pudieron cargar alertas", err));
+    }
+
+    function loadManagementData() {
+        axios.get(MANAGEMENT_COUNTERS_URL)
+            .then((res) => {
+                processManagementData(res.data);
+            })
+            .catch((err) => {
+                showError("Error cargando datos gerenciales", err.message || "");
+            });
+    }
+
+    function processManagementData(data) {
+        if (!data || typeof data !== 'object') return;
+
+        // 1. Ordenar fechas cronológicamente
+        const sortedDates = Object.keys(data).sort();
+        
+        // 2. Extraer arreglos para gráficas
+        const hoursData = sortedDates.map(date => data[date].hours);
+        const fuelData = sortedDates.map(date => data[date].fuel_spent);
+        const costData = sortedDates.map(date => data[date].rental_cost);
+
+        // 3. Calcular Totales para KPIs
+        const totalHours = hoursData.reduce((a, b) => a + b, 0);
+        const totalFuel = fuelData.reduce((a, b) => a + b, 0);
+        const totalCost = costData.reduce((a, b) => a + b, 0);
+
+        // Actualizar DOM KPIs con animación simple
+        document.getElementById("mgmt-total-hours").innerText = totalHours;
+        document.getElementById("mgmt-total-fuel").innerText = totalFuel;
+        document.getElementById("mgmt-total-cost").innerText = formatCurrency(totalCost);
+
+        // 4. Actualizar Gráficas
+        updateCharts(sortedDates, hoursData, fuelData, costData);
+
+        // 5. Actualizar Tabla
+        updateTable(sortedDates, data);
+    }
+
+    // --- Gráficas ---
+    function initCharts() {
+        // Gráfico Mixto: Línea (Horas) y Barra (Costo)
+        const ctxMixed = document.getElementById('mgmt-mixed-chart');
+        if (!ctxMixed) return;
+        
+        if (chartInstances['mgmt-mixed']) chartInstances['mgmt-mixed'].destroy();
+
+        chartInstances['mgmt-mixed'] = new Chart(ctxMixed, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [
+                    {
+                        label: 'Costo Alquiler ($)',
+                        data: [],
+                        backgroundColor: 'rgba(220, 53, 69, 0.6)', // Rojo
+                        borderColor: 'rgba(220, 53, 69, 1)',
+                        borderWidth: 1,
+                        yAxisID: 'y-cost',
+                        order: 2
+                    },
+                    {
+                        type: 'line',
+                        label: 'Horas Trabajadas',
+                        data: [],
+                        borderColor: '#007bff', // Azul
+                        backgroundColor: '#007bff',
+                        borderWidth: 2,
+                        pointRadius: 4,
+                        fill: false,
+                        yAxisID: 'y-hours',
+                        order: 1
+                    }
+                ]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    yAxes: [
+                        {
+                            id: 'y-cost',
+                            type: 'linear',
+                            position: 'left',
+                            ticks: { callback: function(value) { return '$' + value; } },
+                            gridLines: { display: false }
+                        },
+                        {
+                            id: 'y-hours',
+                            type: 'linear',
+                            position: 'right',
+                            ticks: { callback: function(value) { return value + 'h'; } },
+                            gridLines: { display: true }
+                        }
+                    ],
+                    xAxes: [{
+                        gridLines: { display: false }
+                    }]
+                }
+            }
+        });
+
+        // Gráfico Barras: Combustible
+        const ctxFuel = document.getElementById('mgmt-fuel-chart');
+        if (!ctxFuel) return;
+
+        if (chartInstances['mgmt-fuel']) chartInstances['mgmt-fuel'].destroy();
+
+        chartInstances['mgmt-fuel'] = new Chart(ctxFuel, {
+            type: 'bar',
+            data: {
+                labels: [],
+                datasets: [{
+                    label: 'Combustible (Unidades)',
+                    data: [],
+                    backgroundColor: 'rgba(40, 167, 69, 0.7)', // Verde
+                    borderColor: 'rgba(40, 167, 69, 1)',
+                    borderWidth: 1
+                }]
+            },
+            options: {
+                responsive: true,
+                maintainAspectRatio: false,
+                scales: {
+                    yAxes: [{ ticks: { beginAtZero: true } }],
+                    xAxes: [{ ticks: { autoSkip: true, maxTicksLimit: 8 } }]
+                }
+            }
+        });
+    }
+
+    function updateCharts(labels, hours, fuel, cost) {
+        if (chartInstances['mgmt-mixed']) {
+            chartInstances['mgmt-mixed'].data.labels = labels;
+            chartInstances['mgmt-mixed'].data.datasets[0].data = cost;
+            chartInstances['mgmt-mixed'].data.datasets[1].data = hours;
+            chartInstances['mgmt-mixed'].update();
+        }
+
+        if (chartInstances['mgmt-fuel']) {
+            chartInstances['mgmt-fuel'].data.labels = labels;
+            chartInstances['mgmt-fuel'].data.datasets[0].data = fuel;
+            chartInstances['mgmt-fuel'].update();
+        }
+    }
+
+    // --- Tabla ---
+    function initMgmtTable() {
+        mgmtTableInstance = $('#tabla-gestion').DataTable({
+            dom: '<"row"<"col-sm-6"l><"col-sm-6"f>> t i p',
+            pagingType: "numbers",
+            responsive: true,
+            
+            order: [[0, 'desc']], // Ordenar por fecha descendente por defecto
+            columnDefs: [
+                { 
+                    targets: 4, // Columna Estado
+                    render: function(data, type, row) {
+                        // Lógica simple: si hay horas > 0 es activo
+                        const hours = row[1]; 
+                        if(hours > 0) return '<span class="badge badge-success">{% trans "Activo" %}</span>';
+                        return '<span class="badge badge-secondary">{% trans "Inactivo" %}</span>';
+                    }
+                },
+                { targets: 2, render: $.fn.dataTable.render.number(',', '.', 2, '') }, // Formato Fuel
+                { targets: 3, render: $.fn.dataTable.render.number(',', '.', 0, '$') }  // Formato Costo
+            ],
+            initComplete: function () {
+                const api = this.api();
+                $('.dataTables_paginate', api.table().container()).addClass('pagination-sm');
+            }
+        });
+    }
+
+    function updateTable(dates, dataObj) {
+        const tableData = dates.map(date => {
+            const info = dataObj[date];
+            // Estructura: [Fecha, Horas, Combustible, Costo, Placeholder para estado]
+            return [date, info.hours, info.fuel_spent, info.rental_cost, ''];
+        });
+
+        mgmtTableInstance.clear();
+        mgmtTableInstance.rows.add(tableData);
+        mgmtTableInstance.draw();
+    }
+
+</script>
+{% endblock %}

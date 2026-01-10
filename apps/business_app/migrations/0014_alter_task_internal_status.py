@@ -4,15 +4,27 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('business_app', '0013_remove_task_internal_percent_complete'),
+        ("business_app", "0013_remove_task_internal_percent_complete"),
     ]
 
     operations = [
         migrations.AlterField(
-            model_name='task',
-            name='internal_status',
-            field=models.CharField(choices=[('P', 'Planned'), ('H', 'Hold'), ('W', 'Warning'), ('B', 'Backlog'), ('I', 'In progress'), ('C', 'Completed'), ('N', 'Not started')], default='N', max_length=1, verbose_name='internal status'),
+            model_name="task",
+            name="internal_status",
+            field=models.CharField(
+                choices=[
+                    ("P", "Planned"),
+                    ("H", "Hold"),
+                    ("W", "Warning"),
+                    ("B", "Backlog"),
+                    ("I", "In progress"),
+                    ("C", "Completed"),
+                    ("N", "Not started"),
+                ],
+                default="N",
+                max_length=1,
+                verbose_name="internal status",
+            ),
         ),
     ]

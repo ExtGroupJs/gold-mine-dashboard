@@ -89,6 +89,17 @@ def dashboard(request):
     )
 
 
+def gboard(request):
+    return render(
+        request,
+        "dashboard/gboard.html",
+        {
+            "pusher_key": settings.PUSHER_KEY,
+            "pusher_cluster": settings.PUSHER_CLUSTER,
+        },
+    )
+
+
 def user_redirect(request):
     # Definimos la lista de los 3 grupos que pueden ver el dashboard
     allowed_groups = [

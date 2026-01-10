@@ -6,27 +6,33 @@
       "name": "Bulldozer LIEBHERR PR734",
       "resource_type": null,
       "fuel_spent_by_hour": 25.0,
-      "rent_cost_by_hour_in_euros": 57.56
+      "rent_cost_by_hour_in_euros": 57.56,
+      "processed_volume_by_hour": 187.5,
+      "processed_area_by_hour": 0.0
     }
   },
   {
     "model": "business_app.resource",
     "pk": 2,
     "fields": {
-      "name": "Topogr�fia",
+      "name": "Topografia",
       "resource_type": "",
       "fuel_spent_by_hour": 0.0,
-      "rent_cost_by_hour_in_euros": 0.0
+      "rent_cost_by_hour_in_euros": 0.0,
+      "processed_volume_by_hour": 0.0,
+      "processed_area_by_hour": 0.0
     }
   },
   {
     "model": "business_app.resource",
     "pk": 3,
     "fields": {
-      "name": "Cami�n volquete articulado VOLVO A45G (25.5 m3)",
+      "name": "Camión volquete articulado VOLVO A45G (25.5 m3)",
       "resource_type": null,
       "fuel_spent_by_hour": 12.5,
-      "rent_cost_by_hour_in_euros": 49.59
+      "rent_cost_by_hour_in_euros": 49.59,
+      "processed_volume_by_hour": 62.5,
+      "processed_area_by_hour": 0.0
     }
   },
   {
@@ -36,7 +42,9 @@
       "name": "Excavadora VOLVO EC480D",
       "resource_type": null,
       "fuel_spent_by_hour": 25.0,
-      "rent_cost_by_hour_in_euros": 46.65
+      "rent_cost_by_hour_in_euros": 46.65,
+      "processed_volume_by_hour": 0.0,
+      "processed_area_by_hour": 0.0
     }
   },
   {
@@ -46,17 +54,21 @@
       "name": "Motoniveladora SDLG G9220",
       "resource_type": null,
       "fuel_spent_by_hour": 12.5,
-      "rent_cost_by_hour_in_euros": 45.48
+      "rent_cost_by_hour_in_euros": 45.48,
+      "processed_volume_by_hour": 187.5,
+      "processed_area_by_hour": 0.0
     }
   },
   {
     "model": "business_app.resource",
     "pk": 6,
     "fields": {
-      "name": "Cami�n cisterna con barras roceadoras (15 m3)",
+      "name": "Camión cisterna con barras roceadoras (15 m3)",
       "resource_type": null,
       "fuel_spent_by_hour": 12.5,
-      "rent_cost_by_hour_in_euros": 46.65
+      "rent_cost_by_hour_in_euros": 46.65,
+      "processed_volume_by_hour": 0.0,
+      "processed_area_by_hour": 0.0
     }
   },
   {
@@ -66,7 +78,9 @@
       "name": "Compactador de rodillo liso VOLVO SD13O",
       "resource_type": null,
       "fuel_spent_by_hour": 12.5,
-      "rent_cost_by_hour_in_euros": 44.9
+      "rent_cost_by_hour_in_euros": 44.9,
+      "processed_volume_by_hour": 0.0,
+      "processed_area_by_hour": 0.0
     }
   },
   {
@@ -76,7 +90,9 @@
       "name": "GPS",
       "resource_type": "",
       "fuel_spent_by_hour": 0.0,
-      "rent_cost_by_hour_in_euros": 0.0
+      "rent_cost_by_hour_in_euros": 0.0,
+      "processed_volume_by_hour": 0.0,
+      "processed_area_by_hour": 0.0
     }
   },
   {
@@ -86,17 +102,21 @@
       "name": "Carro Ligero",
       "resource_type": "",
       "fuel_spent_by_hour": 0.0,
-      "rent_cost_by_hour_in_euros": 0.0
+      "rent_cost_by_hour_in_euros": 0.0,
+      "processed_volume_by_hour": 0.0,
+      "processed_area_by_hour": 0.0
     }
   },
   {
     "model": "business_app.resource",
     "pk": 12,
     "fields": {
-      "name": "Deflect�metro LWD",
+      "name": "Deflectómetro LWD",
       "resource_type": "",
       "fuel_spent_by_hour": 0.0,
-      "rent_cost_by_hour_in_euros": 0.0
+      "rent_cost_by_hour_in_euros": 0.0,
+      "processed_volume_by_hour": 0.0,
+      "processed_area_by_hour": 0.0
     }
   }
 ]

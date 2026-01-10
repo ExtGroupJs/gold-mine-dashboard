@@ -69,6 +69,7 @@ urlpatterns = [
         name="taskSupervisorMovil",
     ),
     path("dashboard/", login_required(pages.dashboard), name="dashboard"),
+    path("gboard/", login_required(pages.gboard), name="gboard"),
 ]
 
 # This is for serving media on development stages
