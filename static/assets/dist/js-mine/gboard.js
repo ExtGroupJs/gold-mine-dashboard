@@ -1,5 +1,5 @@
 // --- Variables Globales ---
-const MANAGEMENT_COUNTERS_URL = "/business-gestion/task/management_counters/";
+const MANAGEMENT_COUNTERS_URL = "/business-gestion/task/management-counters/";
 const ALERT_COUNTERS_URL = "/business-gestion/alert/counters/";
 
 let chartInstances = {};

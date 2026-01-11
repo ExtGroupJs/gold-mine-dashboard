@@ -133,9 +133,9 @@ class TaskSerializer(serializers.ModelSerializer):
             validated_data["internal_status"] = new_internal_status
             update_task_dashboard = True
         updated_instance = super().update(instance, validated_data)
-        if update_task_dashboard:
-            send_update_task_dashboard()
         if "complete_pct" in validated_data:
             send_update_management_dashboard()
+            update_task_dashboard = True
+        if update_task_dashboard:
             send_update_task_dashboard()
         return updated_instance
