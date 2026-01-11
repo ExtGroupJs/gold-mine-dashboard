@@ -37,10 +37,10 @@ def send_update_alert_dashboard():
     )
 
 
-@receiver(post_save, sender=Task)
-def update_dashboard(sender, instance, **kwargs):
-    send_update_task_dashboard()
-    send_update_management_dashboard()
+# @receiver(post_save, sender=Task)
+# def update_dashboard(sender, instance, **kwargs):
+#     send_update_task_dashboard()
+#     send_update_management_dashboard()
 
 
 @receiver(post_save, sender=Alert)

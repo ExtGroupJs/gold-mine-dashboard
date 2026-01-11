@@ -167,12 +167,8 @@ def get_daily_work_summary_for_test():
         daily_summary[day_key]["hours"] += task_info["hours"]
         daily_summary[day_key]["fuel_spent"] += task_info["fuel_spent"]
         daily_summary[day_key]["rental_cost"] += task_info["rental_cost"]
-        daily_summary[day_key]["processed_volume"] += task_info[
-            "processed_volume"
-        ]
-        daily_summary[day_key]["processed_area"] += task_info[
-            "processed_area"
-        ]
+        daily_summary[day_key]["processed_volume"] += task_info["processed_volume"]
+        daily_summary[day_key]["processed_area"] += task_info["processed_area"]
         daily_summary[day_key]["tasks"] += 1
         if task.complete_pct == 100:
             daily_summary[day_key]["completed_tasks"] += 1

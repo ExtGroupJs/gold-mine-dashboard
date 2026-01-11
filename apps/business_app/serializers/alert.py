@@ -1,6 +1,7 @@
 from rest_framework import serializers
 from ..models.alert import Alert
 from ..models.task import Task
+from ..signals import send_update_task_dashboard
 
 
 class AlertSerializer(serializers.ModelSerializer):
@@ -37,15 +38,16 @@ class AlertSerializer(serializers.ModelSerializer):
 
     def update_task_internal_status(self, alert):
         task = alert.task
-        if task.internal_status == Task.INTERNAL_STATUS.COMPLETED:
-            return
+        new_internal_status = Task.INTERNAL_STATUS.IN_PROGRESS
         if Alert.objects.filter(task=task, kind=Alert.KIND.CRITICAL).exists():
-            task.internal_status = Task.INTERNAL_STATUS.HOLD
+            new_internal_status = Task.INTERNAL_STATUS.HOLD
         elif Alert.objects.filter(task=task, kind=Alert.KIND.WARNING).exists():
-            task.internal_status = Task.INTERNAL_STATUS.WARNING
-        else:
-            task.internal_status = Task.INTERNAL_STATUS.IN_PROGRESS
-        task.save(update_fields=["internal_status"])
+            new_internal_status = Task.INTERNAL_STATUS.WARNING
+
+        if task.internal_status != new_internal_status:
+            task.internal_status = new_internal_status
+            task.save(update_fields=["internal_status"])
+            send_update_task_dashboard()
 
     def create(self, validated_data):
         instance = super().create(validated_data)

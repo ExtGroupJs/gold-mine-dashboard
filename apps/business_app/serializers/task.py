@@ -5,6 +5,7 @@ from datetime import datetime
 from .alert import AlertSerializer
 from ..utils.pusher_client import PusherClient
 from django.core.cache import cache
+from ..signals import send_update_task_dashboard, send_update_management_dashboard
 
 
 class TaskSerializer(serializers.ModelSerializer):
@@ -74,32 +75,48 @@ class TaskSerializer(serializers.ModelSerializer):
         if cache.has_key(cache_key):
             cache.delete(cache_key)
 
-    def _complete_task(self, instance, validated_data):
-        validated_data["internal_status"] = Task.INTERNAL_STATUS.COMPLETED
+    def _complete_task(self, instance, validated_data, new_internal_status):
+        new_internal_status = Task.INTERNAL_STATUS.COMPLETED
         validated_data["complete_pct"] = 100
         validated_data["act_end_date"] = datetime.now()
         self._remove_from_cache(instance)
 
     def update(self, instance, validated_data):
+        new_internal_status = False
+
         if "internal_planned_date" in validated_data:
-            validated_data["internal_status"] = Task.INTERNAL_STATUS.PLANNED
+            new_internal_status = Task.INTERNAL_STATUS.PLANNED
         elif "act_end_date" in validated_data:
-            self._complete_task(instance=instance, validated_data=validated_data)
+            self._complete_task(
+                instance=instance,
+                validated_data=validated_data,
+                new_internal_status=new_internal_status,
+            )
 
         elif "complete_pct" in validated_data:
             complete_pct_value = validated_data.get("complete_pct")
             if complete_pct_value == 100:
-                self._complete_task(instance=instance, validated_data=validated_data)
+                self._complete_task(
+                    instance=instance,
+                    validated_data=validated_data,
+                    new_internal_status=new_internal_status,
+                )
             elif complete_pct_value != 0:
                 if not instance.act_start_date:
                     validated_data["act_start_date"] = datetime.now()
-                validated_data["internal_status"] = Task.INTERNAL_STATUS.IN_PROGRESS
+
                 Alert.objects.filter(task=instance, kind=Alert.KIND.CRITICAL).delete()
+                if Alert.objects.filter(
+                    task=instance, kind=Alert.KIND.WARNING
+                ).exists():
+                    new_internal_status = Task.INTERNAL_STATUS.WARNING
+                else:
+                    new_internal_status = Task.INTERNAL_STATUS.IN_PROGRESS
                 self._remove_from_cache(instance)
                 validated_data["act_end_date"] = None
 
         if "act_start_date" in validated_data:
-            validated_data["internal_status"] = Task.INTERNAL_STATUS.IN_PROGRESS
+            new_internal_status = Task.INTERNAL_STATUS.IN_PROGRESS
             Alert.objects.filter(task=instance, kind=Alert.KIND.CRITICAL).delete()
 
         if validated_data.get("internal_responsibles", []) != []:
@@ -111,5 +128,14 @@ class TaskSerializer(serializers.ModelSerializer):
                 PusherClient.UPDATE_TASK_EVENT_FOR_SUPERVISOR,
                 {"internal_responsibles": [rol.id for rol in payload]},
             )
-
-        return super().update(instance, validated_data)
+        update_task_dashboard = False
+        if new_internal_status and instance.internal_status != new_internal_status:
+            validated_data["internal_status"] = new_internal_status
+            update_task_dashboard = True
+        updated_instance = super().update(instance, validated_data)
+        if update_task_dashboard:
+            send_update_task_dashboard()
+        if "complete_pct" in validated_data:
+            send_update_management_dashboard()
+            send_update_task_dashboard()
+        return updated_instance
