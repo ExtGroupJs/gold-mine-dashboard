@@ -16,6 +16,12 @@ from apps.users_app.models.groups import Groups
 from ..utils.counters import get_task_counters, get_daily_work_summary_for_test
 from apps.common.mixins.enums_mixin import EnumsMixin
 
+from apps.common.permissions import (
+    TaskViewSetPermissions,
+    TaskViewSetCountersPermissions,
+    TaskViewSetManagementCountersPermissions,
+)
+
 
 # Create your views here.
 
@@ -37,8 +43,8 @@ class TaskViewSet(viewsets.ModelViewSet, GenericAPIView):
         "wbs__wbs_name",
     ]
     ordering_fields = "__all__"
-    # permission_classes = [ShopProductsViewSetPermission]
-    permission_classes = [permissions.IsAuthenticated]
+    permission_classes = [TaskViewSetPermissions]
+    # permission_classes = [permissions.IsAuthenticated]
     filter_backends = [
         DjangoFilterBackend,
         filters.SearchFilter,
@@ -59,7 +65,11 @@ class TaskViewSet(viewsets.ModelViewSet, GenericAPIView):
         request_user = self.request.user if not self.request.user.is_anonymous else None
         if request_user and (
             request_user.groups.filter(
-                id__in=(Groups.PLANNER.value, Groups.DASHBOARD_CLIENT.value)
+                id__in=(
+                    Groups.PLANNER.value,
+                    Groups.DASHBOARD_CLIENT.value,
+                    Groups.MANAGER.value,
+                )
             ).exists()
             or request_user.is_superuser
         ):
@@ -74,7 +84,13 @@ class TaskViewSet(viewsets.ModelViewSet, GenericAPIView):
         methods=["GET"],
         description=_("Get summary for management"),
     )
-    @action(detail=False, methods=["GET"])
+    @action(
+        detail=False,
+        methods=["GET"],
+        permission_classes=[TaskViewSetCountersPermissions],
+        url_name="management-counters",
+        url_path="management-counters",
+    )
     def management_counters(self, pk=None):
         return Response(get_daily_work_summary_for_test())
 
@@ -83,7 +99,11 @@ class TaskViewSet(viewsets.ModelViewSet, GenericAPIView):
         methods=["GET"],
         description=_("Get tasks in every state"),
     )
-    @action(detail=False, methods=["GET"])
+    @action(
+        detail=False,
+        methods=["GET"],
+        permission_classes=[TaskViewSetCountersPermissions],
+    )
     def counters(self, pk=None):
         return Response(get_task_counters())
 

@@ -4,7 +4,11 @@ from rest_framework.permissions import (
     DjangoModelPermissions,
 )
 
-from apps.users_app.models.groups import Groups
+from apps.users_app.models.groups import (
+    Groups,
+    ROLES_WITH_READ_ACCESS_TO_TASKS,
+    ROLES_WITH_WRITE_ACCESS_TO_TASKS,
+)
 
 COMMON_ROLES = [
     Groups.SUPER_ADMIN.value,
@@ -76,13 +80,21 @@ class IsAuthenticatedAndReadOnly(BasePermission):
         )
 
 
-class ShopProductsViewSetPermission(CommonRolePermission):
+class TaskViewSetPermissions(CommonRolePermission):
+    roles = ROLES_WITH_READ_ACCESS_TO_TASKS
+
     def has_permission(self, request, view):
-        if request.method in SAFE_METHODS:
-            self.roles = self.roles + [
-                Groups.DASHBOARD_CLIENT.value,
-            ]
+        if request.method in ("PUT", "PATCH"):
+            self.roles = ROLES_WITH_WRITE_ACCESS_TO_TASKS
         return super().has_permission(request, view)
+
+
+class TaskViewSetCountersPermissions(CommonRolePermission):
+    roles = ROLES_WITH_READ_ACCESS_TO_TASKS + (Groups.PLANNER,)
+
+
+class TaskViewSetManagementCountersPermissions(CommonRolePermission):
+    roles = ROLES_WITH_READ_ACCESS_TO_TASKS + (Groups.PLANNER,)
 
 
 # class UssageExamplePermission(CommonRolePermission):
