@@ -9,7 +9,20 @@ class Groups(models.IntegerChoices):
     SUPER_ADMIN = 1, _("Super Admin")
     PLANNER = 2, _("Planner")
     DASHBOARD_CLIENT = 3, _("Dashboard Client")
+    MANAGER = 4, _("Manager")
 
     SUPERVISOR_AREA_A = 11, _("Supervisor Área A")
     SUPERVISOR_AREA_B = 12, _("Supervisor Área B")
     SUPERVISOR_AREA_C = 13, _("Supervisor Área C")
+
+
+ROLES_WITH_WRITE_ACCESS_TO_TASKS = (
+    Groups.PLANNER,
+    Groups.SUPERVISOR_AREA_A,
+    Groups.SUPERVISOR_AREA_B,
+    Groups.SUPERVISOR_AREA_C,
+)
+ROLES_WITH_READ_ACCESS_TO_TASKS = ROLES_WITH_WRITE_ACCESS_TO_TASKS + (
+    Groups.DASHBOARD_CLIENT,
+    Groups.MANAGER,
+)

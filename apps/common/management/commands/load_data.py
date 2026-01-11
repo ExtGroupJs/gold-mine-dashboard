@@ -57,9 +57,20 @@ class Command(BaseCommand):
         planner.groups.add(Groups.PLANNER)
         planner.set_password("1234")
         planner.save()
+        manager, _ = SystemUser.objects.get_or_create(
+            username="manager",
+            defaults={
+                "email": "",
+                "first_name": "Manager",
+                "last_name": "User",
+            },
+        )
+        manager.groups.add(Groups.MANAGER)
+        manager.set_password("1234")
+        manager.save()
         print(
             colored(
-                "Created planner_user with PLANNER role",
+                "Created manager user with MANAGER role",
                 "blue",
                 attrs=["blink"],
             )
