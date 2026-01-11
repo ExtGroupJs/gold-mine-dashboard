@@ -14,7 +14,7 @@ from drf_spectacular.utils import extend_schema
 from django.utils.translation import gettext_lazy as _
 from rest_framework.decorators import action
 from ..utils.counters import get_alert_counters
-from ..signals import send_update_task_dashboard
+from ..signals import send_update_task_dashboard, notify_created_alert, send_update_alert_dashboard
 
 # Create your views here.
 from apps.common.mixins.enums_mixin import EnumsMixin
@@ -52,6 +52,8 @@ class AlertViewSet(viewsets.ModelViewSet, GenericAPIView):
         task = instance.task
         update_required = False
         self.perform_destroy(instance)
+        notify_created_alert(instance)
+        send_update_alert_dashboard()
         if Alert.objects.filter(task=task, kind=Alert.KIND.CRITICAL).exists():
             task.internal_status = Task.INTERNAL_STATUS.HOLD
             update_required = True

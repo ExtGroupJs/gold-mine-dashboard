@@ -1,7 +1,7 @@
 from rest_framework import serializers
 from ..models.alert import Alert
 from ..models.task import Task
-from ..signals import send_update_task_dashboard
+from ..signals import send_update_task_dashboard, send_update_alert_dashboard, notify_created_alert
 
 
 class AlertSerializer(serializers.ModelSerializer):
@@ -52,9 +52,13 @@ class AlertSerializer(serializers.ModelSerializer):
     def create(self, validated_data):
         instance = super().create(validated_data)
         self.update_task_internal_status(instance)
+        send_update_alert_dashboard()
+        notify_created_alert(instance)
         return instance
 
     def update(self, instance, validated_data):
         instance = super().update(instance, validated_data)
-        self.update_task_internal_status(instance)
+        if "kind" in validated_data:
+            self.update_task_internal_status(instance)
+            send_update_alert_dashboard()
         return instance

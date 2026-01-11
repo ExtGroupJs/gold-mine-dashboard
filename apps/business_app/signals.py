@@ -43,18 +43,16 @@ def send_update_alert_dashboard():
 #     send_update_management_dashboard()
 
 
-@receiver(post_save, sender=Alert)
-def notify_created_alert(sender, instance, **kwargs):
+def notify_created_alert(alert):
     pusher_client = PusherClient()
     payload = {
-        "task": instance.task.task_name,
-        "alert_description": instance.short_description,
-        "level": f"{instance.KIND(instance.kind).label}",
+        "task": alert.task.task_name,
+        "alert_description": alert.short_description,
+        "level": f"{alert.KIND(alert.kind).label}",
     }
     event = (
         PusherClient.NEW_ALERT_EVENT
-        if not instance.deleted
+        if not alert.deleted
         else PusherClient.DELETED_ALERT_EVENT
     )
     pusher_client.trigger(PusherClient.ALERT_CHANNEL, event, payload)
-    send_update_alert_dashboard()
