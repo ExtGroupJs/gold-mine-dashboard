@@ -6,10 +6,7 @@ from apps.common.baseclass_for_testing import BaseTestClass
 from apps.users_app.models.groups import Groups
 from model_bakery import baker
 from apps.business_app.models.task import Task
-from apps.business_app.models.alert import Alert
 from rest_framework import status
-from django.db.models.signals import post_save
-from apps.business_app.signals import update_dashboard, notify_created_alert
 
 
 @pytest.mark.django_db

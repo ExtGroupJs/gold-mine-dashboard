@@ -1,10 +1,6 @@
-import random
 
 import pytest
 from django.contrib.auth.models import User
-from django.core.management import call_command
-from django.core.management.base import CommandError
-from model_bakery.exceptions import InvalidQuantityException
 
 
 @pytest.mark.django_db

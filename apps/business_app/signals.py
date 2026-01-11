@@ -1,7 +1,3 @@
-from django.db.models.signals import post_save
-from django.dispatch import receiver
-from .models.task import Task
-from .models.alert import Alert
 from .utils.pusher_client import PusherClient
 from .utils.counters import (
     get_task_counters,

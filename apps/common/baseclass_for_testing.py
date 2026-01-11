@@ -1,6 +1,5 @@
 from unittest import TestCase
 
-from django.utils import timezone
 from model_bakery import baker
 
 # from oauth2_provider.models import AccessToken, Application

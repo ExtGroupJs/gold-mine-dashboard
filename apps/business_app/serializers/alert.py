@@ -1,7 +1,11 @@
 from rest_framework import serializers
 from ..models.alert import Alert
 from ..models.task import Task
-from ..signals import send_update_task_dashboard, send_update_alert_dashboard, notify_created_alert
+from ..signals import (
+    send_update_task_dashboard,
+    send_update_alert_dashboard,
+    notify_created_alert,
+)
 
 
 class AlertSerializer(serializers.ModelSerializer):

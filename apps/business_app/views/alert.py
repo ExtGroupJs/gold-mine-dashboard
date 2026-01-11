@@ -14,7 +14,11 @@ from drf_spectacular.utils import extend_schema
 from django.utils.translation import gettext_lazy as _
 from rest_framework.decorators import action
 from ..utils.counters import get_alert_counters
-from ..signals import send_update_task_dashboard, notify_created_alert, send_update_alert_dashboard
+from ..signals import (
+    send_update_task_dashboard,
+    notify_created_alert,
+    send_update_alert_dashboard,
+)
 
 # Create your views here.
 from apps.common.mixins.enums_mixin import EnumsMixin
