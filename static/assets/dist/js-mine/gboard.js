@@ -1,7 +1,28 @@
-/* Dashboard script - Task counters and metrics */
-
-const TASK_COUNTERS_URL = "/business-gestion/task/counters/";
+// --- Variables Globales ---
+const MANAGEMENT_COUNTERS_URL = "/business-gestion/task/management_counters/";
 const ALERT_COUNTERS_URL = "/business-gestion/alert/counters/";
+
+let chartInstances = {};
+let mgmtTableInstance = null;
+
+// --- Utilidades ---
+
+// Redondeo dinámico: Máximo 3 decimales. Si hay menos, se muestra tal cual.
+function formatNumber(value) {
+  if (value === null || value === undefined) return "0";
+  return new Intl.NumberFormat("en-US", {
+    maximumFractionDigits: 3, // Máximo 3 decimales, pero no fuerza a 3 si hay menos
+  }).format(value);
+}
+
+function formatCurrency(value) {
+  if (value === null || value === undefined) return "$0";
+  return new Intl.NumberFormat("en-US", {
+    style: "currency",
+    currency: "USD",
+    maximumFractionDigits: 3,
+  }).format(value);
+}
 
 function showError(title, text = "", timer = 3000) {
   if (window.Swal) {
@@ -11,235 +32,452 @@ function showError(title, text = "", timer = 3000) {
   }
 }
 
-// Fetch counters from endpoints
-function fetchTaskCounters() {
-  return axios.get(TASK_COUNTERS_URL);
-}
-
-function fetchAlertCounters() {
-  return axios.get(ALERT_COUNTERS_URL);
-}
-
-// Render counters on dashboard
-// Render task counters and charts (separated so updates can be independent)
-function renderTaskCounters(taskInfo, internal_status_filter="") {
-  taskInfo = taskInfo || {};
-  const updateElement = (id, value, internal_value="") => {
-    const node = document.getElementById(id);
-    if (node) node.textContent = value || 0;
-    node.addEventListener("mouseclick", Swal.stopTimer);
-  };
-  // toast.addEventListener("mouseenter", Swal.stopTimer);
-
-  updateElement("total-tasks", taskInfo.total || 0);
-  updateElement("notstarted-tasks", taskInfo["Not started"] || 0);
-  updateElement("inprogress-tasks", taskInfo["In progress"] || 0);
-  updateElement("warning-tasks", taskInfo["Warning"] || 0);
-  updateElement("completed-tasks", taskInfo["Completed"] || 0);
-  updateElement("planned-tasks", taskInfo["Planned"] || 0);
-  updateElement("hold-tasks", taskInfo["Hold"] || 0);
-
-  // Task charts (pie + bar) — use percentages for charts
-  const rawTaskKeys = Object.keys(taskInfo || {});
-  const taskLabels = rawTaskKeys.filter(
-    (k) => k.toLowerCase() !== "total" && !k.includes("_percent")
-  );
-  const taskData = taskLabels.map((k) => taskInfo[k + "_percent"] || 0);
-  const taskDataForBar = taskLabels.map((k) => taskInfo[k] || 0);
-
-  const taskColorMap = {
-    "not started": "#dc3545",
-    "in progress": "#f2f1eeff",
-    warning: "#ffc107",
-    completed: "#28a745",
-    planned: "#007bff",
-    hold: "#6c757d",
-    backlog: "#6c757d",
-  };
-  const taskPalette = [
-    "#f2f1eeff",
-    "#007bff",
-    "#28a745",
-    "#ffc107",
-    "#6c757d",
-    "#17a2b8",
-    "#fd7e14",
-    "#6610f2",
-  ];
-  const taskColors = taskLabels.map(
-    (label, i) =>
-      taskColorMap[label.toLowerCase()] || taskPalette[i % taskPalette.length]
-  );
-
-  renderPieChart("pie-chart", taskLabels, taskData, taskColors);
-  renderBarChart("bar-chart", taskLabels, taskDataForBar, taskColors);
-
-}
-
-// Render alert counters and charts (separated so updates can be independent)
-function renderAlertCounters(alertInfo, kind_filter="") {
-  alertInfo = alertInfo || {};
-  const updateElement = (id, value) => {
-    const node = document.getElementById(id);
-    if (node) node.textContent = value || 0;
-  };
-
-  const alertTotal =
-    alertInfo && (alertInfo.total || alertInfo["total"])
-      ? alertInfo.total || alertInfo["total"]
-      : 0;
-  updateElement("alerts-total", alertTotal || 0);
-
-  const getAlertValue = (name) => {
-    if (!alertInfo) return 0;
-    const k = Object.keys(alertInfo).find(
-      (key) => key.toLowerCase() === name.toLowerCase()
-    );
-    return k ? alertInfo[k] : 0;
-  };
-  updateElement("alerts-information", getAlertValue("Information"));
-  updateElement("alerts-warning", getAlertValue("Warning"));
-  updateElement("alerts-critical", getAlertValue("Critical"));
-
-  const rawAlertKeys = Object.keys(alertInfo || {});
-  const alertLabels = rawAlertKeys.filter(
-    (k) => k.toLowerCase() !== "total" && !k.includes("_percent")
-  );
-  const alertData = alertLabels.map((k) => alertInfo[k + "_percent"] || 0);
-  const alertDataForBar = alertLabels.map((k) => alertInfo[k] || 0);
-
-  const severityColorMap = {
-    critical: "#dc3545",
-    warning: "#ffc107",
-    information: "#28a745",
-    info: "#28a745",
-  };
-  const defaultAlertColor = "#6c757d";
-  const alertColors = alertLabels.map(
-    (l) => severityColorMap[l.toLowerCase()] || defaultAlertColor
-  );
-
-  renderPieChart("alert-pie-chart", alertLabels, alertData, alertColors);
-  renderBarChart("alert-bar-chart", alertLabels, alertDataForBar, alertColors);
-}
-
-const chartInstances = {};
-
-function renderPieChart(
-  canvasId,
-  labels,
-  data,
-  colors = null,
-  legendLabels = []
-) {
-  for (let i = 0; i < labels.length; i++) {
-    legendLabels[i] = labels[i] + " " + data[i] + "%";
-  }
-  const ctx = document.getElementById(canvasId);
-  if (!ctx || !window.Chart) return;
-
-  // Destruir gráfico existente
-  if (chartInstances[canvasId]) {
-    chartInstances[canvasId].destroy();
-  }
-
-  const background =
-    colors && Array.isArray(colors) && colors.length
-      ? colors
-      : ["#dc3545", "#ffc107", "#28a745"];
-
-  chartInstances[canvasId] = new Chart(ctx, {
-    type: "pie",
-    data: {
-      labels: legendLabels,
-      datasets: [
-        {
-          data,
-          backgroundColor: background,
-          borderColor: background.map(() => "#fff"),
-          borderWidth: 2,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      
-    },
-  });
-}
-
-function renderBarChart(canvasId, labels, data, colors = null) {
-  const ctx = document.getElementById(canvasId);
-  if (!ctx || !window.Chart) return;
-
-  // Si ya existe un gráfico con ESTE ID específico, lo destruimos
-  if (chartInstances[canvasId]) {
-    chartInstances[canvasId].destroy();
-  }
-
-  const useArrayColors = colors && Array.isArray(colors) && colors.length;
-  const background = useArrayColors ? colors : "#007bff";
-  const border = useArrayColors ? colors.map(() => "#000") : "#0056b3";
-
-  // Guardamos la nueva instancia usando el ID del canvas como clave
-  chartInstances[canvasId] = new Chart(ctx, {
-    type: "bar",
-    data: {
-      labels,
-      datasets: [
-        {
-          label: "Tareas",
-          data,
-          backgroundColor: background,
-          borderColor: border,
-          borderWidth: 1,
-        },
-      ],
-    },
-    options: {
-      responsive: true,
-      maintainAspectRatio: false,
-      scales: {
-        yAxes: [{ ticks: { beginAtZero: true } }], // Nota: Esto es sintaxis de Chart.js v2. Si usas v3+, esto podría fallar.
-      },
-    },
-  });
-}
-
-// Render dashboard
-function renderDashboard() {
-  // Fetch and render task counters independently
-  fetchTaskCounters()
-    .then((res) => {
-      // Endpoint may return object directly or under `task_info`
-      const payload =
-        res.data && res.data.task_info ? res.data.task_info : res.data;
-      renderTaskCounters(payload);
-    })
-    .catch((err) =>
-      showError("Error cargando contadores de tareas", err.message || "")
-    );
-
-  // Fetch and render alert counters independently
-  fetchAlertCounters()
-    .then((res) => {
-      const payload =
-        res.data && res.data.alert_info ? res.data.alert_info : res.data;
-      renderAlertCounters(payload);
-    })
-    .catch((err) =>
-      showError("Error cargando contadores de alertas", err.message || "")
-    );
-}
-
-// Initialize
+// --- Inicialización ---
 document.addEventListener("DOMContentLoaded", function () {
-  const btn = document.getElementById("btn-refresh-dashboard");
-  if (btn) btn.addEventListener("click", () => renderDashboard());
-  renderDashboard();
+  initCharts();
+  initMgmtTable();
+  loadManagementData();
+  fetchAlertCounters();
+  initPusher();
+});
 
-  // Configuración de Pusher
+// --- Carga de Datos ---
+function fetchAlertCounters() {
+  axios
+    .get(ALERT_COUNTERS_URL)
+    .then((res) => {
+      updateAlertKPI(res.data);
+    })
+    .catch((err) => console.warn("No se pudieron cargar alertas", err));
+}
+
+function loadManagementData() {
+  axios
+    .get(MANAGEMENT_COUNTERS_URL)
+    .then((res) => {
+      processManagementData(res.data);
+    })
+    .catch((err) => {
+      showError("Error cargando datos gerenciales", err.message || "");
+    });
+}
+
+function updateAlertKPI(data) {
+  const alertInfo = data && data.alert_info ? data.alert_info : data;
+  const total = alertInfo.total || 0;
+  document.getElementById("alerts-total-mgmt").textContent = total;
+}
+
+function processManagementData(data) {
+  if (!data || typeof data !== "object") return;
+
+  const sortedDates = Object.keys(data).sort();
+
+  const hoursData = sortedDates.map((date) => data[date].hours);
+  const fuelData = sortedDates.map((date) => data[date].fuel_spent);
+  const costData = sortedDates.map((date) => data[date].rental_cost);
+  const tasksTotal = sortedDates.map((date) => data[date].tasks);
+  const tasksDone = sortedDates.map((date) => data[date].completed_tasks);
+  const tasksPending = sortedDates.map(
+    (date) => data[date].tasks - data[date].completed_tasks
+  );
+  const volumeData = sortedDates.map((date) => data[date].processed_volume);
+  const areaData = sortedDates.map((date) => data[date].processed_area);
+
+  const efficiencyData = sortedDates.map((date) => {
+    const t = data[date].tasks;
+    const c = data[date].completed_tasks;
+    return t > 0 ? (c / t) * 100 : 0;
+  });
+
+  const unitCostData = sortedDates.map((date) => {
+    const totalCost = data[date].rental_cost + data[date].fuel_spent;
+    const vol = data[date].processed_volume;
+    return vol > 0 ? totalCost / vol : 0;
+  });
+
+  // Totales
+  const totalHours = hoursData.reduce((a, b) => a + b, 0);
+  const totalFuel = fuelData.reduce((a, b) => a + b, 0);
+  const totalCost = costData.reduce((a, b) => a + b, 0);
+  const totalVolume = volumeData.reduce((a, b) => a + b, 0);
+
+  const totalTasksAssigned = tasksTotal.reduce((a, b) => a + b, 0);
+  const totalTasksCompleted = tasksDone.reduce((a, b) => a + b, 0);
+  const efficiency =
+    totalTasksAssigned > 0
+      ? (totalTasksCompleted / totalTasksAssigned) * 100
+      : 0;
+
+  // Actualizar DOM (usando formatNumber para lógica dinámica de decimales)
+  document.getElementById("mgmt-total-hours").innerText =
+    formatNumber(totalHours);
+  document.getElementById("mgmt-total-fuel").innerText =
+    formatNumber(totalFuel);
+  document.getElementById("mgmt-total-cost").innerText =
+    formatCurrency(totalCost);
+  document.getElementById("mgmt-total-volume").innerText =
+    formatNumber(totalVolume);
+
+  // Para la eficiencia en el DOM, usamos formatNumber y le agregamos %
+  document.getElementById("mgmt-efficiency").innerText =
+    formatNumber(efficiency) + "%";
+
+  updateCharts(
+    sortedDates,
+    hoursData,
+    fuelData,
+    costData,
+    tasksTotal,
+    tasksDone,
+    tasksPending,
+    volumeData,
+    efficiencyData,
+    unitCostData
+  );
+  updateTable(sortedDates, data, efficiencyData, unitCostData);
+}
+
+// --- Gráficas ---
+function initCharts() {
+  // 1. Productividad
+  const ctxProd = document.getElementById("mgmt-productivity-chart");
+  if (ctxProd) {
+    chartInstances["productivity"] = new Chart(ctxProd, {
+      type: "bar",
+      data: {
+        labels: [],
+        datasets: [
+          {
+            label: "Volumen Procesado",
+            data: [],
+            backgroundColor: "rgba(0, 123, 255, 0.6)",
+            borderColor: "rgba(0, 123, 255, 1)",
+            borderWidth: 1,
+            yAxisID: "y-volume",
+            order: 2,
+          },
+          {
+            label: "Costo Alquiler ($)",
+            data: [],
+            backgroundColor: "rgba(220, 53, 69, 0.6)",
+            borderColor: "rgba(220, 53, 69, 1)",
+            borderWidth: 1,
+            yAxisID: "y-cost",
+            order: 3,
+          },
+          {
+            type: "line",
+            label: "Horas Trabajadas",
+            data: [],
+            borderColor: "#6610f2",
+            backgroundColor: "#6610f2",
+            borderWidth: 2,
+            pointRadius: 3,
+            fill: false,
+            yAxisID: "y-volume",
+            order: 1,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          yAxes: [
+            {
+              id: "y-volume",
+              type: "linear",
+              position: "left",
+              gridLines: { display: true },
+              ticks: {
+                callback: function (value) {
+                  return formatNumber(value);
+                },
+              },
+            },
+            {
+              id: "y-cost",
+              type: "linear",
+              position: "right",
+              gridLines: { display: false },
+              ticks: {
+                callback: function (value) {
+                  return "$" + formatNumber(value);
+                },
+              },
+            },
+          ],
+          xAxes: [{ gridLines: { display: false } }],
+        },
+      },
+    });
+  }
+
+  // 2. Tareas (Stacked)
+  const ctxTasks = document.getElementById("mgmt-tasks-chart");
+  if (ctxTasks) {
+    chartInstances["tasks"] = new Chart(ctxTasks, {
+      type: "bar",
+      data: {
+        labels: [],
+        datasets: [
+          {
+            label: "Completadas",
+            data: [],
+            backgroundColor: "rgba(40, 167, 69, 0.7)",
+            borderColor: "rgba(40, 167, 69, 1)",
+            borderWidth: 1,
+          },
+          {
+            label: "Pendientes",
+            data: [],
+            backgroundColor: "rgba(253, 126, 20, 0.7)",
+            borderColor: "rgba(253, 126, 20, 1)",
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          xAxes: [{ stacked: true, gridLines: { display: false } }],
+          yAxes: [
+            {
+              stacked: true,
+              ticks: {
+                beginAtZero: true,
+                stepSize: 1,
+                callback: function (value) {
+                  return formatNumber(value);
+                },
+              },
+            },
+          ],
+        },
+      },
+    });
+  }
+
+  // 3. Eficiencia
+  const ctxEff = document.getElementById("mgmt-efficiency-chart");
+  if (ctxEff) {
+    chartInstances["efficiency"] = new Chart(ctxEff, {
+      type: "line",
+      data: {
+        labels: [],
+        datasets: [
+          {
+            label: "% Tareas Completadas",
+            data: [],
+            borderColor: "#ffc107",
+            backgroundColor: "rgba(255, 193, 7, 0.2)",
+            borderWidth: 2,
+            pointRadius: 4,
+            fill: true,
+            tension: 0.3,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          yAxes: [
+            {
+              ticks: {
+                callback: function (value) {
+                  return formatNumber(value) + "%";
+                },
+                beginAtZero: true,
+                max: 100,
+              },
+            },
+          ],
+        },
+      },
+    });
+  }
+
+  // 4. Costo por Unidad
+  const ctxUnitCost = document.getElementById("mgmt-unitcost-chart");
+  if (ctxUnitCost) {
+    chartInstances["unitcost"] = new Chart(ctxUnitCost, {
+      type: "bar",
+      data: {
+        labels: [],
+        datasets: [
+          {
+            label: "$ por Unidad",
+            data: [],
+            backgroundColor: "rgba(0,0,0,0.6)",
+            borderColor: "#000",
+            borderWidth: 1,
+          },
+        ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          yAxes: [
+            {
+              ticks: {
+                callback: function (value) {
+                  return "$" + formatNumber(value);
+                },
+                beginAtZero: true,
+              },
+            },
+          ],
+        },
+      },
+    });
+  }
+}
+
+function updateCharts(
+  labels,
+  hours,
+  fuel,
+  cost,
+  totalTasks,
+  doneTasks,
+  pendingTasks,
+  volume,
+  efficiency,
+  unitCost
+) {
+  if (chartInstances["productivity"]) {
+    chartInstances["productivity"].data.labels = labels;
+    chartInstances["productivity"].data.datasets[0].data = volume;
+    chartInstances["productivity"].data.datasets[1].data = cost;
+    chartInstances["productivity"].data.datasets[2].data = hours;
+    chartInstances["productivity"].update();
+  }
+
+  if (chartInstances["tasks"]) {
+    chartInstances["tasks"].data.labels = labels;
+    chartInstances["tasks"].data.datasets[0].data = doneTasks;
+    chartInstances["tasks"].data.datasets[1].data = pendingTasks;
+    chartInstances["tasks"].update();
+  }
+
+  if (chartInstances["efficiency"]) {
+    chartInstances["efficiency"].data.labels = labels;
+    chartInstances["efficiency"].data.datasets[0].data = efficiency;
+    chartInstances["efficiency"].update();
+  }
+
+  if (chartInstances["unitcost"]) {
+    chartInstances["unitcost"].data.labels = labels;
+    chartInstances["unitcost"].data.datasets[0].data = unitCost;
+    chartInstances["unitcost"].update();
+  }
+}
+
+// --- Tabla ---
+function initMgmtTable() {
+  mgmtTableInstance = $("#tabla-gestion").DataTable({
+    dom: '<"row"<"col-sm-6"l><"col-sm-6"f>> t i p',
+    pagingType: "numbers",
+    responsive: true,
+    language: {
+      url: "//cdn.datatables.net/plug-ins/1.10.24/i18n/Spanish.json",
+    },
+    order: [[0, "desc"]],
+    columnDefs: [
+      {
+        targets: 4, // Eficiencia
+        render: function (data, type, row) {
+          const percent = parseFloat(data);
+          let color = "secondary";
+          if (percent >= 80) color = "success";
+          else if (percent > 50) color = "warning";
+          else if (percent > 0) color = "danger";
+          // Usamos formatNumber para aplicar lógica de decimales
+          return `<span class="badge badge-${color}">${formatNumber(
+            percent
+          )}%</span>`;
+        },
+      },
+      // Reemplazamos los renderers estáticos por funciones personalizadas que usan formatNumber
+      {
+        targets: 1,
+        render: function (data) {
+          return formatNumber(data);
+        },
+      }, // Horas
+      {
+        targets: 2,
+        render: function (data) {
+          return formatNumber(data);
+        },
+      }, // Tareas
+      {
+        targets: 3,
+        render: function (data) {
+          return formatNumber(data);
+        },
+      }, // Completadas
+      {
+        targets: 5,
+        render: function (data) {
+          return formatNumber(data);
+        },
+      }, // Volumen
+      {
+        targets: 6,
+        render: function (data) {
+          return formatNumber(data);
+        },
+      }, // Area
+      {
+        targets: 7,
+        render: function (data) {
+          return formatNumber(data);
+        },
+      }, // Fuel
+      {
+        targets: 8,
+        render: function (data) {
+          return "$" + formatNumber(data);
+        },
+      }, // Costo
+    ],
+    initComplete: function () {
+      const api = this.api();
+      $(".dataTables_paginate", api.table().container()).addClass(
+        "pagination-sm"
+      );
+    },
+  });
+}
+
+function updateTable(dates, dataObj, effData, unitCostData) {
+  const tableData = dates.map((date, index) => {
+    const info = dataObj[date];
+    return [
+      date,
+      info.hours,
+      info.tasks,
+      info.completed_tasks,
+      effData[index],
+      info.processed_volume,
+      info.processed_area,
+      info.fuel_spent,
+      info.rental_cost,
+    ];
+  });
+
+  mgmtTableInstance.clear();
+  mgmtTableInstance.rows.add(tableData);
+  mgmtTableInstance.draw();
+}
+
+// --- Configuración de Pusher ---
+function initPusher() {
   if (
     typeof pusherKey !== "undefined" &&
     typeof pusherCluster !== "undefined"
@@ -248,267 +486,55 @@ document.addEventListener("DOMContentLoaded", function () {
       cluster: pusherCluster,
     });
 
-    var dashboard_channel = pusher.subscribe("dashboard-channel");
-    // The realtime update may contain task or alert data (or both).
-    dashboard_channel.bind("update-task-event", function (data) {
-      // If it's the combined structure with task_info/alert_info
-      renderTaskCounters(data);
-      $("#tabla-de-Datos").DataTable().ajax.reload(null, false);
-      $("#tabla-de-Datos-alerts").DataTable().ajax.reload(null, false);
-    });
-    dashboard_channel.bind("update-alert-event", function (data) {
-      // If it's the combined structure with task_info/alert_info
-      renderAlertCounters(data);
+    // --- CANAL Y EVENTO ESPECIFICADOS ---
+    var mgmt_channel = pusher.subscribe("management-dashboard-channel");
+
+    mgmt_channel.bind("update-task-event", function (data) {
+      console.log("Pusher: update-task-event recibido", data);
+      // Si el evento trae los datos completos, se procesan inmediatamente
+      if (data && typeof data === "object") {
+        processManagementData(data);
+      } else {
+        // Si no, forzamos recarga del API
+        loadManagementData();
+      }
     });
 
+    // Lógica de Alertas (si se mantiene)
     var alert_channel = pusher.subscribe("alert-channel");
 
-    // --- Configuración de Toast (No intrusivo) ---
-    const Toast = Swal.mixin({
-      toast: true,
-      position: "top-end", // Esquina superior derecha
-      showConfirmButton: false,
-      timer: 5000, // Se cierra solo en 5 segundos
-      timerProgressBar: true,
-      didOpen: (toast) => {
-        toast.addEventListener("mouseenter", Swal.stopTimer);
-        toast.addEventListener("mouseleave", Swal.resumeTimer);
-      },
+    alert_channel.bind("new-alert-event", function (data) {
+      console.log("Pusher: new-alert-event recibido", data);
+      if (window.Swal) {
+        const Toast = Swal.mixin({
+          toast: true,
+          position: "top-end",
+          showConfirmButton: false,
+          timer: 5000,
+          timerProgressBar: true,
+          didOpen: (toast) => {
+            toast.addEventListener("mouseenter", Swal.stopTimer);
+            toast.addEventListener("mouseleave", Swal.resumeTimer);
+          },
+        });
+        if (data && data.task) {
+          Toast.fire({
+            icon: "warning",
+            title: `¡NUEVA Alerta para: ${data.task}!`,
+            text: `(${data.level.toUpperCase()}) ${data.alert_description}`,
+          });
+        }
+      }
+      fetchAlertCounters();
     });
 
     alert_channel.bind("deleted-alert-event", function (data) {
-      // Validamos que existan los datos para evitar errores
-      console.log("Alerta eliminada recibida:", data);
-      if (data && data.task) {
-        Toast.fire({
-          icon: "info",
-          title: `Alerta ELIMINADA para: ${data.task}`,
-          text: `(${data.level.toUpperCase()}) ${data.alert_description}`,
-        });
-      }
-    });
-
-    alert_channel.bind("new-alert-event", function (data) {
-      // Validamos que existan los datos
-      if (data && data.task) {
-        Toast.fire({
-          icon: "warning",
-          title: `¡NUEVA Alerta para: ${data.task}!`,
-          text: `(${data.level.toUpperCase()}) ${data.alert_description}`,
-        });
-         $("#tabla-de-Datos-alerts").DataTable().ajax.reload(null, false);
-         $("#tabla-de-Datos").DataTable().ajax.reload(null, false);
-      }
+      console.log("Pusher: deleted-alert-event recibido", data);
+      fetchAlertCounters();
     });
   } else {
     console.warn(
-      "Pusher keys no definidas. Las alertas en tiempo real no funcionarán."
+      "Pusher keys no definidas. Las actualizaciones en tiempo real no funcionarán."
     );
-  }
-    paintTaskTable();
-    paintTaskTableAlerts();
-
-});
-
-function paintTaskTable(internal_status="") {
-  $("#tabla-de-Datos").addClass("table table-hover");
-
-  $("#tabla-de-Datos").DataTable({
-    dom: '<"row"<"col-sm-6"l><"col-sm-6"f>> t i p',
-    
-    // 1. Configuración de paginación compacta (solo números)
-    pagingType: "numbers", 
-    
-    responsive: true,
-    serverSide: true,
-    processing: true,
-   
-    search: { return: true },
-    ajax: function (data, callback, settings) {
-      let dir = "";
-      if (data.order && data.order[0].dir === "desc") dir = "-";
-      const orderCol = data.columns && data.columns[data.order[0].column].data;
-
-      // include date filters when present
-      const params = {
-        page_size: data.length,
-        page: data.start / data.length + 1,
-        search: data.search.value,
-        ordering: dir + orderCol,
-        internal_status:internal_status
-      };
-
-      const API_URL = "/business-gestion/task/";
-      axios
-        .get(API_URL, { params })
-        .then((res) => {
-          callback({
-            recordsTotal: res.data.count,
-            recordsFiltered: res.data.count,
-            data: res.data.results,
-          });
-        })
-        .catch((err) => {
-          showError("Error cargando datos", err.message || "");
-        });
-    },
-    columns: [
-      { data: "wbs", title: "WBS" },
-      { data: "alert_list", title: "Alertas<br>(Alerts)" , render: (data) => getAlert(data),},
-      { data: "task_code", title: "Código<br>(Code)" },
-      { data: "task_name", title: "Nombre de tarea<br>(Task Name)" },
-      {
-        data: "internal_status",
-        className: "dt-body-center",
-        title: "Estado<br>(Status)",
-        render: (data) => getStatusIcon(data),
-      },
-      { data: "complete_pct", title: "% Completado<br>(% Completed)" },
-    ],
-    columnDefs: [],
-    
-    // 2. Añadir clase 'pagination-sm' de Bootstrap para reducir el tamaño visual
-    initComplete: function () {
-      const api = this.api();
-      $('.dataTables_paginate', api.table().container()).addClass('pagination-sm');
-    }
-  });
-
-  // Color rows based on start/end dates after table draw
-  const table = $("#tabla-de-Datos").DataTable();
-
-  table.on("draw", function () {
-    const rows = table.rows({ page: "current" }).nodes();
-    table
-      .rows({ page: "current" })
-      .data()
-      .each(function (d, i) {
-        const rowNode = rows[i];
-
-        $(rowNode).removeClass(
-          "task-status-started task-status-completed task-status-notstarted"
-        );
-        // now using actual dates returned by the API
-        const status = d.internal_status;
-
-        if (status == "H") {
-          $(rowNode).addClass("bg-danger");
-        } else if (status == "C") {
-          $(rowNode).addClass("bg-success");
-        } else if (status=='N') {          
-            $(rowNode).addClass("bg-orange");        
-        }else if (status=='W') {          
-            $(rowNode).addClass("bg-warning");        
-        }else if (status=='P') {          
-            $(rowNode).addClass("bg-primary");        
-        }
-      });
-  });
-}
-
-
-function paintTaskTableAlerts(kind="") {
-  $("#tabla-de-Datos-alerts").addClass("table table-hover");
-
-  $("#tabla-de-Datos-alerts").DataTable({
-    dom: '<"row"<"col-sm-6"l><"col-sm-6"f>> t i p',
-    pagingType: "numbers",
-    responsive: true,
-    serverSide: true,
-    processing: true,
-    kind:kind,
-    search: { return: true },
-    ajax: function (data, callback, settings) {
-      let dir = "";
-      if (data.order && data.order[0].dir === "desc") dir = "-";
-      const orderCol = data.columns && data.columns[data.order[0].column].data;
-
-      // include date filters when present
-      const params = {
-        page_size: data.length,
-        page: data.start / data.length + 1,
-        search: data.search.value,
-        ordering: dir + orderCol,
-      };
-
-      const API_URL = "/business-gestion/alert/";
-      axios
-        .get(API_URL, { params })
-        .then((res) => {
-          callback({
-            recordsTotal: res.data.count,
-            recordsFiltered: res.data.count,
-            data: res.data.results,
-          });
-        })
-        .catch((err) => {
-          showError("Error cargando datos", err.message || "");
-        });
-    },
-    columns: [
-      { data: "task_name", title: "Nombre de tarea<br>(Task name)" },
-      { data: "short_description", title: "Observación<br>(Observation)" },
-      { data: "motive_alert_status_name", title: "Motivo<br>(Motive)" },
-      { data: "kind_name", title: "Tipo<br>(Kind)" },
-    ],
-    columnDefs: [],
-     initComplete: function () {
-      const api = this.api();
-      $('.dataTables_paginate', api.table().container()).addClass('pagination-sm');
-    }
-  });
-
-  // Color rows based on start/end dates after table draw
-  const table = $("#tabla-de-Datos-alerts").DataTable();
-
-  table.on("draw", function () {
-    const rows = table.rows({ page: "current" }).nodes();
-    table
-      .rows({ page: "current" })
-      .data()
-      .each(function (d, i) {
-        const rowNode = rows[i];
-
-        $(rowNode).removeClass(
-          "task-status-started task-status-completed task-status-notstarted"
-        );
-        // now using actual dates returned by the API
-
-        if (d.kind == "C") {
-          $(rowNode).addClass("bg-danger");
-        } else if (d.kind == "W") {
-          $(rowNode).addClass("bg-warning");
-        } else if (d.kind == "I") {
-          $(rowNode).addClass("bg-success");
-        }
-      });
-  });
-}
-
-function getStatusIcon(statusCode) {
-  const statusMap = {
-    N: { icon: "fa-circle", color: "#6c757d", label: "(Not started)", labelespañol: "No iniciada" }, // Gris
-    C: { icon: "fa-check-circle", color: "#28a745", label: "(Completed)", labelespañol: "Completada" }, // Verde
-    I: { icon: "fa-circle-notch", color: "#007bff", label: "(In progress)", labelespañol: "En progreso" }, // Azul
-    H: { icon: "fa-pause-circle", color: "#ff0707ff", label: "(Pause)", labelespañol: "Pausa" }, // Amarillo
-    P: { icon: "fa-hourglass-start", color: "#17a2b8", label: "(New)", labelespañol: "Nueva" }, // Cian
-  };
-
-  const status = statusMap[statusCode] || statusMap["N"];
-  // return ``;
-  return `<span class="info-box-icon"><i class="fas ${status.icon}"  style="font-size: x-large;" title="${status.label}"></i></span><span class="info-box-text" style="vertical-align: inherit; display: block; text-align: center;">
-    ${status.labelespañol} <br> ${status.label}
-</span> `;
-}
-function getAlert(alerts) {
-  if(alerts.length>0){   
-
-    if (alerts[0].kind=='C'){
-     return `<span class="info-box-icon-alert"><i class="fas fa-exclamation-triangle "  style="font-size: x-large;" ></i></span>`;
-    } else {
-      return `<span class="info-box-icon"><i class="fas fa-bell "  style="font-size: x-large;" ></i></span>`;
-    }
-  } else {
-    return '';
   }
 }
