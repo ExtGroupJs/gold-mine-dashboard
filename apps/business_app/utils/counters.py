@@ -110,6 +110,7 @@ def get_daily_work_summary_for_test():
             ...
         }
     """
+    owner_dict = ResourceOwner.objects.all().values()
     daily_summary = defaultdict(
         lambda: {
             "hours": 0.0,

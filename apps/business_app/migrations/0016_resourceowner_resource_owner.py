@@ -5,26 +5,39 @@ from django.db import migrations, models
 
 
 class Migration(migrations.Migration):
-
     dependencies = [
-        ('business_app', '0015_resource_processed_area_by_hour_and_more'),
+        ("business_app", "0015_resource_processed_area_by_hour_and_more"),
     ]
 
     operations = [
         migrations.CreateModel(
-            name='ResourceOwner',
+            name="ResourceOwner",
             fields=[
-                ('id', models.BigAutoField(auto_created=True, primary_key=True, serialize=False, verbose_name='ID')),
-                ('name', models.CharField(max_length=100, unique=True)),
+                (
+                    "id",
+                    models.BigAutoField(
+                        auto_created=True,
+                        primary_key=True,
+                        serialize=False,
+                        verbose_name="ID",
+                    ),
+                ),
+                ("name", models.CharField(max_length=100, unique=True)),
             ],
             options={
-                'verbose_name': 'Resource Owner',
-                'verbose_name_plural': 'Resources Owner',
+                "verbose_name": "Resource Owner",
+                "verbose_name_plural": "Resources Owner",
             },
         ),
         migrations.AddField(
-            model_name='resource',
-            name='owner',
-            field=models.ForeignKey(blank=True, null=True, on_delete=django.db.models.deletion.SET_NULL, related_name='resources', to='business_app.resourceowner'),
+            model_name="resource",
+            name="owner",
+            field=models.ForeignKey(
+                blank=True,
+                null=True,
+                on_delete=django.db.models.deletion.SET_NULL,
+                related_name="resources",
+                to="business_app.resourceowner",
+            ),
         ),
     ]

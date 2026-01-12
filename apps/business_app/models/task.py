@@ -93,7 +93,7 @@ class Task(GenericLogMixin, models.Model):
         verbose_name_plural = _("Tasks")
 
     def __str__(self):
-        return f"{self.task_name}"
+        return self.task_name or ""
 
     @property
     def working_hours_for_test(self):

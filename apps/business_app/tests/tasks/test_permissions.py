@@ -6,10 +6,8 @@ from apps.common.baseclass_for_testing import BaseTestClass
 from apps.users_app.models.groups import Groups
 from model_bakery import baker
 from apps.business_app.models.task import Task
-from rest_framework import status
 
 from apps.users_app.models.groups import (
-    Groups,
     ROLES_WITH_READ_ACCESS_TO_TASKS,
     ROLES_WITH_WRITE_ACCESS_TO_TASKS,
 )
@@ -49,7 +47,7 @@ class TestTaskViewSet(BaseTestClass):
 
     def test_acces_to_counter(self):
         """
-        Solo el PLANNER y el DASHBOARD_CLIENT pueden invocar este EP
+        Solo el PLANNER, MANAGER y el DASHBOARD_CLIENT pueden invocar este EP
         """
         test_task = baker.make(
             Task,
@@ -65,7 +63,7 @@ class TestTaskViewSet(BaseTestClass):
 
     def test_acces_to_management_counters(self):
         """
-        Solo el PLANNER y el DASHBOARD_CLIENT pueden invocar este EP
+        Solo el PLANNER, MANAGER y el DASHBOARD_CLIENT pueden invocar este EP
         """
         test_task = baker.make(
             Task,

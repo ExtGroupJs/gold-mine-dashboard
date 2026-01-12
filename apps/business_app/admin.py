@@ -5,6 +5,7 @@ from apps.common.admin import (
 
 
 from .models.resource import Resource
+from .models.resource_owner import ResourceOwner
 from .models.task import Task
 from .models.alert import Alert
 from .models.task_resource import TaskResource
@@ -25,6 +26,12 @@ class ResourceAdmin(GenericModelAdmin):
 
 @admin.register(Task)
 class TaskAdmin(GenericModelAdmin):
+    # EXCLUDED_FIELDS_FOR_EDITING = {"taskresource",}
+    pass
+
+
+@admin.register(ResourceOwner)
+class ResourceOwnerAdmin(GenericModelAdmin):
     # EXCLUDED_FIELDS_FOR_EDITING = {"taskresource",}
     pass
 

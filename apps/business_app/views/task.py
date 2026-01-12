@@ -6,7 +6,6 @@ from rest_framework.generics import GenericAPIView
 from drf_spectacular.utils import extend_schema
 from django.utils.translation import gettext_lazy as _
 from rest_framework.decorators import action
-from rest_framework import permissions
 
 
 from ..models.task import Task
@@ -19,7 +18,6 @@ from apps.common.mixins.enums_mixin import EnumsMixin
 from apps.common.permissions import (
     TaskViewSetPermissions,
     TaskViewSetCountersPermissions,
-    TaskViewSetManagementCountersPermissions,
 )
 
 
