@@ -69,19 +69,13 @@ class TestTaskViewSet(BaseTestClass):
         self.user.groups.add(Groups.SUPERVISOR_AREA_A)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(
-            response.data["count"],
-            random_supervisor_a_qty
-        )        
-        
+        self.assertEqual(response.data["count"], random_supervisor_a_qty)
+
         self.user.groups.clear()  # Remove the group to avoid side effects in other tests.
         self.user.groups.add(Groups.SUPERVISOR_AREA_B)
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
-        self.assertEqual(
-            response.data["count"],
-            random_supervisor_b_qty
-        )
+        self.assertEqual(response.data["count"], random_supervisor_b_qty)
 
     # def test_is_new_is_in_catalog_response_and_is_true_since_has_less_than_one_month(
     #     self,

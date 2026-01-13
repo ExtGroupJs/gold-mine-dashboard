@@ -8,7 +8,9 @@
       "fuel_spent_by_hour": 25.0,
       "rent_cost_by_hour_in_euros": 57.56,
       "processed_volume_by_hour": 187.5,
-      "processed_area_by_hour": 0.0
+      "processed_area_by_hour": 0.0,
+      "owner": 2,
+      "identification": "B1"
     }
   },
   {
@@ -20,7 +22,9 @@
       "fuel_spent_by_hour": 0.0,
       "rent_cost_by_hour_in_euros": 0.0,
       "processed_volume_by_hour": 0.0,
-      "processed_area_by_hour": 0.0
+      "processed_area_by_hour": 0.0,
+      "owner": null,
+      "identification": null
     }
   },
   {
@@ -32,7 +36,9 @@
       "fuel_spent_by_hour": 12.5,
       "rent_cost_by_hour_in_euros": 49.59,
       "processed_volume_by_hour": 62.5,
-      "processed_area_by_hour": 0.0
+      "processed_area_by_hour": 0.0,
+      "owner": 1,
+      "identification": "U16"
     }
   },
   {
@@ -44,7 +50,9 @@
       "fuel_spent_by_hour": 25.0,
       "rent_cost_by_hour_in_euros": 46.65,
       "processed_volume_by_hour": 0.0,
-      "processed_area_by_hour": 0.0
+      "processed_area_by_hour": 0.0,
+      "owner": 1,
+      "identification": "U9"
     }
   },
   {
@@ -56,7 +64,9 @@
       "fuel_spent_by_hour": 12.5,
       "rent_cost_by_hour_in_euros": 45.48,
       "processed_volume_by_hour": 187.5,
-      "processed_area_by_hour": 0.0
+      "processed_area_by_hour": 0.0,
+      "owner": 1,
+      "identification": "M1"
     }
   },
   {
@@ -68,7 +78,9 @@
       "fuel_spent_by_hour": 12.5,
       "rent_cost_by_hour_in_euros": 46.65,
       "processed_volume_by_hour": 0.0,
-      "processed_area_by_hour": 0.0
+      "processed_area_by_hour": 0.0,
+      "owner": 1,
+      "identification": "P1"
     }
   },
   {
@@ -80,7 +92,9 @@
       "fuel_spent_by_hour": 12.5,
       "rent_cost_by_hour_in_euros": 44.9,
       "processed_volume_by_hour": 0.0,
-      "processed_area_by_hour": 0.0
+      "processed_area_by_hour": 0.0,
+      "owner": 1,
+      "identification": "C1"
     }
   },
   {
@@ -92,7 +106,9 @@
       "fuel_spent_by_hour": 0.0,
       "rent_cost_by_hour_in_euros": 0.0,
       "processed_volume_by_hour": 0.0,
-      "processed_area_by_hour": 0.0
+      "processed_area_by_hour": 0.0,
+      "owner": null,
+      "identification": null
     }
   },
   {
@@ -104,7 +120,9 @@
       "fuel_spent_by_hour": 0.0,
       "rent_cost_by_hour_in_euros": 0.0,
       "processed_volume_by_hour": 0.0,
-      "processed_area_by_hour": 0.0
+      "processed_area_by_hour": 0.0,
+      "owner": null,
+      "identification": null
     }
   },
   {
@@ -116,7 +134,51 @@
       "fuel_spent_by_hour": 0.0,
       "rent_cost_by_hour_in_euros": 0.0,
       "processed_volume_by_hour": 0.0,
-      "processed_area_by_hour": 0.0
+      "processed_area_by_hour": 0.0,
+      "owner": null,
+      "identification": null
+    }
+  },
+  {
+    "model": "business_app.resource",
+    "pk": 13,
+    "fields": {
+      "name": "Camión volquete articulado VOLVO A45G (25.5 m3)",
+      "resource_type": null,
+      "fuel_spent_by_hour": 12.5,
+      "rent_cost_by_hour_in_euros": 49.59,
+      "processed_volume_by_hour": 62.5,
+      "processed_area_by_hour": 0.0,
+      "owner": 1,
+      "identification": "U17"
+    }
+  },
+  {
+    "model": "business_app.resource",
+    "pk": 14,
+    "fields": {
+      "name": "Camión volquete articulado VOLVO A45G (25.5 m3)",
+      "resource_type": null,
+      "fuel_spent_by_hour": 12.5,
+      "rent_cost_by_hour_in_euros": 49.59,
+      "processed_volume_by_hour": 62.5,
+      "processed_area_by_hour": 0.0,
+      "owner": 1,
+      "identification": "U23"
+    }
+  },
+  {
+    "model": "business_app.resource",
+    "pk": 15,
+    "fields": {
+      "name": "Camión volquete articulado VOLVO A45G (25.5 m3)",
+      "resource_type": null,
+      "fuel_spent_by_hour": 12.5,
+      "rent_cost_by_hour_in_euros": 49.59,
+      "processed_volume_by_hour": 62.5,
+      "processed_area_by_hour": 0.0,
+      "owner": 1,
+      "identification": "U24"
     }
   }
 ]

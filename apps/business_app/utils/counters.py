@@ -1,5 +1,6 @@
 from ..models.task import Task
 from ..models.alert import Alert
+from ..models.resource_owner import ResourceOwner
 from datetime import datetime, time, timedelta
 from django.utils import timezone
 from django.core.cache import cache
@@ -120,6 +121,14 @@ def get_daily_work_summary_for_test():
             "rental_cost": 0.0,
             "processed_volume": 0.0,
             "processed_area": 0.0,
+            "base_info": {
+                "hours": 0.0,
+                "tasks": 0,
+                "fuel_spent": 0.0,
+                "rental_cost": 0.0,
+                "processed_volume": 0.0,
+                "processed_area": 0.0,
+            },
         }
     )
 
@@ -134,10 +143,27 @@ def get_daily_work_summary_for_test():
         current_datetime = timezone.localtime(task.act_start_date)
         day_key = current_datetime.date().isoformat()
 
-        cache_key = Task.CACHE_KEY_FOR_MANAGEMENT_INFO.format(
+        task_info_cache_key = Task.CACHE_KEY_FOR_MANAGEMENT_INFO.format(
             task_id=task.id, percent=task.complete_pct
         )
-        if not cache.has_key(cache_key):
+        task_base_info_cache_key = Task.CACHE_KEY_FOR_MANAGEMENT_BASE_INFO.format(
+            task_id=task.id
+        )
+
+        has_base_info = cache.has_key(task_base_info_cache_key)
+        base_info = cache.get(
+            task_base_info_cache_key,
+            {
+                "hours": 0.0,
+                "tasks": 0,
+                "fuel_spent": 0.0,
+                "rental_cost": 0.0,
+                "processed_volume": 0.0,
+                "processed_area": 0.0,
+            },
+        )
+
+        if not cache.has_key(task_info_cache_key):
             task_info = {
                 "hours": 0.0,
                 "fuel_spent": 0.0,
@@ -149,28 +175,68 @@ def get_daily_work_summary_for_test():
             task_hours = task.working_hours_for_test
             # Get all resources for this task
             task_info["hours"] = task_hours
+            base_info["hours"] = base_info["hours"] or Task.DEFAULT_TASK_DURATION
+
             resources = task.resources.all()
 
             # Calculate fuel and rental costs for this day
             for resource in resources:
                 task_info["fuel_spent"] += task_hours * resource.fuel_spent_by_hour
+
                 task_info["rental_cost"] += (
                     task_hours * resource.rent_cost_by_hour_in_euros
                 )
+
                 task_info["processed_volume"] += (
                     task_hours * resource.processed_volume_by_hour
                 )
+
                 task_info["processed_area"] += (
                     task_hours * resource.processed_area_by_hour
                 )
-            cache.set(cache_key, task_info, timeout=None)
-        task_info = cache.get(cache_key)
-        daily_summary[day_key]["hours"] += task_info["hours"]
-        daily_summary[day_key]["fuel_spent"] += task_info["fuel_spent"]
-        daily_summary[day_key]["rental_cost"] += task_info["rental_cost"]
-        daily_summary[day_key]["processed_volume"] += task_info["processed_volume"]
-        daily_summary[day_key]["processed_area"] += task_info["processed_area"]
+                if not has_base_info:
+                    base_info["fuel_spent"] += (
+                        Task.DEFAULT_TASK_DURATION * resource.fuel_spent_by_hour
+                    )
+                    base_info["rental_cost"] += (
+                        Task.DEFAULT_TASK_DURATION * resource.rent_cost_by_hour_in_euros
+                    )
+                    base_info["processed_volume"] += (
+                        Task.DEFAULT_TASK_DURATION * resource.processed_volume_by_hour
+                    )
+                    base_info["processed_area"] += (
+                        Task.DEFAULT_TASK_DURATION * resource.processed_area_by_hour
+                    )
+            task_info["base_info"] = base_info
+            if not has_base_info:
+                cache.set(task_base_info_cache_key, base_info, timeout=None)
+            cache.set(task_info_cache_key, task_info, timeout=None)
+
+        task_info = cache.get(task_info_cache_key)
+
+        daily_summary[day_key]["hours"] += round(task_info["hours"], 2)
+        daily_summary[day_key]["base_info"]["hours"] += base_info["hours"]
+
+        daily_summary[day_key]["fuel_spent"] += round(task_info["fuel_spent"], 2)
+        daily_summary[day_key]["base_info"]["fuel_spent"] += base_info["fuel_spent"]
+
+        daily_summary[day_key]["rental_cost"] += round(task_info["rental_cost"], 2)
+        daily_summary[day_key]["base_info"]["rental_cost"] += base_info["rental_cost"]
+
+        daily_summary[day_key]["processed_volume"] += round(
+            task_info["processed_volume"], 2
+        )
+        daily_summary[day_key]["base_info"]["processed_volume"] += base_info[
+            "processed_volume"
+        ]
+
+        daily_summary[day_key]["processed_area"] += round(task_info["processed_area"])
+        daily_summary[day_key]["base_info"]["processed_area"] += base_info[
+            "processed_area"
+        ]
+
         daily_summary[day_key]["tasks"] += 1
+        daily_summary[day_key]["base_info"]["tasks"] += 1
         if task.complete_pct == 100:
             daily_summary[day_key]["completed_tasks"] += 1
 

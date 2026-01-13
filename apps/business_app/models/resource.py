@@ -4,7 +4,7 @@ from ..models.resource_owner import ResourceOwner
 
 
 class Resource(models.Model):
-    name = models.CharField(max_length=100, unique=True)
+    name = models.CharField(max_length=100)
     resource_type = models.CharField(max_length=50, null=True, blank=True)
     fuel_spent_by_hour = models.FloatField(default=0)
     rent_cost_by_hour_in_euros = models.FloatField(default=0)
@@ -17,8 +17,8 @@ class Resource(models.Model):
         blank=True,
         related_name="resources",
     )
+    identification = models.CharField(null=True, blank=True)
 
-    # cost_per_hour = models.DecimalField(max_digits=10, decimal_places=2)
     class Meta:
         verbose_name = _("Resource")
         verbose_name_plural = _("Resources")
