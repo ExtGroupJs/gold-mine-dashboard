@@ -28,6 +28,15 @@ class Command(BaseCommand):
             )
         )
 
+        call_command("loaddata", "resource_owners.json")
+        print(
+            colored(
+                "Successfully added Resource Owners to system",
+                "green",
+                attrs=["blink"],
+            )
+        )
+
         call_command("loaddata", "resources.json")
         print(
             colored(

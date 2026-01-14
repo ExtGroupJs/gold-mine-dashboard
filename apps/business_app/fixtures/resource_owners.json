@@ -1,2 +1,16 @@
 [
+{
+    "model": "business_app.resourceowner",
+    "pk": 1,
+    "fields": {
+        "name": "UNIVOL"
+    }
+},
+{
+    "model": "business_app.resourceowner",
+    "pk": 2,
+    "fields": {
+        "name": "WOOMY"
+    }
+}
 ]
