@@ -30,9 +30,6 @@ class TaskViewSet(viewsets.ModelViewSet, GenericAPIView):
     queryset = (
         Task.objects.all().select_related("wbs").prefetch_related("resources", "alerts")
     )
-    queryset = (
-        Task.objects.all().select_related("wbs").prefetch_related("resources", "alerts")
-    )
     serializer_class = TaskSerializer
     search_fields = [
         "task_code",

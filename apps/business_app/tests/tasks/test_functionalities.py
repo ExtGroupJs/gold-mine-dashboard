@@ -56,6 +56,15 @@ class TestTaskViewSet(BaseTestClass):
             _quantity=random_supervisor_b_qty,
         )
 
+        random_supervisor_c_qty = baker.random_gen.gen_integer(min_int=11, max_int=15)
+        baker.make(
+            Task,
+            internal_responsibles=[
+                Group.objects.get(id=Groups.SUPERVISOR_AREA_C.value)
+            ],
+            _quantity=random_supervisor_c_qty,
+        )
+
         for role in ROLES_WITH_ACCESS_TO_READ_ALL_TASKS:
             self.user.groups.clear()  # Remove the group to avoid side effects in other tests.
             self.user.groups.add(role)
@@ -63,7 +72,10 @@ class TestTaskViewSet(BaseTestClass):
             self.assertEqual(response.status_code, status.HTTP_200_OK)
             self.assertEqual(
                 response.data["count"],
-                random_qty + random_supervisor_a_qty + random_supervisor_b_qty,
+                random_qty
+                + random_supervisor_a_qty
+                + random_supervisor_b_qty
+                + random_supervisor_c_qty,
             )
         self.user.groups.clear()  # Remove the group to avoid side effects in other tests.
         self.user.groups.add(Groups.SUPERVISOR_AREA_A)
@@ -76,3 +88,9 @@ class TestTaskViewSet(BaseTestClass):
         response = self.client.get(url)
         self.assertEqual(response.status_code, status.HTTP_200_OK)
         self.assertEqual(response.data["count"], random_supervisor_b_qty)
+
+        self.user.groups.clear()  # Remove the group to avoid side effects in other tests.
+        self.user.groups.add(Groups.SUPERVISOR_AREA_C)
+        response = self.client.get(url)
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+        self.assertEqual(response.data["count"], random_supervisor_c_qty)

@@ -130,14 +130,13 @@ def get_daily_statistics_by_resource():
 
         if not cache.has_key(task_info_cache_key):
             task_info = {
-                "hours": 0.0, 
+                "hours": 0.0,
                 "fuel_spent": 0.0,
                 "rental_cost": 0.0,
                 "processed_volume": 0.0,
                 "processed_area": 0.0,
                 "owner_info": {},
             }
-           
 
             # Use the working_hours property from Task model
             task_hours = task.working_hours_for_test
