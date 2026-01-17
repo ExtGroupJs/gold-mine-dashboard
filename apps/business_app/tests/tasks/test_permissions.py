@@ -4,8 +4,6 @@ from unittest.mock import patch
 
 from apps.common.baseclass_for_testing import BaseTestClass
 from apps.users_app.models.groups import Groups
-from model_bakery import baker
-from apps.business_app.models.task import Task
 
 from apps.users_app.models.groups import (
     ROLES_WITH_READ_ACCESS_TO_TASKS,
@@ -22,9 +20,7 @@ class TestTaskViewSet(BaseTestClass):
 
     @patch("apps.business_app.signals.PusherClient.trigger")
     def test_get_protocol(self, trigger_mock):
-        """
-        Se puede acceder con cualquier rol, siempre y cuando sea un usuario registrado
-        """
+        """ """
         url = reverse("task-list")
         allowed_groups = ROLES_WITH_READ_ACCESS_TO_TASKS
         test_protocols = [self.client.get]
@@ -34,9 +30,7 @@ class TestTaskViewSet(BaseTestClass):
             )
 
     def test_put_patch_protocols(self):
-        """
-        Se puede acceder con cualquier rol, siempre y cuando sea un usuario registrado
-        """
+        """ """
         url = reverse("task-list")
         allowed_groups = ROLES_WITH_WRITE_ACCESS_TO_TASKS
         test_protocols = [self.client.put, self.client.patch]
@@ -46,12 +40,7 @@ class TestTaskViewSet(BaseTestClass):
             )
 
     def test_acces_to_counter(self):
-        """
-        Solo el PLANNER, MANAGER y el DASHBOARD_CLIENT pueden invocar este EP
-        """
-        test_task = baker.make(
-            Task,
-        )
+        """ """
         url = reverse("task-counters")
         allowed_groups = ROLES_WITH_READ_ACCESS_TO_TASKS + (Groups.PLANNER,)
 
@@ -62,12 +51,7 @@ class TestTaskViewSet(BaseTestClass):
         )
 
     def test_acces_to_management_counters(self):
-        """
-        Solo el PLANNER, MANAGER y el DASHBOARD_CLIENT pueden invocar este EP
-        """
-        test_task = baker.make(
-            Task,
-        )
+        """ """
         url = reverse("task-management-counters")
         allowed_groups = ROLES_WITH_READ_ACCESS_TO_TASKS + (Groups.PLANNER,)
 

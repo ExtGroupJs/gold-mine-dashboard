@@ -76,7 +76,7 @@ class TaskSerializer(serializers.ModelSerializer):
             cache.delete(cache_key)
 
     def _complete_task(self, instance, validated_data, new_internal_status):
-        new_internal_status = Task.INTERNAL_STATUS.COMPLETED
+        new_internal_status = Task.INTERNAL_STATUS.COMPLETED  # noqa: F841
         validated_data["complete_pct"] = 100
         validated_data["act_end_date"] = datetime.now()
         self._remove_from_cache(instance)
