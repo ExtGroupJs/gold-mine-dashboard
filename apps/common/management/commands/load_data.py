@@ -28,6 +28,24 @@ class Command(BaseCommand):
             )
         )
 
+        call_command("loaddata", "resource_owners.json")
+        print(
+            colored(
+                "Successfully added Resource Owners to system",
+                "green",
+                attrs=["blink"],
+            )
+        )
+
+        call_command("loaddata", "resources.json")
+        print(
+            colored(
+                "Successfully added Resources to system",
+                "green",
+                attrs=["blink"],
+            )
+        )
+
         admin_user = User.objects.get(username="admin")
         admin_user.groups.add(Groups.SUPER_ADMIN)
         print(
@@ -41,17 +59,27 @@ class Command(BaseCommand):
             username="planner",
             defaults={
                 "email": "",
-                "password": "3edcvfr4",
                 "first_name": "Planner",
                 "last_name": "User",
             },
         )
         planner.groups.add(Groups.PLANNER)
-        planner.set_password("3edcvfr4")
+        planner.set_password("1234")
         planner.save()
+        manager, _ = SystemUser.objects.get_or_create(
+            username="manager",
+            defaults={
+                "email": "",
+                "first_name": "Manager",
+                "last_name": "User",
+            },
+        )
+        manager.groups.add(Groups.MANAGER)
+        manager.set_password("1234")
+        manager.save()
         print(
             colored(
-                "Created planner_user with PLANNER role",
+                "Created manager user with MANAGER role",
                 "blue",
                 attrs=["blink"],
             )
@@ -65,7 +93,7 @@ class Command(BaseCommand):
             },
         )
         supervisor_a.groups.add(Groups.SUPERVISOR_AREA_A)
-        supervisor_a.set_password("3edcvfr4")
+        supervisor_a.set_password("1234")
         supervisor_a.save()
         print(
             colored(
@@ -83,11 +111,29 @@ class Command(BaseCommand):
             },
         )
         supervisor_b.groups.add(Groups.SUPERVISOR_AREA_B)
-        supervisor_b.set_password("3edcvfr4")
+        supervisor_b.set_password("1234")
         supervisor_b.save()
         print(
             colored(
                 "Created supervisor_b with SUPERVISOR_AREA_B role",
+                "blue",
+                attrs=["blink"],
+            )
+        )
+        supervisor_c, _ = SystemUser.objects.get_or_create(
+            username="supervisor_c",
+            defaults={
+                "email": "",
+                "first_name": "Supervisor C",
+                "last_name": "User",
+            },
+        )
+        supervisor_c.groups.add(Groups.SUPERVISOR_AREA_C)
+        supervisor_c.set_password("1234")
+        supervisor_c.save()
+        print(
+            colored(
+                "Created supervisor_c with SUPERVISOR_AREA_C role",
                 "blue",
                 attrs=["blink"],
             )
@@ -102,7 +148,7 @@ class Command(BaseCommand):
             },
         )
         board_client.groups.add(Groups.DASHBOARD_CLIENT)
-        board_client.set_password("2wsxcde3")
+        board_client.set_password("1234")
         board_client.save()
 
         print(

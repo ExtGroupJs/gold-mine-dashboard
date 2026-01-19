@@ -8,6 +8,20 @@ logger = logging.getLogger(__name__)
 class PusherClient:
     """Wrapper around pusher.Pusher that logs triggers for debugging."""
 
+    # CHANNELS
+    MANAGEMENT_DASHBOARD_CHANNEL = "management-dashboard-channel"
+    DASHBOARD_CHANNEL = "dashboard-channel"
+    TASK_CHANNEL = "task-channel"
+    ALERT_CHANNEL = "alert-channel"
+
+    # EVENTS
+    UPDATE_TASK_EVENT = "update-task-event"
+    UPDATE_TASK_EVENT_FOR_SUPERVISOR = "update-task-event-for-supervisor"
+    UPDATE_ALERT_EVENT = "update-alert-event"
+
+    NEW_ALERT_EVENT = "new-alert-event"
+    DELETED_ALERT_EVENT = "deleted-alert-event"
+
     _instance = None
 
     def __new__(cls, *args, **kwargs):
@@ -26,9 +40,7 @@ class PusherClient:
 
     def trigger(self, channel, event, data):
         try:
-            logger.debug(
-                "Pusher trigger -> channel=%s event=%s data=%s", channel, event, data
-            )
+            print(f"Pusher trigger -> channel={channel} event={event} data={data}")
             return self._client.trigger(channel, event, data)
         except Exception as e:
             logger.exception(

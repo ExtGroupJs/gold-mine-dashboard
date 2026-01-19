@@ -1,0 +1,184 @@
+[
+  {
+    "model": "business_app.resource",
+    "pk": 1,
+    "fields": {
+      "name": "Bulldozer LIEBHERR PR734",
+      "resource_type": null,
+      "fuel_spent_by_hour": 25.0,
+      "rent_cost_by_hour_in_euros": 57.56,
+      "processed_volume_by_hour": 187.5,
+      "processed_area_by_hour": 0.0,
+      "owner": 2,
+      "identification": "B1"
+    }
+  },
+  {
+    "model": "business_app.resource",
+    "pk": 2,
+    "fields": {
+      "name": "Topografia",
+      "resource_type": "",
+      "fuel_spent_by_hour": 0.0,
+      "rent_cost_by_hour_in_euros": 0.0,
+      "processed_volume_by_hour": 0.0,
+      "processed_area_by_hour": 0.0,
+      "owner": null,
+      "identification": null
+    }
+  },
+  {
+    "model": "business_app.resource",
+    "pk": 3,
+    "fields": {
+      "name": "Camión volquete articulado VOLVO A45G (25.5 m3)",
+      "resource_type": null,
+      "fuel_spent_by_hour": 12.5,
+      "rent_cost_by_hour_in_euros": 49.59,
+      "processed_volume_by_hour": 62.5,
+      "processed_area_by_hour": 0.0,
+      "owner": 1,
+      "identification": "U16"
+    }
+  },
+  {
+    "model": "business_app.resource",
+    "pk": 4,
+    "fields": {
+      "name": "Excavadora VOLVO EC480D",
+      "resource_type": null,
+      "fuel_spent_by_hour": 25.0,
+      "rent_cost_by_hour_in_euros": 46.65,
+      "processed_volume_by_hour": 0.0,
+      "processed_area_by_hour": 0.0,
+      "owner": 1,
+      "identification": "U9"
+    }
+  },
+  {
+    "model": "business_app.resource",
+    "pk": 5,
+    "fields": {
+      "name": "Motoniveladora SDLG G9220",
+      "resource_type": null,
+      "fuel_spent_by_hour": 12.5,
+      "rent_cost_by_hour_in_euros": 45.48,
+      "processed_volume_by_hour": 187.5,
+      "processed_area_by_hour": 0.0,
+      "owner": 1,
+      "identification": "M1"
+    }
+  },
+  {
+    "model": "business_app.resource",
+    "pk": 6,
+    "fields": {
+      "name": "Camión cisterna con barras roceadoras (15 m3)",
+      "resource_type": null,
+      "fuel_spent_by_hour": 12.5,
+      "rent_cost_by_hour_in_euros": 46.65,
+      "processed_volume_by_hour": 0.0,
+      "processed_area_by_hour": 0.0,
+      "owner": 1,
+      "identification": "P1"
+    }
+  },
+  {
+    "model": "business_app.resource",
+    "pk": 8,
+    "fields": {
+      "name": "Compactador de rodillo liso VOLVO SD13O",
+      "resource_type": null,
+      "fuel_spent_by_hour": 12.5,
+      "rent_cost_by_hour_in_euros": 44.9,
+      "processed_volume_by_hour": 0.0,
+      "processed_area_by_hour": 0.0,
+      "owner": 1,
+      "identification": "C1"
+    }
+  },
+  {
+    "model": "business_app.resource",
+    "pk": 9,
+    "fields": {
+      "name": "GPS",
+      "resource_type": "",
+      "fuel_spent_by_hour": 0.0,
+      "rent_cost_by_hour_in_euros": 0.0,
+      "processed_volume_by_hour": 0.0,
+      "processed_area_by_hour": 0.0,
+      "owner": null,
+      "identification": null
+    }
+  },
+  {
+    "model": "business_app.resource",
+    "pk": 10,
+    "fields": {
+      "name": "Carro Ligero",
+      "resource_type": "",
+      "fuel_spent_by_hour": 0.0,
+      "rent_cost_by_hour_in_euros": 0.0,
+      "processed_volume_by_hour": 0.0,
+      "processed_area_by_hour": 0.0,
+      "owner": null,
+      "identification": null
+    }
+  },
+  {
+    "model": "business_app.resource",
+    "pk": 12,
+    "fields": {
+      "name": "Deflectómetro LWD",
+      "resource_type": "",
+      "fuel_spent_by_hour": 0.0,
+      "rent_cost_by_hour_in_euros": 0.0,
+      "processed_volume_by_hour": 0.0,
+      "processed_area_by_hour": 0.0,
+      "owner": null,
+      "identification": null
+    }
+  },
+  {
+    "model": "business_app.resource",
+    "pk": 13,
+    "fields": {
+      "name": "Camión volquete articulado VOLVO A45G (25.5 m3)",
+      "resource_type": null,
+      "fuel_spent_by_hour": 12.5,
+      "rent_cost_by_hour_in_euros": 49.59,
+      "processed_volume_by_hour": 62.5,
+      "processed_area_by_hour": 0.0,
+      "owner": 1,
+      "identification": "U17"
+    }
+  },
+  {
+    "model": "business_app.resource",
+    "pk": 14,
+    "fields": {
+      "name": "Camión volquete articulado VOLVO A45G (25.5 m3)",
+      "resource_type": null,
+      "fuel_spent_by_hour": 12.5,
+      "rent_cost_by_hour_in_euros": 49.59,
+      "processed_volume_by_hour": 62.5,
+      "processed_area_by_hour": 0.0,
+      "owner": 1,
+      "identification": "U23"
+    }
+  },
+  {
+    "model": "business_app.resource",
+    "pk": 15,
+    "fields": {
+      "name": "Camión volquete articulado VOLVO A45G (25.5 m3)",
+      "resource_type": null,
+      "fuel_spent_by_hour": 12.5,
+      "rent_cost_by_hour_in_euros": 49.59,
+      "processed_volume_by_hour": 62.5,
+      "processed_area_by_hour": 0.0,
+      "owner": 1,
+      "identification": "U24"
+    }
+  }
+]

@@ -11,4 +11,4 @@ class WBS(models.Model):
         verbose_name_plural = "Work Breakdown Structures (WBSs)"
 
     def __str__(self):
-        return self.wbs_name
+        return self.wbs_name or self.wbs_id

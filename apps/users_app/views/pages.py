@@ -57,13 +57,42 @@ def task(request):
 
 
 def taskSupervisor(request):
-    return render(request, "task/taskSupervisor.html")
+    return render(
+        request,
+        "task/taskSupervisor.html",
+        {
+            "pusher_key": settings.PUSHER_KEY,
+            "pusher_cluster": settings.PUSHER_CLUSTER,
+        },
+    )
+
+
+def taskSupervisorMovil(request):
+    return render(
+        request,
+        "task/taskSupervisorMovil.html",
+        {
+            "pusher_key": settings.PUSHER_KEY,
+            "pusher_cluster": settings.PUSHER_CLUSTER,
+        },
+    )
 
 
 def dashboard(request):
     return render(
         request,
         "dashboard/dashboard.html",
+        {
+            "pusher_key": settings.PUSHER_KEY,
+            "pusher_cluster": settings.PUSHER_CLUSTER,
+        },
+    )
+
+
+def gboard(request):
+    return render(
+        request,
+        "dashboard/gboard.html",
         {
             "pusher_key": settings.PUSHER_KEY,
             "pusher_cluster": settings.PUSHER_CLUSTER,
