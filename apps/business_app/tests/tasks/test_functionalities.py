@@ -134,7 +134,6 @@ class TestTaskViewSet(BaseTestClass):
         tasks = baker.make(
             Task,
             internal_status=Task.INTERNAL_STATUS.HOLD,
-            act_start_date=None,
             _quantity=3,
         )
 
@@ -198,8 +197,7 @@ class TestTaskViewSet(BaseTestClass):
         tasks_without_warnings = baker.make(
             Task,
             internal_status=Task.INTERNAL_STATUS.NOT_STARTED,
-            act_start_date=None,
-            complete_pct=0,
+            complete_pct=0, # The default value
             _quantity=2,
         )
 
