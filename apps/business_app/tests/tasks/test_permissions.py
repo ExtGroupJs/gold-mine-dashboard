@@ -4,8 +4,6 @@ from unittest.mock import patch
 
 from apps.common.baseclass_for_testing import BaseTestClass
 from apps.users_app.models.groups import Groups
-from model_bakery import baker
-from apps.business_app.models.task import Task
 
 from apps.users_app.models.groups import (
     ROLES_WITH_READ_ACCESS_TO_TASKS,
@@ -18,12 +16,22 @@ class TestTaskViewSet(BaseTestClass):
     fixtures = ["auth.group.json"]
 
     def setUp(self):
+        """Configura el entorno de prueba antes de cada test.
+
+        Llama al setUp de la clase padre para inicializar el estado base
+        necesario para las pruebas de permisos.
+        """
         super().setUp()
 
     @patch("apps.business_app.signals.PusherClient.trigger")
     def test_get_protocol(self, trigger_mock):
-        """
-        Se puede acceder con cualquier rol, siempre y cuando sea un usuario registrado
+        """Verifica que los permisos de lectura funcionan correctamente con el protocolo GET.
+
+        Prueba que solo los roles con acceso de lectura a tareas pueden realizar
+        peticiones GET al endpoint de listado de tareas.
+
+        Args:
+            trigger_mock: Mock del trigger de PusherClient para evitar llamadas reales.
         """
         url = reverse("task-list")
         allowed_groups = ROLES_WITH_READ_ACCESS_TO_TASKS
@@ -34,8 +42,10 @@ class TestTaskViewSet(BaseTestClass):
             )
 
     def test_put_patch_protocols(self):
-        """
-        Se puede acceder con cualquier rol, siempre y cuando sea un usuario registrado
+        """Verifica que los permisos de escritura funcionan correctamente con PUT y PATCH.
+
+        Prueba que solo los roles con acceso de escritura a tareas pueden realizar
+        peticiones PUT y PATCH al endpoint de listado de tareas.
         """
         url = reverse("task-list")
         allowed_groups = ROLES_WITH_WRITE_ACCESS_TO_TASKS
@@ -46,12 +56,11 @@ class TestTaskViewSet(BaseTestClass):
             )
 
     def test_acces_to_counter(self):
+        """Verifica el acceso al endpoint de contadores de tareas.
+
+        Prueba que los roles con acceso de lectura a tareas y el rol PLANNER
+        pueden acceder al endpoint de contadores de tareas mediante GET.
         """
-        Solo el PLANNER, MANAGER y el DASHBOARD_CLIENT pueden invocar este EP
-        """
-        test_task = baker.make(
-            Task,
-        )
         url = reverse("task-counters")
         allowed_groups = ROLES_WITH_READ_ACCESS_TO_TASKS + (Groups.PLANNER,)
 
@@ -62,12 +71,11 @@ class TestTaskViewSet(BaseTestClass):
         )
 
     def test_acces_to_management_counters(self):
+        """Verifica el acceso al endpoint de contadores de gestión de tareas.
+
+        Prueba que los roles con acceso de lectura a tareas y el rol PLANNER
+        pueden acceder al endpoint de contadores de gestión mediante GET.
         """
-        Solo el PLANNER, MANAGER y el DASHBOARD_CLIENT pueden invocar este EP
-        """
-        test_task = baker.make(
-            Task,
-        )
         url = reverse("task-management-counters")
         allowed_groups = ROLES_WITH_READ_ACCESS_TO_TASKS + (Groups.PLANNER,)
 

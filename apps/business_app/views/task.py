@@ -11,9 +11,11 @@ from rest_framework.decorators import action
 from ..models.task import Task
 from ..serializers.task import TaskSerializer
 from apps.common.mixins.common_view_mixin import CommonOrderingFilter
-from apps.users_app.models.groups import Groups
 from ..utils.counters import get_task_counters, get_daily_work_summary_for_test
 from apps.common.mixins.enums_mixin import EnumsMixin
+from apps.users_app.models.groups import (
+    ROLES_WITH_ACCESS_TO_READ_ALL_TASKS,
+)
 
 from apps.common.permissions import (
     TaskViewSetPermissions,
@@ -27,9 +29,6 @@ from apps.common.permissions import (
 class TaskViewSet(viewsets.ModelViewSet, GenericAPIView):
     """ """
 
-    queryset = (
-        Task.objects.all().select_related("wbs").prefetch_related("resources", "alerts")
-    )
     queryset = (
         Task.objects.all().select_related("wbs").prefetch_related("resources", "alerts")
     )
@@ -63,11 +62,7 @@ class TaskViewSet(viewsets.ModelViewSet, GenericAPIView):
         request_user = self.request.user if not self.request.user.is_anonymous else None
         if request_user and (
             request_user.groups.filter(
-                id__in=(
-                    Groups.PLANNER.value,
-                    Groups.DASHBOARD_CLIENT.value,
-                    Groups.MANAGER.value,
-                )
+                id__in=ROLES_WITH_ACCESS_TO_READ_ALL_TASKS
             ).exists()
             or request_user.is_superuser
         ):
