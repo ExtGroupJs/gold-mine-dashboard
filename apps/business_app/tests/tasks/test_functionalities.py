@@ -468,3 +468,53 @@ class TestTaskViewSet(BaseTestClass):
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("Planned Date", str(response.data))
+
+    @patch.object(PusherClient, "trigger")
+    def test_patch_hold_clears_internal_responsibles(self, mock_trigger):
+        """
+        Verifica que al cambiar el estado interno a HOLD, se limpien
+        los `internal_responsibles` de la tarea y se notifique al dashboard.
+        """
+        self.user.is_superuser = True
+        self.user.save()
+        self.client.force_authenticate(user=self.user)
+
+        # Obtener grupos para asignar responsables
+        available_groups = list(Group.objects.all()[:2])
+        if not available_groups:
+            # Si no hay grupos en fixtures, crear uno rápido
+            available_groups = [baker.make(Group)]
+
+        # Crear tarea con responsables asignados
+        task = baker.make(
+            Task,
+            internal_status=Task.INTERNAL_STATUS.IN_PROGRESS,
+        )
+        # Asignar responsables manualmente
+        for g in available_groups:
+            task.internal_responsibles.add(g)
+        task.save()
+
+        self.assertGreater(task.internal_responsibles.count(), 0)
+
+        url_detail = reverse("task-detail", kwargs={"pk": task.id})
+
+        # Cambiar estado a HOLD
+        response = self.client.patch(
+            url_detail,
+            {"internal_status": Task.INTERNAL_STATUS.HOLD.value},
+            format="json",
+        )
+        self.assertEqual(response.status_code, status.HTTP_200_OK)
+
+        task.refresh_from_db()
+        # Los responsables deben haber sido limpiados
+        self.assertEqual(task.internal_responsibles.count(), 0)
+        self.assertEqual(task.internal_status, Task.INTERNAL_STATUS.HOLD)
+
+        # Verificar que se notificó al dashboard general una vez por la actualización
+        channels_called = [call_item[0][0] for call_item in mock_trigger.call_args_list]
+        dashboard_calls = channels_called.count("dashboard-channel")
+        management_calls = channels_called.count("management-dashboard-channel")
+        self.assertEqual(dashboard_calls, 1)
+        self.assertEqual(management_calls, 0)

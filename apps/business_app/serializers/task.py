@@ -83,7 +83,7 @@ class TaskSerializer(serializers.ModelSerializer):
         return Task.INTERNAL_STATUS.COMPLETED
 
     def update(self, instance, validated_data):
-        new_internal_status = False
+        new_internal_status = validated_data.get("internal_status")
 
         if "internal_planned_date" in validated_data:
             new_internal_status = Task.INTERNAL_STATUS.PLANNED
@@ -134,6 +134,8 @@ class TaskSerializer(serializers.ModelSerializer):
             validated_data["internal_status"] = new_internal_status
             update_task_dashboard = True
         updated_instance = super().update(instance, validated_data)
+        if new_internal_status == Task.INTERNAL_STATUS.HOLD:
+            updated_instance.internal_responsibles.clear()
         if "complete_pct" in validated_data:
             send_update_management_dashboard()
             update_task_dashboard = True
