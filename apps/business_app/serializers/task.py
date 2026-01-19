@@ -104,7 +104,9 @@ class TaskSerializer(serializers.ModelSerializer):
                 if not instance.act_start_date:
                     validated_data["act_start_date"] = timezone.now()
 
-                Alert.objects.filter(task=instance, kind=Alert.KIND.CRITICAL).delete()
+                Alert.objects.filter(
+                    task=instance, kind=Alert.KIND.CRITICAL
+                ).delete()  # remove CRITICAL alerts when task is in progress, else the status is Holded
                 if Alert.objects.filter(
                     task=instance, kind=Alert.KIND.WARNING
                 ).exists():

@@ -197,7 +197,7 @@ class TestTaskViewSet(BaseTestClass):
         tasks_without_warnings = baker.make(
             Task,
             internal_status=Task.INTERNAL_STATUS.NOT_STARTED,
-            complete_pct=0, # The default value
+            complete_pct=0,  # The default value
             _quantity=2,
         )
 
@@ -207,12 +207,13 @@ class TestTaskViewSet(BaseTestClass):
             complete_pct=10,
             _quantity=3,
         )
+        warning_alerts_query = Alert.objects.filter(kind=Alert.KIND.WARNING)
 
         # Agregar alertas de advertencia y establecer act_start_date para cada tarea
         for task in tasks_with_warnings:
             task.act_start_date = timezone.now() - timedelta(days=1)
             task.save()
-            baker.make(Alert, task=task, kind=Alert.KIND.WARNING, _quantity=1)
+            baker.make(Alert, task=task, kind=Alert.KIND.WARNING)
 
         # Test para tareas sin advertencias
         for task in tasks_without_warnings:
@@ -234,14 +235,11 @@ class TestTaskViewSet(BaseTestClass):
             self.assertEqual(task.complete_pct, progress_value)
             self.assertIsNotNone(task.act_start_date)
             self.assertIsNone(task.act_end_date)
-
         # Test para tareas con advertencias
         for task in tasks_with_warnings:
             # Verificar que la alerta existe antes del patch
-            warning_alerts_before = Alert.objects.filter(
-                task=task, kind=Alert.KIND.WARNING
-            ).count()
-            self.assertGreater(warning_alerts_before, 0)
+
+            self.assertGreater(warning_alerts_query.filter(task=task).count(), 0)
 
             url_detail = reverse("task-detail", kwargs={"pk": task.id})
             progress_value = baker.random_gen.gen_integer(min_int=1, max_int=99)
@@ -258,10 +256,8 @@ class TestTaskViewSet(BaseTestClass):
 
             task.refresh_from_db()
             # La alerta WARNING debe seguir existiendo
-            warning_alerts_after = Alert.objects.filter(
-                task=task, kind=Alert.KIND.WARNING
-            ).count()
-            self.assertGreater(warning_alerts_after, 0)
+
+            self.assertGreater(warning_alerts_query.filter(task=task).count(), 0)
             self.assertEqual(task.internal_status, Task.INTERNAL_STATUS.WARNING)
             self.assertEqual(task.complete_pct, progress_value)
             self.assertIsNotNone(task.act_start_date)
