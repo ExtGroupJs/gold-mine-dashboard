@@ -17,7 +17,7 @@ class TestTaskViewSet(BaseTestClass):
 
     def setUp(self):
         """Configura el entorno de prueba antes de cada test.
-        
+
         Llama al setUp de la clase padre para inicializar el estado base
         necesario para las pruebas de permisos.
         """
@@ -26,10 +26,10 @@ class TestTaskViewSet(BaseTestClass):
     @patch("apps.business_app.signals.PusherClient.trigger")
     def test_get_protocol(self, trigger_mock):
         """Verifica que los permisos de lectura funcionan correctamente con el protocolo GET.
-        
+
         Prueba que solo los roles con acceso de lectura a tareas pueden realizar
         peticiones GET al endpoint de listado de tareas.
-        
+
         Args:
             trigger_mock: Mock del trigger de PusherClient para evitar llamadas reales.
         """
@@ -43,7 +43,7 @@ class TestTaskViewSet(BaseTestClass):
 
     def test_put_patch_protocols(self):
         """Verifica que los permisos de escritura funcionan correctamente con PUT y PATCH.
-        
+
         Prueba que solo los roles con acceso de escritura a tareas pueden realizar
         peticiones PUT y PATCH al endpoint de listado de tareas.
         """
@@ -57,7 +57,7 @@ class TestTaskViewSet(BaseTestClass):
 
     def test_acces_to_counter(self):
         """Verifica el acceso al endpoint de contadores de tareas.
-        
+
         Prueba que los roles con acceso de lectura a tareas y el rol PLANNER
         pueden acceder al endpoint de contadores de tareas mediante GET.
         """
@@ -72,7 +72,7 @@ class TestTaskViewSet(BaseTestClass):
 
     def test_acces_to_management_counters(self):
         """Verifica el acceso al endpoint de contadores de gestión de tareas.
-        
+
         Prueba que los roles con acceso de lectura a tareas y el rol PLANNER
         pueden acceder al endpoint de contadores de gestión mediante GET.
         """

@@ -1,7 +1,6 @@
 from rest_framework import serializers
 from ..models.task import Task
 from ..models.alert import Alert
-from datetime import datetime
 from .alert import AlertSerializer
 from ..utils.pusher_client import PusherClient
 from django.core.cache import cache

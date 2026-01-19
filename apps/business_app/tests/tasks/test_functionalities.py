@@ -7,9 +7,9 @@ from rest_framework import status
 from apps.business_app.models.task import Task
 from apps.business_app.models.alert import Alert
 from apps.business_app.utils.pusher_client import PusherClient
-from datetime import datetime, timedelta
+from datetime import timedelta
 from django.utils import timezone
-from unittest.mock import patch, call
+from unittest.mock import patch
 
 
 from apps.users_app.models.groups import (
@@ -50,13 +50,11 @@ class TestTaskViewSet(BaseTestClass):
                 internal_responsibles=[Group.objects.get(id=role.value)],
                 _quantity=quantity_to_create,
             )
-        print(created_task_by_specific_roles)
         for role in ROLES_WITH_ACCESS_TO_READ_ALL_TASKS:
             self.user.groups.clear()  # Remove the group to avoid side effects in other tests.
             self.user.groups.add(role)
             response = self.client.get(url)
             self.assertEqual(response.status_code, status.HTTP_200_OK)
-            print("Role with full_access:", role)
             self.assertEqual(response.data["count"], total_created_tasks)
         for role in roles_with_restricted_access:
             self.user.groups.clear()  # Remove the group to avoid side effects in other tests.
@@ -67,14 +65,13 @@ class TestTaskViewSet(BaseTestClass):
                 response.data["count"], created_task_by_specific_roles[role]
             )
 
-    @patch.object(PusherClient, 'trigger')
+    @patch.object(PusherClient, "trigger")
     def test_patch_task_planning_flow(self, mock_trigger):
         """
         Test del flujo de planificación de tarea.
         Al establecer internal_planned_date con internal_responsibles,
         el estado debe cambiar a PLANNED.
         """
-        url_list = reverse("task-list")
         self.user.is_superuser = True
         self.user.save()
         self.client.force_authenticate(user=self.user)
@@ -84,7 +81,7 @@ class TestTaskViewSet(BaseTestClass):
             Task,
             internal_status=Task.INTERNAL_STATUS.NOT_STARTED,
             internal_planned_date=None,
-            _quantity=3
+            _quantity=3,
         )
 
         # Obtener grupos disponibles para asignar
@@ -93,32 +90,34 @@ class TestTaskViewSet(BaseTestClass):
         for task in tasks:
             url_detail = reverse("task-detail", kwargs={"pk": task.id})
             planned_date = timezone.now() + timedelta(days=5)
-            
+
             # Hacer PATCH con planificación
             response = self.client.patch(
                 url_detail,
                 {
                     "internal_planned_date": planned_date.isoformat(),
-                    "internal_responsibles": [group.id for group in available_groups]
+                    "internal_responsibles": [group.id for group in available_groups],
                 },
-                format="json"
+                format="json",
             )
 
             self.assertEqual(response.status_code, status.HTTP_200_OK)
-            
+
             # Verificar que el estado cambió a PLANNED
             task.refresh_from_db()
             self.assertEqual(task.internal_status, Task.INTERNAL_STATUS.PLANNED)
             self.assertIsNotNone(task.internal_planned_date)
             self.assertEqual(task.internal_responsibles.count(), len(available_groups))
-        
+
         # Verificar que se llamó al pusher para notificar a supervisores
         self.assertGreater(mock_trigger.call_count, 0)
         # Verificar que se usó el canal y evento correcto
         channels_called = [call_item[0][0] for call_item in mock_trigger.call_args_list]
-        self.assertIn("task-channel", channels_called, "Debe notificar por el canal task-channel")
+        self.assertIn(
+            "task-channel", channels_called, "Debe notificar por el canal task-channel"
+        )
 
-    @patch.object(PusherClient, 'trigger')
+    @patch.object(PusherClient, "trigger")
     def test_patch_task_start_flow(self, mock_trigger):
         """
         Test del flujo de inicio de tarea.
@@ -134,51 +133,47 @@ class TestTaskViewSet(BaseTestClass):
             Task,
             internal_status=Task.INTERNAL_STATUS.HOLD,
             act_start_date=None,
-            _quantity=3
+            _quantity=3,
         )
 
         for task in tasks:
             # Crear alertas críticas
-            baker.make(
-                Alert,
-                task=task,
-                kind=Alert.KIND.CRITICAL,
-                _quantity=2
-            )
-            
+            baker.make(Alert, task=task, kind=Alert.KIND.CRITICAL, _quantity=2)
+
             url_detail = reverse("task-detail", kwargs={"pk": task.id})
             start_date = timezone.now()
-            
+
             # Hacer PATCH con fecha de inicio
             response = self.client.patch(
                 url_detail,
                 {
                     "act_start_date": start_date.isoformat(),
                 },
-                format="json"
+                format="json",
             )
 
             self.assertEqual(response.status_code, status.HTTP_200_OK)
-            
+
             # Verificar que el estado cambió a IN_PROGRESS
             task.refresh_from_db()
             self.assertEqual(task.internal_status, Task.INTERNAL_STATUS.IN_PROGRESS)
             self.assertIsNotNone(task.act_start_date)
-            
+
             # Verificar que se eliminaron alertas críticas
-            critical_alerts = Alert.objects.filter(
-                task=task,
-                kind=Alert.KIND.CRITICAL
-            )
+            critical_alerts = Alert.objects.filter(task=task, kind=Alert.KIND.CRITICAL)
             self.assertEqual(critical_alerts.count(), 0)
-        
+
         # Verificar que se llamó al pusher para actualizar dashboard
         self.assertGreater(mock_trigger.call_count, 0)
         # Verificar que se usó el canal dashboard-channel
         channels_called = [call_item[0][0] for call_item in mock_trigger.call_args_list]
-        self.assertIn("dashboard-channel", channels_called, "Debe notificar por el canal dashboard-channel")
+        self.assertIn(
+            "dashboard-channel",
+            channels_called,
+            "Debe notificar por el canal dashboard-channel",
+        )
 
-    @patch.object(PusherClient, 'trigger')
+    @patch.object(PusherClient, "trigger")
     def test_patch_task_progress_update_flow(self, mock_trigger):
         """
         Test del flujo de actualización de progreso.
@@ -195,42 +190,37 @@ class TestTaskViewSet(BaseTestClass):
             internal_status=Task.INTERNAL_STATUS.NOT_STARTED,
             act_start_date=None,
             complete_pct=0,
-            _quantity=2
+            _quantity=2,
         )
 
         tasks_with_warnings = baker.make(
             Task,
             internal_status=Task.INTERNAL_STATUS.WARNING,
             complete_pct=10,
-            _quantity=3
+            _quantity=3,
         )
 
         # Agregar alertas de advertencia y establecer act_start_date para cada tarea
         for task in tasks_with_warnings:
             task.act_start_date = timezone.now() - timedelta(days=1)
             task.save()
-            baker.make(
-                Alert,
-                task=task,
-                kind=Alert.KIND.WARNING,
-                _quantity=1
-            )
+            baker.make(Alert, task=task, kind=Alert.KIND.WARNING, _quantity=1)
 
         # Test para tareas sin advertencias
         for task in tasks_without_warnings:
             url_detail = reverse("task-detail", kwargs={"pk": task.id})
             progress_value = baker.random_gen.gen_integer(min_int=1, max_int=99)
-            
+
             response = self.client.patch(
                 url_detail,
                 {
                     "complete_pct": progress_value,
                 },
-                format="json"
+                format="json",
             )
 
             self.assertEqual(response.status_code, status.HTTP_200_OK)
-            
+
             task.refresh_from_db()
             self.assertEqual(task.internal_status, Task.INTERNAL_STATUS.IN_PROGRESS)
             self.assertEqual(task.complete_pct, progress_value)
@@ -244,20 +234,20 @@ class TestTaskViewSet(BaseTestClass):
                 task=task, kind=Alert.KIND.WARNING
             ).count()
             self.assertGreater(warning_alerts_before, 0)
-            
+
             url_detail = reverse("task-detail", kwargs={"pk": task.id})
             progress_value = baker.random_gen.gen_integer(min_int=1, max_int=99)
-            
+
             response = self.client.patch(
                 url_detail,
                 {
                     "complete_pct": progress_value,
                 },
-                format="json"
+                format="json",
             )
 
             self.assertEqual(response.status_code, status.HTTP_200_OK)
-            
+
             task.refresh_from_db()
             # La alerta WARNING debe seguir existiendo
             warning_alerts_after = Alert.objects.filter(
@@ -267,18 +257,21 @@ class TestTaskViewSet(BaseTestClass):
             self.assertEqual(task.internal_status, Task.INTERNAL_STATUS.WARNING)
             self.assertEqual(task.complete_pct, progress_value)
             self.assertIsNotNone(task.act_start_date)
-        
+
         # Verificar que se llamó al pusher para actualizar dashboards
         self.assertGreater(mock_trigger.call_count, 0)
         # Verificar notificaciones a management y dashboard
         channels_called = [call_item[0][0] for call_item in mock_trigger.call_args_list]
         has_management_or_dashboard = any(
-            channel in ["management-dashboard-channel", "dashboard-channel"] 
+            channel in ["management-dashboard-channel", "dashboard-channel"]
             for channel in channels_called
         )
-        self.assertTrue(has_management_or_dashboard, "Debe notificar por canales de management o dashboard")
+        self.assertTrue(
+            has_management_or_dashboard,
+            "Debe notificar por canales de management o dashboard",
+        )
 
-    @patch.object(PusherClient, 'trigger')
+    @patch.object(PusherClient, "trigger")
     def test_patch_task_complete_flow_with_percentage(self, mock_trigger):
         """
         Test del flujo de completar tarea usando complete_pct=100.
@@ -294,28 +287,28 @@ class TestTaskViewSet(BaseTestClass):
             Task,
             internal_status=Task.INTERNAL_STATUS.IN_PROGRESS,
             complete_pct=50,
-            _quantity=3
+            _quantity=3,
         )
 
         for task in tasks:
             url_detail = reverse("task-detail", kwargs={"pk": task.id})
-            
+
             response = self.client.patch(
                 url_detail,
                 {
                     "complete_pct": 100,
                 },
-                format="json"
+                format="json",
             )
 
             self.assertEqual(response.status_code, status.HTTP_200_OK)
-            
+
             task.refresh_from_db()
             self.assertEqual(task.internal_status, Task.INTERNAL_STATUS.COMPLETED)
             self.assertEqual(task.complete_pct, 100)
             self.assertIsNotNone(task.act_end_date)
 
-    @patch.object(PusherClient, 'trigger')
+    @patch.object(PusherClient, "trigger")
     def test_patch_task_complete_flow_with_end_date(self, mock_trigger):
         """
         Test del flujo de completar tarea usando act_end_date.
@@ -331,39 +324,42 @@ class TestTaskViewSet(BaseTestClass):
             internal_status=Task.INTERNAL_STATUS.IN_PROGRESS,
             complete_pct=50,
             act_end_date=None,
-            _quantity=3
+            _quantity=3,
         )
 
         for task in tasks:
             url_detail = reverse("task-detail", kwargs={"pk": task.id})
             end_date = timezone.now()
-            
+
             response = self.client.patch(
                 url_detail,
                 {
                     "act_end_date": end_date.isoformat(),
                 },
-                format="json"
+                format="json",
             )
 
             self.assertEqual(response.status_code, status.HTTP_200_OK)
-            
+
             task.refresh_from_db()
             self.assertEqual(task.internal_status, Task.INTERNAL_STATUS.COMPLETED)
             self.assertEqual(task.complete_pct, 100)
             self.assertIsNotNone(task.act_end_date)
-        
+
         # Verificar que se llamó al pusher para actualizar dashboards
         self.assertGreater(mock_trigger.call_count, 0)
         # Verificar notificaciones a management y dashboard
         channels_called = [call_item[0][0] for call_item in mock_trigger.call_args_list]
         has_management_or_dashboard = any(
-            channel in ["management-dashboard-channel", "dashboard-channel"] 
+            channel in ["management-dashboard-channel", "dashboard-channel"]
             for channel in channels_called
         )
-        self.assertTrue(has_management_or_dashboard, "Debe notificar por canales de management o dashboard al completar tarea")
+        self.assertTrue(
+            has_management_or_dashboard,
+            "Debe notificar por canales de management o dashboard al completar tarea",
+        )
 
-    @patch.object(PusherClient, 'trigger')
+    @patch.object(PusherClient, "trigger")
     def test_patch_completed_task_validation(self, mock_trigger):
         """
         Test que verifica que no se puede editar una tarea completada.
@@ -378,25 +374,25 @@ class TestTaskViewSet(BaseTestClass):
             Task,
             internal_status=Task.INTERNAL_STATUS.COMPLETED,
             complete_pct=100,
-            _quantity=3
+            _quantity=3,
         )
 
         for task in tasks:
             url_detail = reverse("task-detail", kwargs={"pk": task.id})
-            
+
             # Intentar actualizar el progreso
             response = self.client.patch(
                 url_detail,
                 {
                     "complete_pct": 50,
                 },
-                format="json"
+                format="json",
             )
 
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
             self.assertIn("COMPLETED", str(response.data))
 
-    @patch.object(PusherClient, 'trigger')
+    @patch.object(PusherClient, "trigger")
     def test_patch_validation_planned_date_requires_responsibles(self, mock_trigger):
         """
         Test que verifica la validación de campos requeridos:
@@ -410,19 +406,21 @@ class TestTaskViewSet(BaseTestClass):
         task = baker.make(
             Task,
             internal_status=Task.INTERNAL_STATUS.NOT_STARTED,
-            internal_planned_date=None
+            internal_planned_date=None,
         )
 
         url_detail = reverse("task-detail", kwargs={"pk": task.id})
-        
+
         # Test 1: Intentar establecer planned_date sin responsibles
         response = self.client.patch(
             url_detail,
             {
-                "internal_planned_date": (timezone.now() + timedelta(days=5)).isoformat(),
-                "internal_responsibles": []
+                "internal_planned_date": (
+                    timezone.now() + timedelta(days=5)
+                ).isoformat(),
+                "internal_responsibles": [],
             },
-            format="json"
+            format="json",
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
@@ -432,10 +430,8 @@ class TestTaskViewSet(BaseTestClass):
         available_groups = Group.objects.all()[:1]
         response = self.client.patch(
             url_detail,
-            {
-                "internal_responsibles": [group.id for group in available_groups]
-            },
-            format="json"
+            {"internal_responsibles": [group.id for group in available_groups]},
+            format="json",
         )
 
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
