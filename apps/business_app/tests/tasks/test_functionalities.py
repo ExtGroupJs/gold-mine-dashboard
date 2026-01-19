@@ -80,7 +80,6 @@ class TestTaskViewSet(BaseTestClass):
         tasks = baker.make(
             Task,
             internal_status=Task.INTERNAL_STATUS.NOT_STARTED,
-            internal_planned_date=None,
             _quantity=3,
         )
 
@@ -113,8 +112,11 @@ class TestTaskViewSet(BaseTestClass):
         self.assertGreater(mock_trigger.call_count, 0)
         # Verificar que se usó el canal y evento correcto
         channels_called = [call_item[0][0] for call_item in mock_trigger.call_args_list]
-        self.assertIn(
-            "task-channel", channels_called, "Debe notificar por el canal task-channel"
+        task_channel_calls = channels_called.count("task-channel")
+        self.assertEqual(
+            task_channel_calls,
+            len(tasks),
+            "Debe notificar por task-channel una vez por cada tarea actualizada",
         )
 
     @patch.object(PusherClient, "trigger")
@@ -165,6 +167,14 @@ class TestTaskViewSet(BaseTestClass):
 
         # Verificar que se llamó al pusher para actualizar dashboard
         self.assertGreater(mock_trigger.call_count, 0)
+        # Verificar que se usó el canal dashboard-channel
+        channels_called = [call_item[0][0] for call_item in mock_trigger.call_args_list]
+        dashboard_channel_calls = channels_called.count("dashboard-channel")
+        self.assertEqual(
+            dashboard_channel_calls,
+            len(tasks),
+            "Debe notificar por dashboard-channel una vez por cada tarea actualizada",
+        )
         # Verificar que se usó el canal dashboard-channel
         channels_called = [call_item[0][0] for call_item in mock_trigger.call_args_list]
         self.assertIn(
@@ -259,16 +269,22 @@ class TestTaskViewSet(BaseTestClass):
             self.assertIsNotNone(task.act_start_date)
 
         # Verificar que se llamó al pusher para actualizar dashboards
+        total_tasks = len(tasks_without_warnings) + len(tasks_with_warnings)
         self.assertGreater(mock_trigger.call_count, 0)
         # Verificar notificaciones a management y dashboard
         channels_called = [call_item[0][0] for call_item in mock_trigger.call_args_list]
-        has_management_or_dashboard = any(
-            channel in ["management-dashboard-channel", "dashboard-channel"]
-            for channel in channels_called
+        management_calls = channels_called.count("management-dashboard-channel")
+        dashboard_calls = channels_called.count("dashboard-channel")
+        # Cada actualización de progreso debe notificar tanto a management como a dashboard
+        self.assertEqual(
+            management_calls,
+            total_tasks,
+            "Debe notificar a management-dashboard-channel una vez por cada tarea",
         )
-        self.assertTrue(
-            has_management_or_dashboard,
-            "Debe notificar por canales de management o dashboard",
+        self.assertEqual(
+            dashboard_calls,
+            total_tasks,
+            "Debe notificar a dashboard-channel una vez por cada tarea",
         )
 
     @patch.object(PusherClient, "trigger")
@@ -307,6 +323,24 @@ class TestTaskViewSet(BaseTestClass):
             self.assertEqual(task.internal_status, Task.INTERNAL_STATUS.COMPLETED)
             self.assertEqual(task.complete_pct, 100)
             self.assertIsNotNone(task.act_end_date)
+
+        # Verificar que se llamó al pusher para actualizar dashboards
+        self.assertGreater(mock_trigger.call_count, 0)
+        # Verificar notificaciones a management y dashboard
+        channels_called = [call_item[0][0] for call_item in mock_trigger.call_args_list]
+        management_calls = channels_called.count("management-dashboard-channel")
+        dashboard_calls = channels_called.count("dashboard-channel")
+        # Cada completación debe notificar tanto a management como a dashboard
+        self.assertEqual(
+            management_calls,
+            len(tasks),
+            "Debe notificar a management-dashboard-channel una vez por cada tarea",
+        )
+        self.assertEqual(
+            dashboard_calls,
+            len(tasks),
+            "Debe notificar a dashboard-channel una vez por cada tarea",
+        )
 
     @patch.object(PusherClient, "trigger")
     def test_patch_task_complete_flow_with_end_date(self, mock_trigger):
@@ -350,13 +384,18 @@ class TestTaskViewSet(BaseTestClass):
         self.assertGreater(mock_trigger.call_count, 0)
         # Verificar notificaciones a management y dashboard
         channels_called = [call_item[0][0] for call_item in mock_trigger.call_args_list]
-        has_management_or_dashboard = any(
-            channel in ["management-dashboard-channel", "dashboard-channel"]
-            for channel in channels_called
+        management_calls = channels_called.count("management-dashboard-channel")
+        dashboard_calls = channels_called.count("dashboard-channel")
+        # Cada completación debe notificar tanto a management como a dashboard
+        self.assertEqual(
+            management_calls,
+            len(tasks),
+            "Debe notificar a management-dashboard-channel una vez por cada tarea",
         )
-        self.assertTrue(
-            has_management_or_dashboard,
-            "Debe notificar por canales de management o dashboard al completar tarea",
+        self.assertEqual(
+            dashboard_calls,
+            len(tasks),
+            "Debe notificar a dashboard-channel una vez por cada tarea",
         )
 
     @patch.object(PusherClient, "trigger")
@@ -406,7 +445,6 @@ class TestTaskViewSet(BaseTestClass):
         task = baker.make(
             Task,
             internal_status=Task.INTERNAL_STATUS.NOT_STARTED,
-            internal_planned_date=None,
         )
 
         url_detail = reverse("task-detail", kwargs={"pk": task.id})
