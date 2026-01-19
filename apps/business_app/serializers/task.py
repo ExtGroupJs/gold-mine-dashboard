@@ -5,6 +5,7 @@ from datetime import datetime
 from .alert import AlertSerializer
 from ..utils.pusher_client import PusherClient
 from django.core.cache import cache
+from django.utils import timezone
 from ..signals import send_update_task_dashboard, send_update_management_dashboard
 
 
@@ -78,7 +79,7 @@ class TaskSerializer(serializers.ModelSerializer):
     def _complete_task(self, instance, validated_data):
         validated_data["internal_status"] = Task.INTERNAL_STATUS.COMPLETED
         validated_data["complete_pct"] = 100
-        validated_data["act_end_date"] = datetime.now()
+        validated_data["act_end_date"] = timezone.now()
         self._remove_from_cache(instance)
         return Task.INTERNAL_STATUS.COMPLETED
 
@@ -102,7 +103,7 @@ class TaskSerializer(serializers.ModelSerializer):
                 )
             elif complete_pct_value != 0:
                 if not instance.act_start_date:
-                    validated_data["act_start_date"] = datetime.now()
+                    validated_data["act_start_date"] = timezone.now()
 
                 Alert.objects.filter(task=instance, kind=Alert.KIND.CRITICAL).delete()
                 if Alert.objects.filter(
