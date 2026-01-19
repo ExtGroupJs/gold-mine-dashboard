@@ -31,11 +31,36 @@ function formatDateTime(iso) {
 
 function getStatusIcon(statusCode) {
   const statusMap = {
-    N: { icon: "fa-circle", color: "#6c757d", label: "Not started", labelespañol: "No iniciada" }, // Gris
-    C: { icon: "fa-check-circle", color: "#28a745", label: "Completed", labelespañol: "Completada" }, // Verde
-    I: { icon: "fa-circle-notch", color: "#007bff", label: "In progress", labelespañol: "En progreso" }, // Azul
-    H: { icon: "fa-pause-circle", color: "#ff0707ff", label: "Backlog", labelespañol: "Pausa" }, // Amarillo
-    P: { icon: "fa-hourglass-start", color: "#17a2b8", label: "New", labelespañol: "Nueva" }, // Cian
+    N: {
+      icon: "fa-circle",
+      color: "#6c757d",
+      label: "Not started",
+      labelespañol: "No iniciada",
+    }, // Gris
+    C: {
+      icon: "fa-check-circle",
+      color: "#28a745",
+      label: "Completed",
+      labelespañol: "Completada",
+    }, // Verde
+    I: {
+      icon: "fa-circle-notch",
+      color: "#007bff",
+      label: "In progress",
+      labelespañol: "En progreso",
+    }, // Azul
+    H: {
+      icon: "fa-pause-circle",
+      color: "#ff0707ff",
+      label: "Backlog",
+      labelespañol: "Pausa",
+    }, // Amarillo
+    P: {
+      icon: "fa-hourglass-start",
+      color: "#17a2b8",
+      label: "New",
+      labelespañol: "Nueva",
+    }, // Cian
   };
 
   const status = statusMap[statusCode] || statusMap["N"];
@@ -86,7 +111,7 @@ $(function () {
 });
 
 // DataTable
- loadAlertEnums();
+loadAlertEnums();
 $(document).ready(function () {
   $("table").addClass("table table-hover");
 
@@ -169,8 +194,8 @@ $(document).ready(function () {
             : "";
         },
       },
-       { data: "alerts", title: "Alertas" , render: (data) => getAlert(data),},
-      
+      { data: "alerts", title: "Alertas", render: (data) => getAlert(data) },
+
       {
         data: "internal_status",
         title: "Estado",
@@ -186,9 +211,9 @@ $(document).ready(function () {
         title: "Recursos",
         render: (data) => (Array.isArray(data) ? data.join(", ") : data || ""),
       },
-      
+
       // { data: "alert_names", title: "Alertas", render: (data) => (Array.isArray(data) ? data.join(", ") : (data || "")), orderable: false },
-      
+
       {
         data: "act_start_date",
         title: "Inicio real",
@@ -211,7 +236,7 @@ $(document).ready(function () {
           const hasStart = !!row.act_start_date;
           const hasEnd = !!row.act_end_date;
           const hasAlert = !!row.alerts && row.alerts.length > 0;
-          const isCompleted = row.complete_pct === 100;
+          const hasInternal_status = row.internal_status;
           let actionButtons = `<div class="btn-group" role="group">`;
 
           // Botón Iniciar: se muestra solo si no hay act_start_date
@@ -225,20 +250,23 @@ $(document).ready(function () {
           }
 
           // Botón Porcentaje: se muestra si no está completado (100%)
-          if (!isCompleted) {
+          if (row.internal_status !== "C") {
             actionButtons += `<button type="button" title="porcentaje" class="btn btn-info btn-completion" data-id="${
               row.id
             }" data-name="${row.task_name}" data-completion="${
               row.complete_pct || 0
             }"><i class="fas fa-percent"></i></button>`;
           }
-if (!hasAlert) {
-  actionButtons += `<button type="button" title="alerta" class="btn btn-danger btn-alert" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-bell"></i></button>`;
-}else{
-  actionButtons += `<button type="button" title="alerta" onclick="window.eliminarAlerta('${row.alerts[0]}')" class="btn btn-secondary" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-bell-slash"></i></button>`;
-}
-          // Alert button
-          // actionButtons += `<button type="button" title="alerta" class="btn btn-danger btn-alert" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-bell"></i></button>`;
+
+          if (!hasAlert && row.internal_status !== "C") {
+            actionButtons += `<button type="button" title="alerta" class="btn btn-danger btn-alert" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-bell"></i></button>`;
+          } else if (row.internal_status !== "C" && hasAlert) {
+            actionButtons += `<button type="button" title="alerta" onclick="window.eliminarAlerta('${row.alerts[0]}')" class="btn btn-secondary" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-bell-slash"></i></button>`;
+          }
+
+          if (hasInternal_status != "B" && row.internal_status !== "C") {
+            actionButtons += `<button type="button" title="Pasar a Backlog" class="btn bg-teal btn-assign-backlog" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-stopwatch"></i></button>`;
+          }
 
           actionButtons += `</div>`;
           return actionButtons;
@@ -246,10 +274,12 @@ if (!hasAlert) {
       },
     ],
     columnDefs: [],
-     initComplete: function () {
+    initComplete: function () {
       const api = this.api();
-      $('.dataTables_paginate', api.table().container()).addClass('pagination-sm');
-    }
+      $(".dataTables_paginate", api.table().container()).addClass(
+        "pagination-sm"
+      );
+    },
   });
 
   // Color rows based on start/end dates after table draw
@@ -282,14 +312,13 @@ if (!hasAlert) {
           $(rowNode).addClass("bg-danger");
         } else if (status == "C") {
           $(rowNode).addClass("bg-success");
-        } else if (status=='N') {          
-            $(rowNode).addClass("bg-orange");        
-        }else if (status=='W') {          
-            $(rowNode).addClass("bg-warning");        
-        }else if (status=='P') {          
-            $(rowNode).addClass("bg-primary");        
+        } else if (status == "N") {
+          $(rowNode).addClass("bg-orange");
+        } else if (status == "W") {
+          $(rowNode).addClass("bg-warning");
+        } else if (status == "P") {
+          $(rowNode).addClass("bg-primary");
         }
-        
       });
   });
 
@@ -342,6 +371,11 @@ if (!hasAlert) {
     const name = $(this).data("name");
     const currentCompletion = $(this).data("completion") || 0;
     openCompletionModal(id, name, currentCompletion);
+  });
+
+  $("table").on("click", ".btn-assign-backlog", function () {
+    const id = $(this).data("id");
+    asignarBacklog(id);
   });
 
   // Filters buttons
@@ -572,8 +606,12 @@ $(document).on("submit", "#form-add-alert", function (e) {
   if (!taskId) return showError("Tarea inválida");
   if (!shortDesc) return showError("La descripción corta es obligatoria");
 
-  const payload = { task: taskId, kind: kind, motive_alert_status: motive_alert_status, short_description: shortDesc };
-  
+  const payload = {
+    task: taskId,
+    kind: kind,
+    motive_alert_status: motive_alert_status,
+    short_description: shortDesc,
+  };
 
   console.log("posting alert", payload);
 
@@ -703,7 +741,7 @@ function formatAlertsHtml(alerts) {
     const iconEl = li.querySelector("[data-icon]");
     iconEl.className = `fas ${k.icon} ${k.cls}`;
     li.querySelector("[data-kind]").textContent = k.label;
-    li.querySelector("[data-short]").textContent = a.short_description || "";    
+    li.querySelector("[data-short]").textContent = a.short_description || "";
     li.querySelector("[data-motive]").textContent = a.motive_alert_status_name;
     li.querySelector("[data-created]").textContent = a.created
       ? new Date(a.created).toLocaleString()
@@ -773,13 +811,36 @@ function actualizarTareasSupervisor() {
   });
 }
 
+function asignarBacklog(selected_assign_id) {
+  const payload = {};
+  payload.internal_status = "B";
+
+  axios
+    .patch(API_URL + selected_assign_id + "/", payload)
+    .then((res) => {
+      showSuccess("Asignado a backlog");
+
+      try {
+        $("#tabla-de-Datos").DataTable().ajax.reload(null, false);
+      } catch (err) {}
+    })
+    .catch((err) => {
+      showError(
+        "Error asignando",
+        err.response?.data?.detail || err.message || ""
+      );
+    });
+}
+
 function loadAlertEnums() {
   axios
     .get("/business-gestion/alert-enums/")
     .then(function (res) {
       const data = res.data || {};
       const kinds = Array.isArray(data.alert_kinds) ? data.alert_kinds : [];
-      const motives = Array.isArray(data.alert_motives) ? data.alert_motives : [];
+      const motives = Array.isArray(data.alert_motives)
+        ? data.alert_motives
+        : [];
 
       const kindSel = document.getElementById("alert_kind");
       const motiveSel = document.getElementById("alert_Motive"); // mantener nombre exacto del HTML
@@ -818,8 +879,9 @@ function loadAlertEnums() {
     });
 }
 function getAlert(alerts) {
-  if(alerts.length>0){
- return `<span class="info-box-icon-alert"><i class="fas fa-exclamation-triangle "  style="font-size: x-large;" ></i></span>`;
-  }else{return '';}
-
+  if (alerts.length > 0) {
+    return `<span class="info-box-icon-alert"><i class="fas fa-exclamation-triangle "  style="font-size: x-large;" ></i></span>`;
+  } else {
+    return "";
+  }
 }

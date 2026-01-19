@@ -14,6 +14,12 @@ from drf_spectacular.utils import extend_schema
 from django.utils.translation import gettext_lazy as _
 from rest_framework.decorators import action
 from ..utils.counters import get_alert_counters
+from ..signals import (
+    send_update_task_dashboard,
+    notify_created_alert,
+    send_update_alert_dashboard,
+)
+
 # Create your views here.
 from apps.common.mixins.enums_mixin import EnumsMixin
 
@@ -50,14 +56,24 @@ class AlertViewSet(viewsets.ModelViewSet, GenericAPIView):
         task = instance.task
         update_required = False
         self.perform_destroy(instance)
+        notify_created_alert(instance)
+        send_update_alert_dashboard()
         if Alert.objects.filter(task=task, kind=Alert.KIND.CRITICAL).exists():
             task.internal_status = Task.INTERNAL_STATUS.HOLD
             update_required = True
-        elif task.internal_status is not Task.INTERNAL_STATUS.COMPLETED:
+        elif Alert.objects.filter(task=task, kind=Alert.KIND.WARNING).exists():
+            task.internal_status = Task.INTERNAL_STATUS.WARNING
+            update_required = True
+        elif task.internal_status not in (
+            Task.INTERNAL_STATUS.BACKLOG,
+            Task.INTERNAL_STATUS.NOT_STARTED,
+            Task.INTERNAL_STATUS.COMPLETED,
+        ):
             task.internal_status = Task.INTERNAL_STATUS.IN_PROGRESS
             update_required = True
         if update_required:
             task.save(update_fields=["internal_status"])
+            send_update_task_dashboard()
         return Response(status=status.HTTP_204_NO_CONTENT)
 
     @extend_schema(
@@ -68,7 +84,6 @@ class AlertViewSet(viewsets.ModelViewSet, GenericAPIView):
     @action(detail=False, methods=["GET"])
     def counters(self, pk=None):
         return Response(get_alert_counters())
-
 
 
 class AlertEnumsViewSet(EnumsMixin):

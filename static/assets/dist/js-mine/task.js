@@ -248,16 +248,16 @@ $(document).ready(function () {
           const hasAlert = !!row.alerts && row.alerts.length > 0;
           let actionButtons = `<div class="btn-group" role="group">`;
           // Alert button (abrir modal para crear alerta)
-          if (!hasAlert) {
+          if (!hasAlert && row.internal_status !== "C") {
             actionButtons += `<button type="button" title="alerta" class="btn btn-danger btn-alert" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-bell"></i></button>`;
-          } else {
+          } else if (hasAlert && row.internal_status !== "C") {
             actionButtons += `<button type="button" title="alerta" onclick="window.eliminarAlerta('${row.alerts[0]}')" class="btn btn-secondary" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-bell-slash"></i></button>`;
           }
-          if (hasInternal_status == "N" || hasInternal_status == "B") {
+          if (row.internal_status !== "C" && (hasInternal_status == "N" || hasInternal_status == "B")) {
             actionButtons += `<button type="button" title="asignar" class="btn btn-info btn-assign" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-user-plus"></i></button>`;
           }
-          if (hasInternal_status != "B") {
-          actionButtons += `<button type="button" title="Pasar a Backlog" class="btn btn-info btn-assign-backlog" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-stopwatch"></i></button>`;
+          if (hasInternal_status != "B" && row.internal_status !== "C") {
+          actionButtons += `<button type="button" title="Pasar a Backlog" class="btn bg-teal btn-assign-backlog" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-stopwatch"></i></button>`;
            }
            
           actionButtons += `</div>`;

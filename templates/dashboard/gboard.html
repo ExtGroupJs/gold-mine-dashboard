@@ -1,0 +1,273 @@
+{% extends "index.html" %}
+{% load static %}
+{% load i18n %}
+
+{% block head-extra %}
+<!-- AdminLTE CSS -->
+<link rel="stylesheet" href="{% static 'assets/dist/css/adminlte.min.css' %}">
+<!-- DataTables CSS -->
+<link rel="stylesheet" href="{% static 'assets/plugins/datatables-bs4/css/dataTables.bootstrap4.min.css' %}">
+<link rel="stylesheet" href="{% static 'assets/plugins/datatables-responsive/css/responsive.bootstrap4.min.css' %}">
+<link rel="stylesheet" href="{% static 'assets/plugins/datatables-buttons/css/buttons.bootstrap4.min.css' %}">
+
+<style>
+    .info-box-icon-alert i {
+        animation: parpadeo 1s infinite;
+    }
+
+    @keyframes parpadeo {
+      0% { opacity: 1; }
+      50% { opacity: 0.2; }
+      100% { opacity: 1; }
+    }
+
+    .chart-container {
+        position: relative; 
+        height: 350px;
+        width: 100%;
+    }
+    
+    .chart-container-sm {
+        position: relative; 
+        height: 280px;
+        width: 100%;
+    }
+</style>
+
+{% endblock %}
+
+{% block content %}
+<div class="content-wrapper">
+  <!-- Content Header -->
+  <div class="content-header">
+    <div class="container-fluid">
+      <div class="row mb-2">
+        <div class="col-sm-6">
+          <h1 class="m-0">{% trans "Resumen Gerencial (Management Overview)" %}</h1>
+        </div>
+        <div class="col-sm-6">
+          <ol class="breadcrumb float-sm-right">
+            <li class="breadcrumb-item"><a href="#">{% trans "Home" %}</a></li>
+            <li class="breadcrumb-item active">{% trans "Management" %}</li>
+          </ol>
+        </div>        
+      </div>
+    </div>
+  </div>
+
+  <!-- Main content -->
+  <section class="content">
+    <div class="container-fluid">
+      
+      <!-- KPIs Row -->
+      <div class="row mb-3">
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+          <div class="small-box bg-danger">
+            <div class="inner">
+              <h3 id="mgmt-total-cost">$0</h3>
+              <p style="font-size: 0.9rem;">{% trans "Costo Alquiler<br>(Rental Cost)" %}</p>
+            </div>
+            <div class="icon"><i class="fas fa-money-bill-wave"></i></div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+          <div class="small-box bg-info">
+            <div class="inner">
+              <h3 id="mgmt-total-volume">0</h3>
+              <p style="font-size: 0.9rem;">{% trans "Volumen Procesado (m3)<br>(Processed Vol)" %}</p>
+            </div>
+            <div class="icon"><i class="fas fa-boxes"></i></div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+          <div class="small-box bg-success">
+            <div class="inner">
+              <h3 id="mgmt-efficiency">0%</h3>
+              <p style="font-size: 0.9rem;">{% trans "Eficiencia Tareas<br>(Task Completion)" %}</p>
+            </div>
+            <div class="icon"><i class="fas fa-check-double"></i></div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+          <div class="small-box bg-warning">
+            <div class="inner">
+              <h3 id="mgmt-total-fuel">0</h3>
+              <p style="font-size: 0.9rem;">{% trans "Combustible (L)<br>(Fuel Spent)" %}</p>
+            </div>
+            <div class="icon"><i class="fas fa-gas-pump"></i></div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+          <div class="small-box bg-olive border">
+            <div class="inner">
+              <h3 id="mgmt-total-area" style="color:#333">0</h3>
+              <p style="font-size: 0.9rem; color:#333">{% trans "Área Procesada (m²)<br>(Processed Area)" %}</p>
+            </div>
+            <div class="icon"><i class="fas fa-ruler-combined" style="color:#333"></i></div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+          <div class="small-box bg-primary">
+            <div class="inner">
+              <h3 id="mgmt-cost-per-volume">$0</h3>
+              <p style="font-size: 0.9rem;">{% trans "Costo por m³<br>(Cost per m³)" %}</p>
+            </div>
+            <div class="icon"><i class="fas fa-calculator"></i></div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+          <div class="small-box bg-teal">
+            <div class="inner">
+              <h3 id="mgmt-volume-per-hour">0</h3>
+              <p style="font-size: 0.9rem;">{% trans "m³ por Hora<br>(m³ per Hour)" %}</p>
+            </div>
+            <div class="icon"><i class="fas fa-tachometer-alt"></i></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Owner KPIs Row -->
+      <div class="row mb-3" id="owner-kpis-container">
+        <!-- Los KPIs por propietario se generarán dinámicamente -->
+      </div>
+
+      <!-- Main Charts Row -->
+      <div class="row mb-3">
+        <div class="col-lg-6">
+          <div class="card card-primary">
+            <div class="card-header">
+              <h3 class="card-title">{% trans "Volumen: Real vs Base<br>(Volume: Actual vs Baseline)" %}</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="chart-container">
+                <canvas id="mgmt-productivity-chart" height="350"></canvas>
+              </div>
+            </div> 
+          </div>
+        </div>
+        
+        <div class="col-lg-6">
+          <div class="card card-danger">
+            <div class="card-header">
+              <h3 class="card-title">{% trans "Costo: Real vs Base<br>(Cost: Actual vs Baseline)" %}</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="chart-container">
+                <canvas id="mgmt-cost-chart" height="350"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Owner Comparison Charts -->
+      <div class="row mb-3">
+        <div class="col-lg-6">
+          <div class="card card-warning">
+            <div class="card-header">
+              <h3 class="card-title">{% trans "Volumen por Propietario<br>(Volume by Owner)" %}</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="chart-container-sm">
+                <canvas id="mgmt-owner-volume-chart" height="280"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="card card-info">
+            <div class="card-header">
+              <h3 class="card-title">{% trans "Combustible por Propietario<br>(Fuel by Owner)" %}</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="chart-container-sm">
+                <canvas id="mgmt-owner-fuel-chart" height="280"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Additional Analysis Charts -->
+      <div class="row mb-3">
+        <div class="col-lg-6">
+          <div class="card card-success">
+            <div class="card-header">
+              <h3 class="card-title">{% trans "Tendencia Eficiencia<br>(Efficiency Trend)" %}</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="chart-container-sm">
+                <canvas id="mgmt-efficiency-chart" height="280"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="card card-dark">
+            <div class="card-header">
+              <h3 class="card-title">{% trans "Costo por Propietario<br>(Cost by Owner)" %}</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="chart-container-sm">
+                <canvas id="mgmt-owner-cost-chart" height="280"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+
+
+    </div>
+  </section>
+</div>
+
+{% endblock %}
+
+{% block script %}
+<!-- DataTables & Plugins -->
+<script src="{% static 'assets/plugins/datatables/jquery.dataTables.min.js' %}"></script>
+<script src="{% static 'assets/plugins/datatables-bs4/js/dataTables.bootstrap4.min.js' %}"></script>
+<script src="{% static 'assets/plugins/datatables-responsive/js/dataTables.responsive.min.js' %}"></script>
+<script src="{% static 'assets/plugins/datatables-responsive/js/responsive.bootstrap4.min.js' %}"></script>
+<script src="{% static 'assets/plugins/datatables-buttons/js/dataTables.buttons.min.js' %}"></script>
+<script src="{% static 'assets/plugins/datatables-buttons/js/buttons.bootstrap4.min.js' %}"></script>
+
+<!-- Axios -->
+<script src="{% static 'assets/dist/js/axios.min.js' %}"></script>
+
+<!-- Chart.js -->
+<script src="{% static 'assets/plugins/chart.js/Chart.js' %}"></script>
+
+<!-- Pusher JS -->
+<script src="https://js.pusher.com/8.4.0/pusher.min.js"></script>
+
+<!-- Page specific script -->
+<script src="{% static 'assets/dist/js-mine/gboard.js' %}"></script>
+{% endblock %}

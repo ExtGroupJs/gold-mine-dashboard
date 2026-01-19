@@ -28,6 +28,24 @@ class Command(BaseCommand):
             )
         )
 
+        call_command("loaddata", "resource_owners.json")
+        print(
+            colored(
+                "Successfully added Resource Owners to system",
+                "green",
+                attrs=["blink"],
+            )
+        )
+
+        call_command("loaddata", "resources.json")
+        print(
+            colored(
+                "Successfully added Resources to system",
+                "green",
+                attrs=["blink"],
+            )
+        )
+
         admin_user = User.objects.get(username="admin")
         admin_user.groups.add(Groups.SUPER_ADMIN)
         print(
@@ -48,9 +66,20 @@ class Command(BaseCommand):
         planner.groups.add(Groups.PLANNER)
         planner.set_password("1234")
         planner.save()
+        manager, _ = SystemUser.objects.get_or_create(
+            username="manager",
+            defaults={
+                "email": "",
+                "first_name": "Manager",
+                "last_name": "User",
+            },
+        )
+        manager.groups.add(Groups.MANAGER)
+        manager.set_password("1234")
+        manager.save()
         print(
             colored(
-                "Created planner_user with PLANNER role",
+                "Created manager user with MANAGER role",
                 "blue",
                 attrs=["blink"],
             )

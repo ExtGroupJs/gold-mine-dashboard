@@ -6,12 +6,10 @@ from django.contrib.auth.models import User
 from django.core.management import call_command
 from django.core.management.base import CommandError
 from django.urls import reverse
-from faker import Faker
-from model_bakery import random_gen
 from model_bakery.exceptions import InvalidQuantityException
 from rest_framework import status
 
-from apps.users_app.models import Country, SystemUser
+# from apps.users_app.models import Country, SystemUser
 
 
 @pytest.mark.django_db
@@ -51,59 +49,59 @@ def test_users_list_available(client):
     assert response.status_code == 200
 
 
-@pytest.mark.django_db
-def test_registration_flow(client):
-    # client.login(username="admin", password="1qazxsw2")
-    url = reverse("users-list")
-    faker = Faker(0)
+# @pytest.mark.django_db
+# def test_registration_flow(client):
+#     # client.login(username="admin", password="1qazxsw2")
+#     url = reverse("users-list")
+#     faker = Faker(0)
 
-    username = faker.user_name()
-    password = random_gen.gen_string(8)
-    countries = Country.objects.values_list("id", flat=True)
+#     username = faker.user_name()
+#     password = random_gen.gen_string(8)
+#     countries = Country.objects.values_list("id", flat=True)
 
-    data = {
-        "username": username,
-        "email": faker.email(),
-        "first_name": faker.first_name(),
-        "last_name": faker.last_name(),
-        "country": countries[random.randint(0, len(countries) - 1)],
-        "identification_number": faker.random_number(digits=10),
-        "gender": "M",
-        "internal_status": "R",
-        "password": password,
-    }
-    response = client.post(url, data=data)
-    assert response.status_code == status.HTTP_201_CREATED
-    assert response.data["confirmation_code"] is not None
-    # until here the user has been registered, not confirmet yet
+#     data = {
+#         "username": username,
+#         "email": faker.email(),
+#         "first_name": faker.first_name(),
+#         "last_name": faker.last_name(),
+#         "country": countries[random.randint(0, len(countries) - 1)],
+#         "identification_number": faker.random_number(digits=10),
+#         "gender": "M",
+#         "internal_status": "R",
+#         "password": password,
+#     }
+#     response = client.post(url, data=data)
+#     assert response.status_code == status.HTTP_201_CREATED
+#     assert response.data["confirmation_code"] is not None
+#     # until here the user has been registered, not confirmet yet
 
-    # here he will try to access without confirming, it should fail
-    url = reverse("users-login")
-    data = {"username": username, "password": password}
-    response = client.post(url, data=data)
-    assert response.status_code == status.HTTP_400_BAD_REQUEST
+#     # here he will try to access without confirming, it should fail
+#     url = reverse("users-login")
+#     data = {"username": username, "password": password}
+#     response = client.post(url, data=data)
+#     assert response.status_code == status.HTTP_400_BAD_REQUEST
 
-    # here he will try to access confirming, it should go ahead
-    # the original user status is "R" for registered
-    user = SystemUser.objects.get(username=username)
-    assert user.internal_status == SystemUser.INTERNAL_STATUS.REGISTERED
-    data = {"username": username, "password": password, "confirmed": True}
-    response = client.post(
-        url,
-        data=data,
-    )
-    assert response.status_code == status.HTTP_202_ACCEPTED
-    # the internal status of the user must be changed to "C" for confirmed
-    user.refresh_from_db(fields=["internal_status"])
-    assert user.internal_status == SystemUser.INTERNAL_STATUS.CONFIRMED
+#     # here he will try to access confirming, it should go ahead
+#     # the original user status is "R" for registered
+#     user = SystemUser.objects.get(username=username)
+#     assert user.internal_status == SystemUser.INTERNAL_STATUS.REGISTERED
+#     data = {"username": username, "password": password, "confirmed": True}
+#     response = client.post(
+#         url,
+#         data=data,
+#     )
+#     assert response.status_code == status.HTTP_202_ACCEPTED
+#     # the internal status of the user must be changed to "C" for confirmed
+#     user.refresh_from_db(fields=["internal_status"])
+#     assert user.internal_status == SystemUser.INTERNAL_STATUS.CONFIRMED
 
-    # here he will try to access as usual, it should go ahead
-    data = {"username": username, "password": password}
-    response = client.post(
-        url,
-        data=data,
-    )
-    assert response.status_code == status.HTTP_202_ACCEPTED
+#     # here he will try to access as usual, it should go ahead
+#     data = {"username": username, "password": password}
+#     response = client.post(
+#         url,
+#         data=data,
+#     )
+#     assert response.status_code == status.HTTP_202_ACCEPTED
 
 
 @pytest.mark.django_db

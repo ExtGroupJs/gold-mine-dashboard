@@ -62,3 +62,10 @@ Para los cambios de código posteriores no hay que hacer más nada, el código e
 
 ## Para crear solo la imagen
 docker build -f Dockerfile-dev -t certus-backend-img:latest .
+
+# TIPS
+## Crear fixture:
+python manage.py dumpdata <app>.<modelname> --indent=4 --output=apps/<app>/fixtures/<fixture_name>.json
+
+## Ejemplo concreto sobre el modelo ResourceOwner
+python manage.py dumpdata business_app.resourceowner --indent=4 --output=apps/business_app/fixtures/resource_owners.json
