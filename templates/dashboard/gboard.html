@@ -61,7 +61,7 @@
       
       <!-- KPIs Row -->
       <div class="row mb-3">
-        <div class="col-lg-2 col-md-4 col-sm-6 col-12">
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
           <div class="small-box bg-danger">
             <div class="inner">
               <h3 id="mgmt-total-cost">$0</h3>
@@ -71,7 +71,7 @@
           </div>
         </div>
 
-        <div class="col-lg-2 col-md-4 col-sm-6 col-12">
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
           <div class="small-box bg-info">
             <div class="inner">
               <h3 id="mgmt-total-volume">0</h3>
@@ -81,17 +81,7 @@
           </div>
         </div>
 
-        <div class="col-lg-2 col-md-4 col-sm-6 col-12">
-          <div class="small-box bg-secondary">
-            <div class="inner">
-              <h3 id="mgmt-total-hours">0</h3>
-              <p style="font-size: 0.9rem;">{% trans "Horas Trabajadas<br>(Working Hours)" %}</p>
-            </div>
-            <div class="icon"><i class="fas fa-clock"></i></div>
-          </div>
-        </div>
-
-        <div class="col-lg-2 col-md-4 col-sm-6 col-12">
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
           <div class="small-box bg-success">
             <div class="inner">
               <h3 id="mgmt-efficiency">0%</h3>
@@ -101,7 +91,7 @@
           </div>
         </div>
 
-        <div class="col-lg-2 col-md-4 col-sm-6 col-12">
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
           <div class="small-box bg-warning">
             <div class="inner">
               <h3 id="mgmt-total-fuel">0</h3>
@@ -111,23 +101,48 @@
           </div>
         </div>
 
-        <div class="col-lg-2 col-md-4 col-sm-6 col-12">
-          <div class="small-box bg-light border">
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+          <div class="small-box bg-olive border">
             <div class="inner">
-              <h3 id="alerts-total-mgmt" style="color:#333">0</h3>
-              <p style="font-size: 0.9rem; color:#333">{% trans "Alertas<br>(Alerts)" %}</p>
+              <h3 id="mgmt-total-area" style="color:#333">0</h3>
+              <p style="font-size: 0.9rem; color:#333">{% trans "Área Procesada (m²)<br>(Processed Area)" %}</p>
             </div>
-            <div class="icon"><i class="fas fa-bell" style="color:#333"></i></div>
+            <div class="icon"><i class="fas fa-ruler-combined" style="color:#333"></i></div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+          <div class="small-box bg-primary">
+            <div class="inner">
+              <h3 id="mgmt-cost-per-volume">$0</h3>
+              <p style="font-size: 0.9rem;">{% trans "Costo por m³<br>(Cost per m³)" %}</p>
+            </div>
+            <div class="icon"><i class="fas fa-calculator"></i></div>
+          </div>
+        </div>
+
+        <div class="col-lg-3 col-md-4 col-sm-6 col-12">
+          <div class="small-box bg-teal">
+            <div class="inner">
+              <h3 id="mgmt-volume-per-hour">0</h3>
+              <p style="font-size: 0.9rem;">{% trans "m³ por Hora<br>(m³ per Hour)" %}</p>
+            </div>
+            <div class="icon"><i class="fas fa-tachometer-alt"></i></div>
           </div>
         </div>
       </div>
 
+      <!-- Owner KPIs Row -->
+      <div class="row mb-3" id="owner-kpis-container">
+        <!-- Los KPIs por propietario se generarán dinámicamente -->
+      </div>
+
       <!-- Main Charts Row -->
       <div class="row mb-3">
-        <div class="col-lg-8">
+        <div class="col-lg-6">
           <div class="card card-primary">
             <div class="card-header">
-              <h3 class="card-title">{% trans "Producción vs Costos<br>(Volume vs Cost Analysis)" %}</h3>
+              <h3 class="card-title">{% trans "Volumen: Real vs Base<br>(Volume: Actual vs Baseline)" %}</h3>
               <div class="card-tools">
                 <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
               </div>
@@ -140,36 +155,71 @@
           </div>
         </div>
         
-        <div class="col-lg-4">
-          <div class="card card-success">
+        <div class="col-lg-6">
+          <div class="card card-danger">
             <div class="card-header">
-              <h3 class="card-title">{% trans "Ejecución de Tareas<br>(Task Execution)" %}</h3>
+              <h3 class="card-title">{% trans "Costo: Real vs Base<br>(Cost: Actual vs Baseline)" %}</h3>
               <div class="card-tools">
                 <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
               </div>
             </div>
             <div class="card-body">
               <div class="chart-container">
-                <canvas id="mgmt-tasks-chart" height="350"></canvas>
+                <canvas id="mgmt-cost-chart" height="350"></canvas>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Deep Analysis Charts Row -->
+      <!-- Owner Comparison Charts -->
       <div class="row mb-3">
         <div class="col-lg-6">
           <div class="card card-warning">
             <div class="card-header">
-              <h3 class="card-title">{% trans "Tendencia Eficiencia Operativa<br>(Efficiency Trend)" %}</h3>
+              <h3 class="card-title">{% trans "Volumen por Propietario<br>(Volume by Owner)" %}</h3>
               <div class="card-tools">
                 <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
               </div>
             </div>
             <div class="card-body">
               <div class="chart-container-sm">
-                <canvas id="mgmt-efficiency-chart" height="250"></canvas>
+                <canvas id="mgmt-owner-volume-chart" height="280"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="col-lg-6">
+          <div class="card card-info">
+            <div class="card-header">
+              <h3 class="card-title">{% trans "Combustible por Propietario<br>(Fuel by Owner)" %}</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="chart-container-sm">
+                <canvas id="mgmt-owner-fuel-chart" height="280"></canvas>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Additional Analysis Charts -->
+      <div class="row mb-3">
+        <div class="col-lg-6">
+          <div class="card card-success">
+            <div class="card-header">
+              <h3 class="card-title">{% trans "Tendencia Eficiencia<br>(Efficiency Trend)" %}</h3>
+              <div class="card-tools">
+                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
+              </div>
+            </div>
+            <div class="card-body">
+              <div class="chart-container-sm">
+                <canvas id="mgmt-efficiency-chart" height="280"></canvas>
               </div>
             </div>
           </div>
@@ -178,51 +228,21 @@
         <div class="col-lg-6">
           <div class="card card-dark">
             <div class="card-header">
-              <h3 class="card-title">{% trans "Costo por Unidad Producida<br>(Cost per Unit)" %}</h3>
+              <h3 class="card-title">{% trans "Costo por Propietario<br>(Cost by Owner)" %}</h3>
               <div class="card-tools">
                 <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
               </div>
             </div>
             <div class="card-body">
               <div class="chart-container-sm">
-                <canvas id="mgmt-unitcost-chart" height="250"></canvas>
+                <canvas id="mgmt-owner-cost-chart" height="280"></canvas>
               </div>
             </div>
           </div>
         </div>
       </div>
 
-      <!-- Data Table Row -->
-      <div class="row">
-        <div class="col-lg-12">
-          <div class="card card-info">
-            <div class="card-header">
-              <h3 class="card-title">{% trans "Detalle Diario Operacional (Daily Operations Breakdown)" %}</h3>
-              <div class="card-tools">
-                <button type="button" class="btn btn-tool" data-card-widget="collapse"><i class="fas fa-minus"></i></button>
-              </div>
-            </div>
-            <div class="card-body">
-              <table id="tabla-gestion" class="table table-bordered table-striped table-hover" style="text-align: center; width: 100%;">
-                <thead>
-                  <tr>
-                    <th>{% trans "Fecha<br>(Date)" %}</th>
-                    <th>{% trans "Horas<br>(Hours)" %}</th>
-                    <th>{% trans "Tareas<br>(Tasks)" %}</th>
-                    <th>{% trans "Completadas<br>(Done)" %}</th>
-                    <th>{% trans "Eficiencia<br>(%)" %}</th>
-                    <th>{% trans "Volumen<br>(Vol)" %}</th>
-                    <th>{% trans "Área<br>(Area)" %}</th>
-                    <th>{% trans "Combustible<br>(Fuel)" %}</th>
-                    <th>{% trans "Costo Alquiler<br>(Cost)" %}</th>
-                  </tr>
-                </thead>
-                <tbody></tbody>
-              </table>
-            </div>
-          </div>
-        </div>
-      </div>
+
 
     </div>
   </section>

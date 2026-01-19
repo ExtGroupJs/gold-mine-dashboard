@@ -212,6 +212,7 @@ $(document).ready(function () {
           const hasEnd = !!row.act_end_date;
           const hasAlert = !!row.alerts && row.alerts.length > 0;
           const isCompleted = row.complete_pct === 100;
+          const hasInternal_status = row.internal_status;
           let actionButtons = `<div class="btn-group" role="group">`;
 
           // Botón Iniciar: se muestra solo si no hay act_start_date
@@ -232,15 +233,18 @@ $(document).ready(function () {
               row.complete_pct || 0
             }"><i class="fas fa-percent"></i></button>`;
           }
+
 if (!hasAlert) {
   actionButtons += `<button type="button" title="alerta" class="btn btn-danger btn-alert" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-bell"></i></button>`;
 }else{
   actionButtons += `<button type="button" title="alerta" onclick="window.eliminarAlerta('${row.alerts[0]}')" class="btn btn-secondary" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-bell-slash"></i></button>`;
 }
-          // Alert button
-          // actionButtons += `<button type="button" title="alerta" class="btn btn-danger btn-alert" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-bell"></i></button>`;
 
-          actionButtons += `</div>`;
+   if (hasInternal_status != "B") {
+          actionButtons += `<button type="button" title="Pasar a Backlog" class="btn bg-teal btn-assign-backlog" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-stopwatch"></i></button>`;
+           }
+
+actionButtons += `</div>`;
           return actionButtons;
         },
       },
@@ -343,6 +347,16 @@ if (!hasAlert) {
     const currentCompletion = $(this).data("completion") || 0;
     openCompletionModal(id, name, currentCompletion);
   });
+
+
+  $("table").on("click", ".btn-assign-backlog", function () {
+    const id = $(this).data("id");
+    asignarBacklog(id);
+  });
+
+
+
+
 
   // Filters buttons
   $("#btn-filter-dates").on("click", function () {
@@ -772,6 +786,32 @@ function actualizarTareasSupervisor() {
     }
   });
 }
+
+
+function asignarBacklog(selected_assign_id) {
+
+const payload = {};
+  payload.internal_status = "B";
+
+axios
+    .patch(API_URL + selected_assign_id + "/", payload)
+    .then((res) => {
+      showSuccess("Asignado a backlog");
+      
+      try {
+        $("#tabla-de-Datos").DataTable().ajax.reload(null, false);
+      } catch (err) {}
+    })
+    .catch((err) => {
+      showError(
+        "Error asignando",
+        err.response?.data?.detail || err.message || ""
+      );
+    });
+};
+
+
+
 
 function loadAlertEnums() {
   axios

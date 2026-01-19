@@ -3,7 +3,10 @@ const MANAGEMENT_COUNTERS_URL = "/business-gestion/task/management-counters/";
 const ALERT_COUNTERS_URL = "/business-gestion/alert/counters/";
 
 let chartInstances = {};
-let mgmtTableInstance = null;
+let ownerColors = {
+  UNIVOL: { bg: "rgba(23, 162, 184, 0.7)", border: "rgba(23, 162, 184, 1)" },
+  WOOMY: { bg: "rgba(220, 53, 69, 0.7)", border: "rgba(220, 53, 69, 1)" },
+};
 
 // --- Utilidades ---
 
@@ -35,22 +38,11 @@ function showError(title, text = "", timer = 3000) {
 // --- Inicialización ---
 document.addEventListener("DOMContentLoaded", function () {
   initCharts();
-  initMgmtTable();
   loadManagementData();
-  fetchAlertCounters();
   initPusher();
 });
 
 // --- Carga de Datos ---
-function fetchAlertCounters() {
-  axios
-    .get(ALERT_COUNTERS_URL)
-    .then((res) => {
-      updateAlertKPI(res.data);
-    })
-    .catch((err) => console.warn("No se pudieron cargar alertas", err));
-}
-
 function loadManagementData() {
   axios
     .get(MANAGEMENT_COUNTERS_URL)
@@ -62,27 +54,27 @@ function loadManagementData() {
     });
 }
 
-function updateAlertKPI(data) {
-  const alertInfo = data && data.alert_info ? data.alert_info : data;
-  const total = alertInfo.total || 0;
-  document.getElementById("alerts-total-mgmt").textContent = total;
-}
-
 function processManagementData(data) {
   if (!data || typeof data !== "object") return;
 
   const sortedDates = Object.keys(data).sort();
 
+  // Datos reales
   const hoursData = sortedDates.map((date) => data[date].hours);
   const fuelData = sortedDates.map((date) => data[date].fuel_spent);
   const costData = sortedDates.map((date) => data[date].rental_cost);
   const tasksTotal = sortedDates.map((date) => data[date].tasks);
   const tasksDone = sortedDates.map((date) => data[date].completed_tasks);
-  const tasksPending = sortedDates.map(
-    (date) => data[date].tasks - data[date].completed_tasks
-  );
   const volumeData = sortedDates.map((date) => data[date].processed_volume);
   const areaData = sortedDates.map((date) => data[date].processed_area);
+
+  // Datos de línea base
+  const baseFuel = sortedDates.map((date) => data[date].base_info?.fuel_spent || 0);
+  const baseCost = sortedDates.map((date) => data[date].base_info?.rental_cost || 0);
+  const baseVolume = sortedDates.map((date) => data[date].base_info?.processed_volume || 0);
+
+  // Procesar datos por propietario
+  const ownerData = processOwnerData(data, sortedDates);
 
   const efficiencyData = sortedDates.map((date) => {
     const t = data[date].tasks;
@@ -90,17 +82,12 @@ function processManagementData(data) {
     return t > 0 ? (c / t) * 100 : 0;
   });
 
-  const unitCostData = sortedDates.map((date) => {
-    const totalCost = data[date].rental_cost + data[date].fuel_spent;
-    const vol = data[date].processed_volume;
-    return vol > 0 ? totalCost / vol : 0;
-  });
-
   // Totales
   const totalHours = hoursData.reduce((a, b) => a + b, 0);
   const totalFuel = fuelData.reduce((a, b) => a + b, 0);
   const totalCost = costData.reduce((a, b) => a + b, 0);
   const totalVolume = volumeData.reduce((a, b) => a + b, 0);
+  const totalArea = areaData.reduce((a, b) => a + b, 0);
 
   const totalTasksAssigned = tasksTotal.reduce((a, b) => a + b, 0);
   const totalTasksCompleted = tasksDone.reduce((a, b) => a + b, 0);
@@ -109,38 +96,144 @@ function processManagementData(data) {
       ? (totalTasksCompleted / totalTasksAssigned) * 100
       : 0;
 
-  // Actualizar DOM (usando formatNumber para lógica dinámica de decimales)
-  document.getElementById("mgmt-total-hours").innerText =
-    formatNumber(totalHours);
+  // Calcular KPIs derivados
+  const costPerVolume = totalVolume > 0 ? totalCost / totalVolume : 0;
+  const volumePerHour = totalHours > 0 ? totalVolume / totalHours : 0;
+
+  // Actualizar DOM
   document.getElementById("mgmt-total-fuel").innerText =
     formatNumber(totalFuel);
   document.getElementById("mgmt-total-cost").innerText =
     formatCurrency(totalCost);
   document.getElementById("mgmt-total-volume").innerText =
     formatNumber(totalVolume);
-
-  // Para la eficiencia en el DOM, usamos formatNumber y le agregamos %
+  document.getElementById("mgmt-total-area").innerText =
+    formatNumber(totalArea);
   document.getElementById("mgmt-efficiency").innerText =
     formatNumber(efficiency) + "%";
+  document.getElementById("mgmt-cost-per-volume").innerText =
+    formatCurrency(costPerVolume);
+  document.getElementById("mgmt-volume-per-hour").innerText =
+    formatNumber(volumePerHour);
+
+  // Actualizar KPIs por propietario
+  updateOwnerKPIs(ownerData);
 
   updateCharts(
     sortedDates,
-    hoursData,
     fuelData,
     costData,
-    tasksTotal,
-    tasksDone,
-    tasksPending,
     volumeData,
     efficiencyData,
-    unitCostData
+    baseFuel,
+    baseCost,
+    baseVolume,
+    ownerData
   );
-  updateTable(sortedDates, data, efficiencyData, unitCostData);
+}
+
+// Procesar datos por propietario
+function processOwnerData(data, dates) {
+  const owners = {};
+  
+  dates.forEach(date => {
+    const ownerInfo = data[date].owner_info || {};
+    Object.keys(ownerInfo).forEach(ownerName => {
+      if (!owners[ownerName]) {
+        owners[ownerName] = {
+          volume: [],
+          fuel: [],
+          cost: [],
+          dates: []
+        };
+      }
+      owners[ownerName].volume.push(ownerInfo[ownerName].processed_volume || 0);
+      owners[ownerName].fuel.push(ownerInfo[ownerName].fuel_spent || 0);
+      owners[ownerName].cost.push(ownerInfo[ownerName].rental_cost || 0);
+    });
+  });
+
+  // Calcular totales por propietario
+  Object.keys(owners).forEach(owner => {
+    owners[owner].totalVolume = owners[owner].volume.reduce((a, b) => a + b, 0);
+    owners[owner].totalFuel = owners[owner].fuel.reduce((a, b) => a + b, 0);
+    owners[owner].totalCost = owners[owner].cost.reduce((a, b) => a + b, 0);
+  });
+
+  return owners;
+}
+
+// Actualizar KPIs por propietario
+function updateOwnerKPIs(ownerData) {
+  const container = document.getElementById("owner-kpis-container");
+  if (!container) return;
+
+  container.innerHTML = "";
+
+  const colorMap = {
+    UNIVOL: { card: "info", icon: "fas fa-building", iconBg: "bg-info" },
+    WOOMY: { card: "danger", icon: "fas fa-industry", iconBg: "bg-danger" }
+  };
+
+  Object.keys(ownerData).forEach(owner => {
+    const colors = colorMap[owner] || { card: "secondary", icon: "fas fa-user", iconBg: "bg-secondary" };
+    const data = ownerData[owner];
+
+    const col = document.createElement("div");
+    col.className = "col-lg-6 col-md-6 col-sm-12";
+    col.innerHTML = `
+      <div class="card card-${colors.card} card-outline">
+        <div class="card-header">
+          <h3 class="card-title">
+            <i class="${colors.icon}"></i> <strong>${owner}</strong>
+          </h3>
+          <div class="card-tools">
+            <span class="badge badge-${colors.card}">Propietario / Owner</span>
+          </div>
+        </div>
+        <div class="card-body">
+          <div class="row">
+            <div class="col-md-6 col-sm-6 col-12">
+              <div class="info-box ${colors.iconBg}">
+                <span class="info-box-icon"><i class="fas fa-boxes"></i></span>
+                <div class="info-box-content">
+                  <span class="info-box-text">Volumen</span>
+                  <span class="info-box-number">${formatNumber(data.totalVolume)}</span>
+                  <span class="info-box-text" style="font-size: 0.85rem;">m³</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 col-sm-6 col-12">
+              <div class="info-box ${colors.iconBg}">
+                <span class="info-box-icon"><i class="fas fa-gas-pump"></i></span>
+                <div class="info-box-content">
+                  <span class="info-box-text">Combustible</span>
+                  <span class="info-box-number">${formatNumber(data.totalFuel)}</span>
+                  <span class="info-box-text" style="font-size: 0.85rem;">Litros</span>
+                </div>
+              </div>
+            </div>
+            <div class="col-md-6 col-sm-12 col-12">
+              <div class="info-box ${colors.iconBg}">
+                <span class="info-box-icon"><i class="fas fa-dollar-sign"></i></span>
+                <div class="info-box-content">
+                  <span class="info-box-text">Costo Total</span>
+                  <span class="info-box-number">${formatCurrency(data.totalCost)}</span>
+                  <span class="info-box-text" style="font-size: 0.85rem;">USD</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    `;
+    container.appendChild(col);
+  });
 }
 
 // --- Gráficas ---
 function initCharts() {
-  // 1. Productividad
+  // 1. Volumen Real vs Base
   const ctxProd = document.getElementById("mgmt-productivity-chart");
   if (ctxProd) {
     chartInstances["productivity"] = new Chart(ctxProd, {
@@ -149,34 +242,21 @@ function initCharts() {
         labels: [],
         datasets: [
           {
-            label: "Volumen Procesado",
+            label: "Volumen Real",
             data: [],
-            backgroundColor: "rgba(0, 123, 255, 0.6)",
+            backgroundColor: "rgba(0, 123, 255, 0.7)",
             borderColor: "rgba(0, 123, 255, 1)",
-            borderWidth: 1,
-            yAxisID: "y-volume",
-            order: 2,
-          },
-          {
-            label: "Costo Alquiler ($)",
-            data: [],
-            backgroundColor: "rgba(220, 53, 69, 0.6)",
-            borderColor: "rgba(220, 53, 69, 1)",
-            borderWidth: 1,
-            yAxisID: "y-cost",
-            order: 3,
-          },
-          {
-            type: "line",
-            label: "Horas Trabajadas",
-            data: [],
-            borderColor: "#6610f2",
-            backgroundColor: "#6610f2",
             borderWidth: 2,
-            pointRadius: 3,
-            fill: false,
-            yAxisID: "y-volume",
             order: 1,
+          },
+          {
+            label: "Volumen Base (Referencia)",
+            data: [],
+            backgroundColor: "rgba(0, 123, 255, 0.2)",
+            borderColor: "rgba(0, 123, 255, 0.5)",
+            borderWidth: 2,
+            borderDash: [5, 5],
+            order: 2,
           },
         ],
       },
@@ -186,57 +266,91 @@ function initCharts() {
         scales: {
           yAxes: [
             {
-              id: "y-volume",
-              type: "linear",
-              position: "left",
-              gridLines: { display: true },
               ticks: {
                 callback: function (value) {
                   return formatNumber(value);
                 },
-              },
-            },
-            {
-              id: "y-cost",
-              type: "linear",
-              position: "right",
-              gridLines: { display: false },
-              ticks: {
-                callback: function (value) {
-                  return "$" + formatNumber(value);
-                },
+                beginAtZero: true,
               },
             },
           ],
           xAxes: [{ gridLines: { display: false } }],
         },
+        tooltips: {
+          callbacks: {
+            label: function(tooltipItem, data) {
+              const label = data.datasets[tooltipItem.datasetIndex].label || '';
+              return label + ': ' + formatNumber(tooltipItem.value) + ' m³';
+            }
+          }
+        }
       },
     });
   }
 
-  // 2. Tareas (Stacked)
-  const ctxTasks = document.getElementById("mgmt-tasks-chart");
-  if (ctxTasks) {
-    chartInstances["tasks"] = new Chart(ctxTasks, {
+  // 2. Costo Real vs Base
+  const ctxCost = document.getElementById("mgmt-cost-chart");
+  if (ctxCost) {
+    chartInstances["cost"] = new Chart(ctxCost, {
       type: "bar",
       data: {
         labels: [],
         datasets: [
           {
-            label: "Completadas",
+            label: "Costo Real",
             data: [],
-            backgroundColor: "rgba(40, 167, 69, 0.7)",
-            borderColor: "rgba(40, 167, 69, 1)",
-            borderWidth: 1,
+            backgroundColor: "rgba(220, 53, 69, 0.7)",
+            borderColor: "rgba(220, 53, 69, 1)",
+            borderWidth: 2,
+            order: 1,
           },
           {
-            label: "Pendientes",
+            label: "Costo Base (Referencia)",
             data: [],
-            backgroundColor: "rgba(253, 126, 20, 0.7)",
-            borderColor: "rgba(253, 126, 20, 1)",
-            borderWidth: 1,
+            backgroundColor: "rgba(220, 53, 69, 0.2)",
+            borderColor: "rgba(220, 53, 69, 0.5)",
+            borderWidth: 2,
+            borderDash: [5, 5],
+            order: 2,
           },
         ],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          yAxes: [
+            {
+              ticks: {
+                callback: function (value) {
+                  return "$" + formatNumber(value);
+                },
+                beginAtZero: true,
+              },
+            },
+          ],
+          xAxes: [{ gridLines: { display: false } }],
+        },
+        tooltips: {
+          callbacks: {
+            label: function(tooltipItem, data) {
+              const label = data.datasets[tooltipItem.datasetIndex].label || '';
+              return label + ': $' + formatNumber(tooltipItem.value);
+            }
+          }
+        }
+      },
+    });
+  }
+
+  // 3. Volumen por Propietario
+  const ctxOwnerVol = document.getElementById("mgmt-owner-volume-chart");
+  if (ctxOwnerVol) {
+    chartInstances["ownervolume"] = new Chart(ctxOwnerVol, {
+      type: "bar",
+      data: {
+        labels: [],
+        datasets: [],
       },
       options: {
         responsive: true,
@@ -247,20 +361,65 @@ function initCharts() {
             {
               stacked: true,
               ticks: {
-                beginAtZero: true,
-                stepSize: 1,
                 callback: function (value) {
                   return formatNumber(value);
                 },
+                beginAtZero: true,
               },
             },
           ],
         },
+        tooltips: {
+          callbacks: {
+            label: function(tooltipItem, data) {
+              const label = data.datasets[tooltipItem.datasetIndex].label || '';
+              return label + ': ' + formatNumber(tooltipItem.value) + ' m³';
+            }
+          }
+        }
       },
     });
   }
 
-  // 3. Eficiencia
+  // 4. Combustible por Propietario
+  const ctxOwnerFuel = document.getElementById("mgmt-owner-fuel-chart");
+  if (ctxOwnerFuel) {
+    chartInstances["ownerfuel"] = new Chart(ctxOwnerFuel, {
+      type: "bar",
+      data: {
+        labels: [],
+        datasets: [],
+      },
+      options: {
+        responsive: true,
+        maintainAspectRatio: false,
+        scales: {
+          xAxes: [{ stacked: true, gridLines: { display: false } }],
+          yAxes: [
+            {
+              stacked: true,
+              ticks: {
+                callback: function (value) {
+                  return formatNumber(value);
+                },
+                beginAtZero: true,
+              },
+            },
+          ],
+        },
+        tooltips: {
+          callbacks: {
+            label: function(tooltipItem, data) {
+              const label = data.datasets[tooltipItem.datasetIndex].label || '';
+              return label + ': ' + formatNumber(tooltipItem.value) + ' L';
+            }
+          }
+        }
+      },
+    });
+  }
+
+  // 5. Eficiencia
   const ctxEff = document.getElementById("mgmt-efficiency-chart");
   if (ctxEff) {
     chartInstances["efficiency"] = new Chart(ctxEff, {
@@ -269,10 +428,10 @@ function initCharts() {
         labels: [],
         datasets: [
           {
-            label: "% Tareas Completadas",
+            label: "% Eficiencia",
             data: [],
-            borderColor: "#ffc107",
-            backgroundColor: "rgba(255, 193, 7, 0.2)",
+            borderColor: "#28a745",
+            backgroundColor: "rgba(40, 167, 69, 0.2)",
             borderWidth: 2,
             pointRadius: 4,
             fill: true,
@@ -300,29 +459,23 @@ function initCharts() {
     });
   }
 
-  // 4. Costo por Unidad
-  const ctxUnitCost = document.getElementById("mgmt-unitcost-chart");
-  if (ctxUnitCost) {
-    chartInstances["unitcost"] = new Chart(ctxUnitCost, {
+  // 6. Costo por Propietario
+  const ctxOwnerCost = document.getElementById("mgmt-owner-cost-chart");
+  if (ctxOwnerCost) {
+    chartInstances["ownercost"] = new Chart(ctxOwnerCost, {
       type: "bar",
       data: {
         labels: [],
-        datasets: [
-          {
-            label: "$ por Unidad",
-            data: [],
-            backgroundColor: "rgba(0,0,0,0.6)",
-            borderColor: "#000",
-            borderWidth: 1,
-          },
-        ],
+        datasets: [],
       },
       options: {
         responsive: true,
         maintainAspectRatio: false,
         scales: {
+          xAxes: [{ stacked: true, gridLines: { display: false } }],
           yAxes: [
             {
+              stacked: true,
               ticks: {
                 callback: function (value) {
                   return "$" + formatNumber(value);
@@ -332,6 +485,14 @@ function initCharts() {
             },
           ],
         },
+        tooltips: {
+          callbacks: {
+            label: function(tooltipItem, data) {
+              const label = data.datasets[tooltipItem.datasetIndex].label || '';
+              return label + ': $' + formatNumber(tooltipItem.value);
+            }
+          }
+        }
       },
     });
   }
@@ -339,141 +500,84 @@ function initCharts() {
 
 function updateCharts(
   labels,
-  hours,
   fuel,
   cost,
-  totalTasks,
-  doneTasks,
-  pendingTasks,
   volume,
   efficiency,
-  unitCost
+  baseFuel,
+  baseCost,
+  baseVolume,
+  ownerData
 ) {
+  // Volumen Real vs Base
   if (chartInstances["productivity"]) {
     chartInstances["productivity"].data.labels = labels;
     chartInstances["productivity"].data.datasets[0].data = volume;
-    chartInstances["productivity"].data.datasets[1].data = cost;
-    chartInstances["productivity"].data.datasets[2].data = hours;
+    chartInstances["productivity"].data.datasets[1].data = baseVolume;
     chartInstances["productivity"].update();
   }
 
-  if (chartInstances["tasks"]) {
-    chartInstances["tasks"].data.labels = labels;
-    chartInstances["tasks"].data.datasets[0].data = doneTasks;
-    chartInstances["tasks"].data.datasets[1].data = pendingTasks;
-    chartInstances["tasks"].update();
+  // Costo Real vs Base
+  if (chartInstances["cost"]) {
+    chartInstances["cost"].data.labels = labels;
+    chartInstances["cost"].data.datasets[0].data = cost;
+    chartInstances["cost"].data.datasets[1].data = baseCost;
+    chartInstances["cost"].update();
   }
 
+  // Eficiencia
   if (chartInstances["efficiency"]) {
     chartInstances["efficiency"].data.labels = labels;
     chartInstances["efficiency"].data.datasets[0].data = efficiency;
     chartInstances["efficiency"].update();
   }
 
-  if (chartInstances["unitcost"]) {
-    chartInstances["unitcost"].data.labels = labels;
-    chartInstances["unitcost"].data.datasets[0].data = unitCost;
-    chartInstances["unitcost"].update();
+  // Gráficas por propietario
+  updateOwnerCharts(labels, ownerData);
+}
+
+// Actualizar gráficas por propietario
+function updateOwnerCharts(labels, ownerData) {
+  const owners = Object.keys(ownerData);
+  
+  // Volumen por propietario
+  if (chartInstances["ownervolume"]) {
+    chartInstances["ownervolume"].data.labels = labels;
+    chartInstances["ownervolume"].data.datasets = owners.map((owner, idx) => ({
+      label: owner,
+      data: ownerData[owner].volume,
+      backgroundColor: ownerColors[owner]?.bg || `rgba(${idx * 50}, ${100 + idx * 30}, 200, 0.7)`,
+      borderColor: ownerColors[owner]?.border || `rgba(${idx * 50}, ${100 + idx * 30}, 200, 1)`,
+      borderWidth: 1,
+    }));
+    chartInstances["ownervolume"].update();
   }
-}
 
-// --- Tabla ---
-function initMgmtTable() {
-  mgmtTableInstance = $("#tabla-gestion").DataTable({
-    dom: '<"row"<"col-sm-6"l><"col-sm-6"f>> t i p',
-    pagingType: "numbers",
-    responsive: true,
-    language: {
-      url: "//cdn.datatables.net/plug-ins/1.10.24/i18n/Spanish.json",
-    },
-    order: [[0, "desc"]],
-    columnDefs: [
-      {
-        targets: 4, // Eficiencia
-        render: function (data, type, row) {
-          const percent = parseFloat(data);
-          let color = "secondary";
-          if (percent >= 80) color = "success";
-          else if (percent > 50) color = "warning";
-          else if (percent > 0) color = "danger";
-          // Usamos formatNumber para aplicar lógica de decimales
-          return `<span class="badge badge-${color}">${formatNumber(
-            percent
-          )}%</span>`;
-        },
-      },
-      // Reemplazamos los renderers estáticos por funciones personalizadas que usan formatNumber
-      {
-        targets: 1,
-        render: function (data) {
-          return formatNumber(data);
-        },
-      }, // Horas
-      {
-        targets: 2,
-        render: function (data) {
-          return formatNumber(data);
-        },
-      }, // Tareas
-      {
-        targets: 3,
-        render: function (data) {
-          return formatNumber(data);
-        },
-      }, // Completadas
-      {
-        targets: 5,
-        render: function (data) {
-          return formatNumber(data);
-        },
-      }, // Volumen
-      {
-        targets: 6,
-        render: function (data) {
-          return formatNumber(data);
-        },
-      }, // Area
-      {
-        targets: 7,
-        render: function (data) {
-          return formatNumber(data);
-        },
-      }, // Fuel
-      {
-        targets: 8,
-        render: function (data) {
-          return "$" + formatNumber(data);
-        },
-      }, // Costo
-    ],
-    initComplete: function () {
-      const api = this.api();
-      $(".dataTables_paginate", api.table().container()).addClass(
-        "pagination-sm"
-      );
-    },
-  });
-}
+  // Combustible por propietario
+  if (chartInstances["ownerfuel"]) {
+    chartInstances["ownerfuel"].data.labels = labels;
+    chartInstances["ownerfuel"].data.datasets = owners.map((owner, idx) => ({
+      label: owner,
+      data: ownerData[owner].fuel,
+      backgroundColor: ownerColors[owner]?.bg || `rgba(${idx * 50}, ${100 + idx * 30}, 200, 0.7)`,
+      borderColor: ownerColors[owner]?.border || `rgba(${idx * 50}, ${100 + idx * 30}, 200, 1)`,
+      borderWidth: 1,
+    }));
+    chartInstances["ownerfuel"].update();
+  }
 
-function updateTable(dates, dataObj, effData, unitCostData) {
-  const tableData = dates.map((date, index) => {
-    const info = dataObj[date];
-    return [
-      date,
-      info.hours,
-      info.tasks,
-      info.completed_tasks,
-      effData[index],
-      info.processed_volume,
-      info.processed_area,
-      info.fuel_spent,
-      info.rental_cost,
-    ];
-  });
-
-  mgmtTableInstance.clear();
-  mgmtTableInstance.rows.add(tableData);
-  mgmtTableInstance.draw();
+  // Costo por propietario
+  if (chartInstances["ownercost"]) {
+    chartInstances["ownercost"].data.labels = labels;
+    chartInstances["ownercost"].data.datasets = owners.map((owner, idx) => ({
+      label: owner,
+      data: ownerData[owner].cost,
+      backgroundColor: ownerColors[owner]?.bg || `rgba(${idx * 50}, ${100 + idx * 30}, 200, 0.7)`,
+      borderColor: ownerColors[owner]?.border || `rgba(${idx * 50}, ${100 + idx * 30}, 200, 1)`,
+      borderWidth: 1,
+    }));
+    chartInstances["ownercost"].update();
+  }
 }
 
 // --- Configuración de Pusher ---
@@ -498,39 +602,6 @@ function initPusher() {
         // Si no, forzamos recarga del API
         loadManagementData();
       }
-    });
-
-    // Lógica de Alertas (si se mantiene)
-    var alert_channel = pusher.subscribe("alert-channel");
-
-    alert_channel.bind("new-alert-event", function (data) {
-      console.log("Pusher: new-alert-event recibido", data);
-      if (window.Swal) {
-        const Toast = Swal.mixin({
-          toast: true,
-          position: "top-end",
-          showConfirmButton: false,
-          timer: 5000,
-          timerProgressBar: true,
-          didOpen: (toast) => {
-            toast.addEventListener("mouseenter", Swal.stopTimer);
-            toast.addEventListener("mouseleave", Swal.resumeTimer);
-          },
-        });
-        if (data && data.task) {
-          Toast.fire({
-            icon: "warning",
-            title: `¡NUEVA Alerta para: ${data.task}!`,
-            text: `(${data.level.toUpperCase()}) ${data.alert_description}`,
-          });
-        }
-      }
-      fetchAlertCounters();
-    });
-
-    alert_channel.bind("deleted-alert-event", function (data) {
-      console.log("Pusher: deleted-alert-event recibido", data);
-      fetchAlertCounters();
     });
   } else {
     console.warn(

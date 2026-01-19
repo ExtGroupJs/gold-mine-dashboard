@@ -257,7 +257,7 @@ $(document).ready(function () {
             actionButtons += `<button type="button" title="asignar" class="btn btn-info btn-assign" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-user-plus"></i></button>`;
           }
           if (hasInternal_status != "B") {
-          actionButtons += `<button type="button" title="Pasar a Backlog" class="btn btn-info btn-assign-backlog" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-stopwatch"></i></button>`;
+          actionButtons += `<button type="button" title="Pasar a Backlog" class="btn bg-teal btn-assign-backlog" data-id="${row.id}" data-name="${row.task_name}"><i class="fas fa-stopwatch"></i></button>`;
            }
            
           actionButtons += `</div>`;

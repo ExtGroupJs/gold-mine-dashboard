@@ -24,6 +24,7 @@ function fetchAlertCounters() {
 // Render task counters and charts (separated so updates can be independent)
 function renderTaskCounters(taskInfo, internal_status_filter="") {
   taskInfo = taskInfo || {};
+console.log('✌️taskInfo --->', taskInfo);
   const updateElement = (id, value, internal_value="") => {
     const node = document.getElementById(id);
     if (node) node.textContent = value || 0;
@@ -38,6 +39,7 @@ function renderTaskCounters(taskInfo, internal_status_filter="") {
   updateElement("completed-tasks", taskInfo["Completed"] || 0);
   updateElement("planned-tasks", taskInfo["Planned"] || 0);
   updateElement("hold-tasks", taskInfo["Hold"] || 0);
+  updateElement("backlog-tasks", taskInfo["Backlog"] || 0);
 
   // Task charts (pie + bar) — use percentages for charts
   const rawTaskKeys = Object.keys(taskInfo || {});
@@ -54,7 +56,7 @@ function renderTaskCounters(taskInfo, internal_status_filter="") {
     completed: "#28a745",
     planned: "#007bff",
     hold: "#6c757d",
-    backlog: "#6c757d",
+    backlog: "#aaf7ca",
   };
   const taskPalette = [
     "#f2f1eeff",
