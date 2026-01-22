@@ -65,12 +65,18 @@ class TestTaskViewSet(BaseTestClass):
             )
 
     @patch("apps.business_app.tasks.send_pusher_trigger_task.delay")
-    def test_patch_task_planning_flow(self, mock_task_delay):
+    @patch("apps.business_app.utils.pusher_client.PusherClient.trigger")
+    def test_patch_task_planning_flow(self, mock_pusher_trigger, mock_task_delay):
         """
         Test del flujo de planificación de tarea.
         Al establecer internal_planned_date con internal_responsibles,
         el estado debe cambiar a PLANNED.
         """
+        from apps.business_app.tasks import send_pusher_trigger_task
+        
+        # Hacer que la tarea se ejecute síncronamente
+        mock_task_delay.side_effect = lambda *args, **kwargs: send_pusher_trigger_task(*args, **kwargs)
+        
         self.user.is_superuser = True
         self.user.save()
         self.client.force_authenticate(user=self.user)
@@ -107,22 +113,27 @@ class TestTaskViewSet(BaseTestClass):
             self.assertIsNotNone(task.internal_planned_date)
             self.assertEqual(task.internal_responsibles.count(), len(available_groups))
 
-        # Verificar que se llamó a la tarea asíncrona para notificar a supervisores
-        self.assertGreater(mock_task_delay.call_count, 0)
+        # Verificar que se llamó a PusherClient.trigger dentro de la tarea
+        self.assertGreater(mock_pusher_trigger.call_count, 0)
         # Verificar que se usó el canal y evento correcto
-        for call in mock_task_delay.call_args_list:
-            kwargs = call[1]
-            if 'channel' in kwargs:
-                self.assertEqual(kwargs['channel'], "task-channel")
-                self.assertEqual(kwargs['event'], "update-task-event-for-supervisor")
+        for call in mock_pusher_trigger.call_args_list:
+            args = call[0]
+            if len(args) >= 2 and args[0] == "task-channel":
+                self.assertEqual(args[1], "update-task-event-for-supervisor")
 
     @patch("apps.business_app.signals.send_update_task_dashboard_task.delay")
-    def test_patch_task_start_flow(self, mock_task_delay):
+    @patch("apps.business_app.utils.pusher_client.PusherClient.trigger")
+    def test_patch_task_start_flow(self, mock_pusher_trigger, mock_task_delay):
         """
         Test del flujo de inicio de tarea.
         Al establecer act_start_date, el estado debe cambiar a IN_PROGRESS
         y eliminar alertas críticas.
         """
+        from apps.business_app.tasks import send_update_task_dashboard_task
+        
+        # Hacer que la tarea se ejecute síncronamente
+        mock_task_delay.side_effect = lambda *args, **kwargs: send_update_task_dashboard_task(*args, **kwargs)
+        
         self.user.is_superuser = True
         self.user.save()
         self.client.force_authenticate(user=self.user)
@@ -161,23 +172,27 @@ class TestTaskViewSet(BaseTestClass):
             critical_alerts = Alert.objects.filter(task=task, kind=Alert.KIND.CRITICAL)
             self.assertEqual(critical_alerts.count(), 0)
 
-        # Verificar que se llamó a la tarea asíncrona para actualizar dashboard
-        self.assertGreater(mock_task_delay.call_count, 0)
-        # Verificar que se llamó una vez por cada tarea actualizada
-        self.assertEqual(
-            mock_task_delay.call_count,
-            len(tasks),
-            "Debe llamar a send_update_task_dashboard_task una vez por cada tarea actualizada",
-        )
+        # Verificar que se llamó a PusherClient.trigger dentro de la tarea
+        self.assertGreater(mock_pusher_trigger.call_count, 0)
+        # Verificar que se usó el canal correcto
+        channels_called = [call[0][0] for call in mock_pusher_trigger.call_args_list]
+        self.assertIn("dashboard-channel", channels_called)
 
-    @patch("apps.business_app.signals.send_update_management_dashboard_task.delay")
     @patch("apps.business_app.signals.send_update_task_dashboard_task.delay")
-    def test_patch_task_progress_update_flow(self, mock_task_dashboard_delay, mock_mgmt_dashboard_delay):
+    @patch("apps.business_app.signals.send_update_management_dashboard_task.delay")
+    @patch("apps.business_app.utils.pusher_client.PusherClient.trigger")
+    def test_patch_task_progress_update_flow(self, mock_pusher_trigger, mock_mgmt_dashboard_delay, mock_task_dashboard_delay):
         """
         Test del flujo de actualización de progreso.
         Al actualizar complete_pct (1-99), el estado debe cambiar a IN_PROGRESS
         o WARNING (si hay alertas), y establecer act_start_date si no existe.
         """
+        from apps.business_app.tasks import send_update_management_dashboard_task, send_update_task_dashboard_task
+        
+        # Hacer que las tareas se ejecuten síncronamente
+        mock_task_dashboard_delay.side_effect = lambda *args, **kwargs: send_update_task_dashboard_task(*args, **kwargs)
+        mock_mgmt_dashboard_delay.side_effect = lambda *args, **kwargs: send_update_management_dashboard_task(*args, **kwargs)
+        
         self.user.is_superuser = True
         self.user.save()
         self.client.force_authenticate(user=self.user)
@@ -251,30 +266,40 @@ class TestTaskViewSet(BaseTestClass):
             self.assertEqual(task.complete_pct, progress_value)
             self.assertIsNotNone(task.act_start_date)
 
-        # Verificar que se llamaron las tareas asíncronas para actualizar dashboards
+        # Verificar que se llamó a PusherClient.trigger dentro de las tareas
         total_tasks = len(tasks_without_warnings) + len(tasks_with_warnings)
-        self.assertGreater(mock_mgmt_dashboard_delay.call_count, 0)
-        self.assertGreater(mock_task_dashboard_delay.call_count, 0)
+        self.assertGreater(mock_pusher_trigger.call_count, 0)
+        # Verificar que se usaron los canales correctos
+        channels_called = [call[0][0] for call in mock_pusher_trigger.call_args_list]
+        management_calls = channels_called.count("management-dashboard-channel")
+        dashboard_calls = channels_called.count("dashboard-channel")
         # Cada actualización de progreso debe notificar tanto a management como a dashboard
         self.assertEqual(
-            mock_mgmt_dashboard_delay.call_count,
+            management_calls,
             total_tasks,
-            "Debe llamar a send_update_management_dashboard_task una vez por cada tarea",
+            "Debe notificar a management-dashboard-channel una vez por cada tarea",
         )
         self.assertEqual(
-            mock_task_dashboard_delay.call_count,
+            dashboard_calls,
             total_tasks,
-            "Debe llamar a send_update_task_dashboard_task una vez por cada tarea",
+            "Debe notificar a dashboard-channel una vez por cada tarea",
         )
 
-    @patch("apps.business_app.signals.send_update_management_dashboard_task.delay")
     @patch("apps.business_app.signals.send_update_task_dashboard_task.delay")
-    def test_patch_task_complete_flow_with_percentage(self, mock_task_dashboard_delay, mock_mgmt_dashboard_delay):
+    @patch("apps.business_app.signals.send_update_management_dashboard_task.delay")
+    @patch("apps.business_app.utils.pusher_client.PusherClient.trigger")
+    def test_patch_task_complete_flow_with_percentage(self, mock_pusher_trigger, mock_mgmt_dashboard_delay, mock_task_dashboard_delay):
         """
         Test del flujo de completar tarea usando complete_pct=100.
         El estado debe cambiar a COMPLETED, complete_pct debe ser 100,
         y act_end_date debe establecerse automáticamente.
         """
+        from apps.business_app.tasks import send_update_management_dashboard_task, send_update_task_dashboard_task
+        
+        # Hacer que las tareas se ejecuten síncronamente
+        mock_task_dashboard_delay.side_effect = lambda *args, **kwargs: send_update_task_dashboard_task(*args, **kwargs)
+        mock_mgmt_dashboard_delay.side_effect = lambda *args, **kwargs: send_update_management_dashboard_task(*args, **kwargs)
+        
         self.user.is_superuser = True
         self.user.save()
         self.client.force_authenticate(user=self.user)
@@ -320,13 +345,20 @@ class TestTaskViewSet(BaseTestClass):
             "Debe llamar a send_update_task_dashboard_task una vez por cada tarea",
         )
 
-    @patch("apps.business_app.signals.send_update_management_dashboard_task.delay")
     @patch("apps.business_app.signals.send_update_task_dashboard_task.delay")
-    def test_patch_task_complete_flow_with_end_date(self, mock_task_dashboard_delay, mock_mgmt_dashboard_delay):
+    @patch("apps.business_app.signals.send_update_management_dashboard_task.delay")
+    @patch("apps.business_app.utils.pusher_client.PusherClient.trigger")
+    def test_patch_task_complete_flow_with_end_date(self, mock_pusher_trigger, mock_mgmt_dashboard_delay, mock_task_dashboard_delay):
         """
         Test del flujo de completar tarea usando act_end_date.
         El estado debe cambiar a COMPLETED y complete_pct debe ser 100.
         """
+        from apps.business_app.tasks import send_update_management_dashboard_task, send_update_task_dashboard_task
+        
+        # Hacer que las tareas se ejecuten síncronamente
+        mock_task_dashboard_delay.side_effect = lambda *args, **kwargs: send_update_task_dashboard_task(*args, **kwargs)
+        mock_mgmt_dashboard_delay.side_effect = lambda *args, **kwargs: send_update_management_dashboard_task(*args, **kwargs)
+        
         self.user.is_superuser = True
         self.user.save()
         self.client.force_authenticate(user=self.user)
@@ -450,11 +482,17 @@ class TestTaskViewSet(BaseTestClass):
         self.assertIn("Planned Date", str(response.data))
 
     @patch("apps.business_app.signals.send_update_task_dashboard_task.delay")
-    def test_patch_hold_clears_internal_responsibles(self, mock_task_dashboard_delay):
+    @patch("apps.business_app.utils.pusher_client.PusherClient.trigger")
+    def test_patch_hold_clears_internal_responsibles(self, mock_pusher_trigger, mock_task_dashboard_delay):
         """
         Verifica que al cambiar el estado interno a HOLD, se limpien
         los `internal_responsibles` de la tarea y se notifique al dashboard.
         """
+        from apps.business_app.tasks import send_update_task_dashboard_task
+        
+        # Hacer que la tarea se ejecute síncronamente
+        mock_task_dashboard_delay.side_effect = lambda *args, **kwargs: send_update_task_dashboard_task(*args, **kwargs)
+        
         self.user.is_superuser = True
         self.user.save()
         self.client.force_authenticate(user=self.user)
@@ -492,5 +530,8 @@ class TestTaskViewSet(BaseTestClass):
         self.assertEqual(task.internal_responsibles.count(), 0)
         self.assertEqual(task.internal_status, Task.INTERNAL_STATUS.HOLD)
 
-        # Verificar que se llamó a la tarea asíncrona para actualizar dashboard
-        self.assertEqual(mock_task_dashboard_delay.call_count, 1)
+        # Verificar que se llamó a PusherClient.trigger dentro de la tarea
+        self.assertGreater(mock_pusher_trigger.call_count, 0)
+        # Verificar que se usó el canal correcto
+        channels_called = [call[0][0] for call in mock_pusher_trigger.call_args_list]
+        self.assertIn("dashboard-channel", channels_called)

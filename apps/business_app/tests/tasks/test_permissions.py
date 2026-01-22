@@ -23,17 +23,11 @@ class TestTaskViewSet(BaseTestClass):
         """
         super().setUp()
 
-    @patch("apps.business_app.signals.send_update_management_dashboard_task.delay")
-    @patch("apps.business_app.signals.send_update_task_dashboard_task.delay")
-    def test_get_protocol(self, mock_task_dashboard_delay, mock_mgmt_dashboard_delay):
+    def test_get_protocol(self):
         """Verifica que los permisos de lectura funcionan correctamente con el protocolo GET.
 
         Prueba que solo los roles con acceso de lectura a tareas pueden realizar
         peticiones GET al endpoint de listado de tareas.
-
-        Args:
-            mock_task_dashboard_delay: Mock de la tarea de actualización del dashboard de tareas.
-            mock_mgmt_dashboard_delay: Mock de la tarea de actualización del dashboard de gestión.
         """
         url = reverse("task-list")
         allowed_groups = ROLES_WITH_READ_ACCESS_TO_TASKS
