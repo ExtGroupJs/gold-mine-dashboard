@@ -2,7 +2,7 @@ from rest_framework import serializers
 from ..models.task import Task
 from ..models.alert import Alert
 from .alert import AlertSerializer
-from ..utils.pusher_client import PusherClient
+from ..tasks import send_pusher_trigger_task
 from django.core.cache import cache
 from django.utils import timezone
 from ..signals import send_update_task_dashboard, send_update_management_dashboard
@@ -121,13 +121,12 @@ class TaskSerializer(serializers.ModelSerializer):
             Alert.objects.filter(task=instance, kind=Alert.KIND.CRITICAL).delete()
 
         if validated_data.get("internal_responsibles", []) != []:
-            pusher_client = PusherClient()  # update supervisors list
+            # update supervisors list de manera asíncrona
             payload = validated_data.get("internal_responsibles")
-
-            pusher_client.trigger(
-                PusherClient.TASK_CHANNEL,
-                PusherClient.UPDATE_TASK_EVENT_FOR_SUPERVISOR,
-                {"internal_responsibles": [rol.id for rol in payload]},
+            send_pusher_trigger_task.delay(
+                channel="task-channel",
+                event="update-task-event-for-supervisor",
+                data={"internal_responsibles": [rol.id for rol in payload]},
             )
         update_task_dashboard = False
         if new_internal_status and instance.internal_status != new_internal_status:

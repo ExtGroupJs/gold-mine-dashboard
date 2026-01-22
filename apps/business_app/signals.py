@@ -1,8 +1,8 @@
-from .utils.pusher_client import PusherClient
-from .utils.counters import (
-    get_task_counters,
-    get_alert_counters,
-    get_daily_work_summary_for_test,
+from .tasks import (
+    send_update_management_dashboard_task,
+    send_update_task_dashboard_task,
+    send_update_alert_dashboard_task,
+    notify_created_alert_task,
 )
 import logging
 
@@ -10,27 +10,18 @@ logger = logging.getLogger(__name__)
 
 
 def send_update_management_dashboard():
-    pusher_client = PusherClient()
-    data = get_daily_work_summary_for_test()
-    pusher_client.trigger(
-        PusherClient.MANAGEMENT_DASHBOARD_CHANNEL, PusherClient.UPDATE_TASK_EVENT, data
-    )
+    """Envía actualización del dashboard de gestión de manera asíncrona."""
+    send_update_management_dashboard_task.delay()
 
 
 def send_update_task_dashboard():
-    pusher_client = PusherClient()
-    data = get_task_counters()
-    pusher_client.trigger(
-        PusherClient.DASHBOARD_CHANNEL, PusherClient.UPDATE_TASK_EVENT, data
-    )
+    """Envía actualización del dashboard de tareas de manera asíncrona."""
+    send_update_task_dashboard_task.delay()
 
 
 def send_update_alert_dashboard():
-    pusher_client = PusherClient()
-    data = get_alert_counters()
-    pusher_client.trigger(
-        PusherClient.DASHBOARD_CHANNEL, PusherClient.UPDATE_ALERT_EVENT, data
-    )
+    """Envía actualización del dashboard de alertas de manera asíncrona."""
+    send_update_alert_dashboard_task.delay()
 
 
 # @receiver(post_save, sender=Task)
@@ -40,15 +31,11 @@ def send_update_alert_dashboard():
 
 
 def notify_created_alert(alert):
-    pusher_client = PusherClient()
-    payload = {
-        "task": alert.task.task_name,
-        "alert_description": alert.short_description,
-        "level": f"{alert.KIND(alert.kind).label}",
-    }
-    event = (
-        PusherClient.NEW_ALERT_EVENT
-        if not alert.deleted
-        else PusherClient.DELETED_ALERT_EVENT
+    """Notifica la creación de una alerta de manera asíncrona."""
+    notify_created_alert_task.delay(
+        alert_id=alert.id,
+        task_name=alert.task.task_name,
+        short_description=alert.short_description,
+        kind=alert.kind,
+        deleted=alert.deleted,
     )
-    pusher_client.trigger(PusherClient.ALERT_CHANNEL, event, payload)

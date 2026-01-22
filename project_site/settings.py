@@ -66,6 +66,8 @@ INSTALLED_APPS = [
     "drf_spectacular_sidecar",  # required for Django collectstatic discovery
     "apps.common.middlewares",
     "debug_toolbar",
+    "django_celery_results",
+    "django_celery_beat",
     # "django_browser_reload",
     # "django_watchfiles",
 ]
@@ -144,7 +146,7 @@ if RUNNING_FROM == RUNNING_FROM_LOCAL:
 else:
     conexion = {
         "ENGINE": env("DB_REMOTE_ENGINE"),
-        "NAME": f"{WEBSITE_SLUG_NAME}_db",
+        "NAME": env("DB_REMOTE_NAME"),
         "USER": env("DB_REMOTE_USER"),
         "PASSWORD": env("DB_REMOTE_PASSWORD"),
         "HOST": env("DB_REMOTE_HOST"),
@@ -323,3 +325,15 @@ PUSHER_SECRET = env.str(
 PUSHER_CLUSTER = env.str(
     f"{pusher_prefix}PUSHER_CLUSTER", default=""
 )  # Example cluster TODO: change it
+
+# Celery Configuration
+CELERY_BROKER_URL = env.str("CELERY_BROKER_URL", default=f"redis://{REDIS_HOST}:{REDIS_PORT}/0")
+CELERY_RESULT_BACKEND = "django-db"
+CELERY_CACHE_BACKEND = "default"
+CELERY_ACCEPT_CONTENT = ["json"]
+CELERY_TASK_SERIALIZER = "json"
+CELERY_RESULT_SERIALIZER = "json"
+CELERY_TIMEZONE = "UTC"
+CELERY_TASK_TRACK_STARTED = True
+CELERY_TASK_TIME_LIMIT = 30 * 60  # 30 minutos
+CELERY_BROKER_CONNECTION_RETRY_ON_STARTUP = True
