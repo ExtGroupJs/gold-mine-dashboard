@@ -82,16 +82,19 @@ if ($LASTEXITCODE -eq 0) {
 
 Write-Host ""
 
-# Configurar variables de entorno para Celery
-$env:CELERY_BROKER_URL = "redis://localhost:6379/0"
+# Configurar variables de entorno para Celery usando valores de .env
+$redisPort = if ($env:REDIS_PORT) { $env:REDIS_PORT } else { "6379" }
+$serverName = if ($env:SERVER_NAME) { $env:SERVER_NAME } else { "localhost" }
+$env:CELERY_BROKER_URL = "redis://${serverName}:${redisPort}/0"
 $env:CELERY_RESULT_BACKEND = "django-db"
 
 # Iniciar Celery Worker en segundo plano
 Write-Host "[4/5] Iniciando Celery Worker..." -ForegroundColor Yellow
+$celeryBrokerUrl = $env:CELERY_BROKER_URL
 $workerJob = Start-Job -ScriptBlock {
     Set-Location $using:PWD
     & $using:venvPath
-    $env:CELERY_BROKER_URL = "redis://localhost:6379/0"
+    $env:CELERY_BROKER_URL = $using:celeryBrokerUrl
     $env:CELERY_RESULT_BACKEND = "django-db"
     celery -A project_site worker --loglevel=info --pool=solo
 }
@@ -112,7 +115,7 @@ Write-Host "[5/5] Iniciando Celery Beat..." -ForegroundColor Yellow
 $beatJob = Start-Job -ScriptBlock {
     Set-Location $using:PWD
     & $using:venvPath
-    $env:CELERY_BROKER_URL = "redis://localhost:6379/0"
+    $env:CELERY_BROKER_URL = $using:celeryBrokerUrl
     $env:CELERY_RESULT_BACKEND = "django-db"
     celery -A project_site beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
 }
@@ -131,8 +134,9 @@ Write-Host ""
 Write-Host "=== Todos los servicios iniciados correctamente ===" -ForegroundColor Green
 Write-Host ""
 Write-Host "Servicios activos:" -ForegroundColor Cyan
-Write-Host "  • PostgreSQL:    localhost:5432" -ForegroundColor White
-Write-Host "  • Redis:         localhost:6379" -ForegroundColor White
+$dbPort = if ($env:DB_REMOTE_PORT) { $env:DB_REMOTE_PORT } else { "5432" }
+Write-Host "  • PostgreSQL:    ${serverName}:${dbPort}" -ForegroundColor White
+Write-Host "  • Redis:         ${serverName}:${redisPort}" -ForegroundColor White
 Write-Host "  • Celery Worker: Job ID $($workerJob.Id)" -ForegroundColor White
 Write-Host "  • Celery Beat:   Job ID $($beatJob.Id)" -ForegroundColor White
 Write-Host ""
