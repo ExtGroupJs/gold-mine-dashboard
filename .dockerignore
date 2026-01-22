@@ -1,0 +1,79 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+*.egg-info/
+dist/
+build/
+*.egg
+
+# Virtual Environment
+venv/
+env/
+ENV/
+
+# IDEs
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Git
+.git/
+.gitignore
+
+# Database
+*.sqlite3
+db.sqlite3
+
+# Media files - no copiar en build (se genera en runtime)
+media/
+
+# Static output - no copiar en build (se genera con collectstatic)
+staticfiles/
+static_output/
+
+# Logs
+*.log
+registered_warnings_and_errors.log
+
+# Test coverage
+.coverage
+htmlcov/
+.pytest_cache/
+
+# Documentation - no necesaria en contenedor
+docs/
+
+# Fixtures - no necesarios para Celery
+**/fixtures/
+
+# Celery
+celerybeat-schedule
+celerybeat.pid
+
+# Backup files
+*.bak
+*.patch
+
+# Temporary files
+*.tmp
+temp/
+tmp/
+
+# Archivos de configuración de desarrollo
+test.txt
+
+# Deploy requirements (no necesario para imagen de desarrollo)
+deploy_requirements.txt
+
+# Docker files
+docker-compose-dev.yml
+.dockerignore

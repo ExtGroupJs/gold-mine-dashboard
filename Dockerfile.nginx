@@ -1,0 +1,16 @@
+FROM nginx:1.25-alpine
+
+# Eliminar configuración por defecto
+RUN rm /etc/nginx/conf.d/default.conf
+
+# Copiar configuración como plantilla
+COPY nginx.conf /etc/nginx/templates/default.conf.template
+
+# Crear directorios para archivos estáticos y media
+RUN mkdir -p /app/staticfiles /app/media
+
+# Exponer puerto 80
+EXPOSE 80
+
+# Nginx procesa automáticamente las plantillas en /etc/nginx/templates/
+# y sustituye variables de entorno antes de iniciar

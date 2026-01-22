@@ -1,83 +1,203 @@
+# Docker Compose para producción con Nginx + Gunicorn + Celery
+# Configuración completa para despliegue
 
-# version: '3.8'  # Versión de Docker Compose
-
-# networks:
-  # internal_network:
-  #   driver: bridge
 services:
+  # PostgreSQL - Base de datos
   postgres:
     container_name: ${WEBSITE_SLUG_NAME}_postgres
     image: postgres:16
     environment:
-      POSTGRES_DB: ${DB_REMOTE_NAME}
-      POSTGRES_USER: ${DB_REMOTE_USER}
-      POSTGRES_PASSWORD: ${DB_REMOTE_PASSWORD}
+      POSTGRES_DB: ${DB_REMOTE_NAME:-gold_mine_db}
+      POSTGRES_USER: ${DB_REMOTE_USER:-postgres}
+      POSTGRES_PASSWORD: ${DB_REMOTE_PASSWORD:-postgres}
     ports:
-      - "${DB_REMOTE_PORT}:5432"
+      - "${DB_REMOTE_PORT:-5432}:5432"
     volumes:
-      - postgres_data_volume:/var/lib/postgresql/data
-    restart: always  # Opcional: reinicia el contenedor si falla
-    # networks:
-    #   - internal_network
-      
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${DB_REMOTE_USER:-postgres}"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - app-network
+
+  # Redis - Broker para Celery
   redis:
     container_name: ${WEBSITE_SLUG_NAME}_redis
-    image: redis:latest
-    restart: always
+    image: redis:7-alpine
     ports:
-      - ${REDIS_PORT}:6379
-    # networks:
-    #   - internal_network
-    # healthcheck:
-    #   test: ["CMD", "redis-cli", "ping"]
-    #   interval: 10s
-    #   timeout: 5s
-    #   retries: 5
-  
-#   django-server:
-#     # image: certus-backend-img:latest # esto por si se creó la imagen localmente
-#     build:
-#       context: .
-#       dockerfile: Dockerfile # Usamos nuestro Dockerfile de desarrollo
-#     restart: always
-#     networks:
-#       - internal_network
-#     ports:
-#       - "8000:8000"
-#     volumes:
-#       # 1. Monta tu código local en el contenedor.
-#       # Cualquier cambio que hagas en tu PC se verá dentro del contenedor.
-#       - .:/home/project
+      - "${REDIS_PORT:-6379}:6379"
+    volumes:
+      - redis_data:/data
+    command: redis-server --appendonly yes
+    healthcheck:
+      test: ["CMD", "redis-cli", "ping"]
+      interval: 5s
+      timeout: 3s
+      retries: 5
+    restart: unless-stopped
+    networks:
+      - app-network
 
-#     depends_on:
-#       postgres:
-#         condition: service_started
-#       redis:
-#         condition: service_healthy  # <-- CAMBIA ESTO
-     
-#     environment:
-#       SECRET_KEY: ${SECRET_KEY}
+  # Django Web Application - Servida con Gunicorn
+  web:
+    container_name: ${WEBSITE_SLUG_NAME}_web
+    build:
+      context: .
+      dockerfile: Dockerfile
+    volumes:
+      - static_volume:/app/static_output
+      - media_volume:/app/media
+    environment:
+      - DJANGO_SETTINGS_MODULE=project_site.settings
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=django-db
+      - SECRET_KEY=${SECRET_KEY}
+      - DEBUG=${DEBUG:-False}
+      - ALLOWED_HOSTS=${ALLOWED_HOSTS:-localhost,127.0.0.1}
+      - EMAIL_HOST_USER=${EMAIL_HOST_USER}
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
+      - DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL}
+      - EMAIL_PORT=${EMAIL_PORT:-587}
+      - SESSION_EXPIRE_SECONDS=${SESSION_EXPIRE_SECONDS:-600}
+      - DB_REMOTE_ENGINE=django.db.backends.postgresql
+      - DB_REMOTE_NAME=${DB_REMOTE_NAME:-gold_mine_db}
+      - DB_REMOTE_USER=${DB_REMOTE_USER:-postgres}
+      - DB_REMOTE_PASSWORD=${DB_REMOTE_PASSWORD:-postgres}
+      - DB_REMOTE_HOST=postgres
+      - DB_REMOTE_PORT=5432
+      - SENTRY_DSN=${SENTRY_DSN}
+      - SENTRY_SAMPLE_RATE=${SENTRY_SAMPLE_RATE:-0.2}
+      - CACHE_DEFAULT_TIMEOUT=${CACHE_DEFAULT_TIMEOUT:-3600}
+      - REDIS_PORT=6379
+      - CELERY_BASE_REDIS_URL=${CELERY_BASE_REDIS_URL:-redis://redis:}
+      - RUNNING_FROM=remote
+      - WEBSITE_NAME=${WEBSITE_NAME}
+      - WEBSITE_SLUG_NAME=${WEBSITE_SLUG_NAME}
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - app-network
+    expose:
+      - "8000"
 
-#       REDIS_HOST: "redis"
-#       REDIS_PORT: ${REDIS_PORT}
+  # Nginx - Servidor web y proxy reverso
+  nginx:
+    container_name: ${WEBSITE_SLUG_NAME}_nginx
+    build:
+      context: .
+      dockerfile: Dockerfile.nginx
+    ports:
+      - "${NGINX_PORT:-80}:80"
+    volumes:
+      - static_volume:/app/static_output:ro
+      - media_volume:/app/media:ro
+    environment:
+      - SERVER_NAME=${SERVER_NAME:-localhost}
+    depends_on:
+      - web
+    restart: unless-stopped
+    networks:
+      - app-network
 
-#       WEBSITE_NAME: ${WEBSITE_NAME}
-#       WEBSITE_SLUG_NAME: ${WEBSITE_SLUG_NAME}
+  # Celery Worker - Procesa tareas asíncronas
+  celery_worker:
+    container_name: ${WEBSITE_SLUG_NAME}_celery_worker
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A project_site worker --loglevel=info --concurrency=4
+    volumes:
+      - media_volume:/app/media
+    environment:
+      - DJANGO_SETTINGS_MODULE=project_site.settings
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=django-db
+      - SECRET_KEY=${SECRET_KEY}
+      - DEBUG=${DEBUG:-False}
+      - EMAIL_HOST_USER=${EMAIL_HOST_USER}
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
+      - DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL}
+      - EMAIL_PORT=${EMAIL_PORT:-587}
+      - SESSION_EXPIRE_SECONDS=${SESSION_EXPIRE_SECONDS:-600}
+      - DB_REMOTE_ENGINE=django.db.backends.postgresql
+      - DB_REMOTE_NAME=${DB_REMOTE_NAME:-gold_mine_db}
+      - DB_REMOTE_USER=${DB_REMOTE_USER:-postgres}
+      - DB_REMOTE_PASSWORD=${DB_REMOTE_PASSWORD:-postgres}
+      - DB_REMOTE_HOST=postgres
+      - DB_REMOTE_PORT=5432
+      - SENTRY_DSN=${SENTRY_DSN}
+      - SENTRY_SAMPLE_RATE=${SENTRY_SAMPLE_RATE:-0.2}
+      - CACHE_DEFAULT_TIMEOUT=${CACHE_DEFAULT_TIMEOUT:-3600}
+      - REDIS_PORT=6379
+      - CELERY_BASE_REDIS_URL=${CELERY_BASE_REDIS_URL:-redis://redis:}
+      - RUNNING_FROM=remote
+      - WEBSITE_NAME=${WEBSITE_NAME}
+      - WEBSITE_SLUG_NAME=${WEBSITE_SLUG_NAME}
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - app-network
 
-#       #seconds before session expires
-#       SESSION_EXPIRE_SECONDS: ${SESSION_EXPIRE_SECONDS}
+  # Celery Beat - Scheduler para tareas periódicas
+  celery_beat:
+    container_name: ${WEBSITE_SLUG_NAME}_celery_beat
+    build:
+      context: .
+      dockerfile: Dockerfile
+    command: celery -A project_site beat --loglevel=info --scheduler django_celery_beat.schedulers:DatabaseScheduler
+    volumes:
+      - media_volume:/app/media
+    environment:
+      - DJANGO_SETTINGS_MODULE=project_site.settings
+      - CELERY_BROKER_URL=redis://redis:6379/0
+      - CELERY_RESULT_BACKEND=django-db
+      - SECRET_KEY=${SECRET_KEY}
+      - DEBUG=${DEBUG:-False}
+      - EMAIL_HOST_USER=${EMAIL_HOST_USER}
+      - EMAIL_HOST_PASSWORD=${EMAIL_HOST_PASSWORD}
+      - DEFAULT_FROM_EMAIL=${DEFAULT_FROM_EMAIL}
+      - EMAIL_PORT=${EMAIL_PORT:-587}
+      - SESSION_EXPIRE_SECONDS=${SESSION_EXPIRE_SECONDS:-600}
+      - DB_REMOTE_ENGINE=django.db.backends.postgresql
+      - DB_REMOTE_NAME=${DB_REMOTE_NAME:-gold_mine_db}
+      - DB_REMOTE_USER=${DB_REMOTE_USER:-postgres}
+      - DB_REMOTE_PASSWORD=${DB_REMOTE_PASSWORD:-postgres}
+      - DB_REMOTE_HOST=postgres
+      - DB_REMOTE_PORT=5432
+      - SENTRY_DSN=${SENTRY_DSN}
+      - SENTRY_SAMPLE_RATE=${SENTRY_SAMPLE_RATE:-0.2}
+      - CACHE_DEFAULT_TIMEOUT=${CACHE_DEFAULT_TIMEOUT:-3600}
+      - REDIS_PORT=6379
+      - CELERY_BASE_REDIS_URL=${CELERY_BASE_REDIS_URL:-redis://redis:}
+      - RUNNING_FROM=remote
+      - WEBSITE_NAME=${WEBSITE_NAME}
+      - WEBSITE_SLUG_NAME=${WEBSITE_SLUG_NAME}
+    depends_on:
+      redis:
+        condition: service_healthy
+      postgres:
+        condition: service_healthy
+    restart: unless-stopped
+    networks:
+      - app-network
 
-#       #set to "remote" on production server, or "local" on local machine
-#       RUNNING_FROM: ${RUNNING_FROM}
-
-#       DB_REMOTE_ENGINE: ${DB_REMOTE_ENGINE}
-#       DB_REMOTE_NAME: ${DB_REMOTE_NAME}
-#       DB_REMOTE_USER: ${DB_REMOTE_USER}
-#       DB_REMOTE_PASSWORD: ${DB_REMOTE_PASSWORD}
-#       DB_REMOTE_HOST: postgres
-#       DB_REMOTE_PORT: ${DB_REMOTE_PORT}
-
-#       CACHE_DEFAULT_TIMEOUT: ${CACHE_DEFAULT_TIMEOUT}
 volumes:
-  postgres_data_volume:
-    name: postgres_data_volume_${WEBSITE_SLUG_NAME}  # Define el volumen
+  postgres_data:
+  redis_data:
+  static_volume:
+  media_volume:
+
+networks:
+  app-network:
+    driver: bridge
