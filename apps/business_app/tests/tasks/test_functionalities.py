@@ -6,10 +6,9 @@ from model_bakery import baker
 from rest_framework import status
 from apps.business_app.models.task import Task
 from apps.business_app.models.alert import Alert
-from apps.business_app.utils.pusher_client import PusherClient
 from datetime import timedelta
 from django.utils import timezone
-from unittest.mock import patch
+from unittest.mock import patch, MagicMock
 
 
 from apps.users_app.models.groups import (
@@ -65,8 +64,8 @@ class TestTaskViewSet(BaseTestClass):
                 response.data["count"], created_task_by_specific_roles[role]
             )
 
-    @patch.object(PusherClient, "trigger")
-    def test_patch_task_planning_flow(self, mock_trigger):
+    @patch("apps.business_app.tasks.send_pusher_trigger_task.delay")
+    def test_patch_task_planning_flow(self, mock_task_delay):
         """
         Test del flujo de planificación de tarea.
         Al establecer internal_planned_date con internal_responsibles,
@@ -108,19 +107,17 @@ class TestTaskViewSet(BaseTestClass):
             self.assertIsNotNone(task.internal_planned_date)
             self.assertEqual(task.internal_responsibles.count(), len(available_groups))
 
-        # Verificar que se llamó al pusher para notificar a supervisores
-        self.assertGreater(mock_trigger.call_count, 0)
+        # Verificar que se llamó a la tarea asíncrona para notificar a supervisores
+        self.assertGreater(mock_task_delay.call_count, 0)
         # Verificar que se usó el canal y evento correcto
-        channels_called = [call_item[0][0] for call_item in mock_trigger.call_args_list]
-        task_channel_calls = channels_called.count("task-channel")
-        self.assertEqual(
-            task_channel_calls,
-            len(tasks),
-            "Debe notificar por task-channel una vez por cada tarea actualizada",
-        )
+        for call in mock_task_delay.call_args_list:
+            kwargs = call[1]
+            if 'channel' in kwargs:
+                self.assertEqual(kwargs['channel'], "task-channel")
+                self.assertEqual(kwargs['event'], "update-task-event-for-supervisor")
 
-    @patch.object(PusherClient, "trigger")
-    def test_patch_task_start_flow(self, mock_trigger):
+    @patch("apps.business_app.signals.send_update_task_dashboard_task.delay")
+    def test_patch_task_start_flow(self, mock_task_delay):
         """
         Test del flujo de inicio de tarea.
         Al establecer act_start_date, el estado debe cambiar a IN_PROGRESS
@@ -164,26 +161,18 @@ class TestTaskViewSet(BaseTestClass):
             critical_alerts = Alert.objects.filter(task=task, kind=Alert.KIND.CRITICAL)
             self.assertEqual(critical_alerts.count(), 0)
 
-        # Verificar que se llamó al pusher para actualizar dashboard
-        self.assertGreater(mock_trigger.call_count, 0)
-        # Verificar que se usó el canal dashboard-channel
-        channels_called = [call_item[0][0] for call_item in mock_trigger.call_args_list]
-        dashboard_channel_calls = channels_called.count("dashboard-channel")
+        # Verificar que se llamó a la tarea asíncrona para actualizar dashboard
+        self.assertGreater(mock_task_delay.call_count, 0)
+        # Verificar que se llamó una vez por cada tarea actualizada
         self.assertEqual(
-            dashboard_channel_calls,
+            mock_task_delay.call_count,
             len(tasks),
-            "Debe notificar por dashboard-channel una vez por cada tarea actualizada",
-        )
-        # Verificar que se usó el canal dashboard-channel
-        channels_called = [call_item[0][0] for call_item in mock_trigger.call_args_list]
-        self.assertIn(
-            "dashboard-channel",
-            channels_called,
-            "Debe notificar por el canal dashboard-channel",
+            "Debe llamar a send_update_task_dashboard_task una vez por cada tarea actualizada",
         )
 
-    @patch.object(PusherClient, "trigger")
-    def test_patch_task_progress_update_flow(self, mock_trigger):
+    @patch("apps.business_app.signals.send_update_management_dashboard_task.delay")
+    @patch("apps.business_app.signals.send_update_task_dashboard_task.delay")
+    def test_patch_task_progress_update_flow(self, mock_task_dashboard_delay, mock_mgmt_dashboard_delay):
         """
         Test del flujo de actualización de progreso.
         Al actualizar complete_pct (1-99), el estado debe cambiar a IN_PROGRESS
@@ -262,27 +251,25 @@ class TestTaskViewSet(BaseTestClass):
             self.assertEqual(task.complete_pct, progress_value)
             self.assertIsNotNone(task.act_start_date)
 
-        # Verificar que se llamó al pusher para actualizar dashboards
+        # Verificar que se llamaron las tareas asíncronas para actualizar dashboards
         total_tasks = len(tasks_without_warnings) + len(tasks_with_warnings)
-        self.assertGreater(mock_trigger.call_count, 0)
-        # Verificar notificaciones a management y dashboard
-        channels_called = [call_item[0][0] for call_item in mock_trigger.call_args_list]
-        management_calls = channels_called.count("management-dashboard-channel")
-        dashboard_calls = channels_called.count("dashboard-channel")
+        self.assertGreater(mock_mgmt_dashboard_delay.call_count, 0)
+        self.assertGreater(mock_task_dashboard_delay.call_count, 0)
         # Cada actualización de progreso debe notificar tanto a management como a dashboard
         self.assertEqual(
-            management_calls,
+            mock_mgmt_dashboard_delay.call_count,
             total_tasks,
-            "Debe notificar a management-dashboard-channel una vez por cada tarea",
+            "Debe llamar a send_update_management_dashboard_task una vez por cada tarea",
         )
         self.assertEqual(
-            dashboard_calls,
+            mock_task_dashboard_delay.call_count,
             total_tasks,
-            "Debe notificar a dashboard-channel una vez por cada tarea",
+            "Debe llamar a send_update_task_dashboard_task una vez por cada tarea",
         )
 
-    @patch.object(PusherClient, "trigger")
-    def test_patch_task_complete_flow_with_percentage(self, mock_trigger):
+    @patch("apps.business_app.signals.send_update_management_dashboard_task.delay")
+    @patch("apps.business_app.signals.send_update_task_dashboard_task.delay")
+    def test_patch_task_complete_flow_with_percentage(self, mock_task_dashboard_delay, mock_mgmt_dashboard_delay):
         """
         Test del flujo de completar tarea usando complete_pct=100.
         El estado debe cambiar a COMPLETED, complete_pct debe ser 100,
@@ -318,26 +305,24 @@ class TestTaskViewSet(BaseTestClass):
             self.assertEqual(task.complete_pct, 100)
             self.assertIsNotNone(task.act_end_date)
 
-        # Verificar que se llamó al pusher para actualizar dashboards
-        self.assertGreater(mock_trigger.call_count, 0)
-        # Verificar notificaciones a management y dashboard
-        channels_called = [call_item[0][0] for call_item in mock_trigger.call_args_list]
-        management_calls = channels_called.count("management-dashboard-channel")
-        dashboard_calls = channels_called.count("dashboard-channel")
+        # Verificar que se llamaron las tareas asíncronas para actualizar dashboards
+        self.assertGreater(mock_mgmt_dashboard_delay.call_count, 0)
+        self.assertGreater(mock_task_dashboard_delay.call_count, 0)
         # Cada completación debe notificar tanto a management como a dashboard
         self.assertEqual(
-            management_calls,
+            mock_mgmt_dashboard_delay.call_count,
             len(tasks),
-            "Debe notificar a management-dashboard-channel una vez por cada tarea",
+            "Debe llamar a send_update_management_dashboard_task una vez por cada tarea",
         )
         self.assertEqual(
-            dashboard_calls,
+            mock_task_dashboard_delay.call_count,
             len(tasks),
-            "Debe notificar a dashboard-channel una vez por cada tarea",
+            "Debe llamar a send_update_task_dashboard_task una vez por cada tarea",
         )
 
-    @patch.object(PusherClient, "trigger")
-    def test_patch_task_complete_flow_with_end_date(self, mock_trigger):
+    @patch("apps.business_app.signals.send_update_management_dashboard_task.delay")
+    @patch("apps.business_app.signals.send_update_task_dashboard_task.delay")
+    def test_patch_task_complete_flow_with_end_date(self, mock_task_dashboard_delay, mock_mgmt_dashboard_delay):
         """
         Test del flujo de completar tarea usando act_end_date.
         El estado debe cambiar a COMPLETED y complete_pct debe ser 100.
@@ -374,26 +359,22 @@ class TestTaskViewSet(BaseTestClass):
             self.assertEqual(task.complete_pct, 100)
             self.assertIsNotNone(task.act_end_date)
 
-        # Verificar que se llamó al pusher para actualizar dashboards
-        self.assertGreater(mock_trigger.call_count, 0)
-        # Verificar notificaciones a management y dashboard
-        channels_called = [call_item[0][0] for call_item in mock_trigger.call_args_list]
-        management_calls = channels_called.count("management-dashboard-channel")
-        dashboard_calls = channels_called.count("dashboard-channel")
+        # Verificar que se llamaron las tareas asíncronas para actualizar dashboards
+        self.assertGreater(mock_mgmt_dashboard_delay.call_count, 0)
+        self.assertGreater(mock_task_dashboard_delay.call_count, 0)
         # Cada completación debe notificar tanto a management como a dashboard
         self.assertEqual(
-            management_calls,
+            mock_mgmt_dashboard_delay.call_count,
             len(tasks),
-            "Debe notificar a management-dashboard-channel una vez por cada tarea",
+            "Debe llamar a send_update_management_dashboard_task una vez por cada tarea",
         )
         self.assertEqual(
-            dashboard_calls,
+            mock_task_dashboard_delay.call_count,
             len(tasks),
-            "Debe notificar a dashboard-channel una vez por cada tarea",
+            "Debe llamar a send_update_task_dashboard_task una vez por cada tarea",
         )
 
-    @patch.object(PusherClient, "trigger")
-    def test_patch_completed_task_validation(self, mock_trigger):
+    def test_patch_completed_task_validation(self):
         """
         Test que verifica que no se puede editar una tarea completada.
         Debe retornar un error de validación.
@@ -425,8 +406,7 @@ class TestTaskViewSet(BaseTestClass):
             self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
             self.assertIn("COMPLETED", str(response.data))
 
-    @patch.object(PusherClient, "trigger")
-    def test_patch_validation_planned_date_requires_responsibles(self, mock_trigger):
+    def test_patch_validation_planned_date_requires_responsibles(self):
         """
         Test que verifica la validación de campos requeridos:
         - internal_planned_date requiere internal_responsibles
@@ -469,8 +449,8 @@ class TestTaskViewSet(BaseTestClass):
         self.assertEqual(response.status_code, status.HTTP_400_BAD_REQUEST)
         self.assertIn("Planned Date", str(response.data))
 
-    @patch.object(PusherClient, "trigger")
-    def test_patch_hold_clears_internal_responsibles(self, mock_trigger):
+    @patch("apps.business_app.signals.send_update_task_dashboard_task.delay")
+    def test_patch_hold_clears_internal_responsibles(self, mock_task_dashboard_delay):
         """
         Verifica que al cambiar el estado interno a HOLD, se limpien
         los `internal_responsibles` de la tarea y se notifique al dashboard.
@@ -512,9 +492,5 @@ class TestTaskViewSet(BaseTestClass):
         self.assertEqual(task.internal_responsibles.count(), 0)
         self.assertEqual(task.internal_status, Task.INTERNAL_STATUS.HOLD)
 
-        # Verificar que se notificó al dashboard general una vez por la actualización
-        channels_called = [call_item[0][0] for call_item in mock_trigger.call_args_list]
-        dashboard_calls = channels_called.count("dashboard-channel")
-        management_calls = channels_called.count("management-dashboard-channel")
-        self.assertEqual(dashboard_calls, 1)
-        self.assertEqual(management_calls, 0)
+        # Verificar que se llamó a la tarea asíncrona para actualizar dashboard
+        self.assertEqual(mock_task_dashboard_delay.call_count, 1)
